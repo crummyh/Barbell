@@ -2,10 +2,6 @@ from fastapi import APIRouter
 
 router = APIRouter()
 
-@router.get("/status/{batch_id}")
-def get_batch_status(batch_id: int):
-    pass
-
 @router.get("/stats")
 def get_stats():
     pass
