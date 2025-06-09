@@ -193,7 +193,3 @@ cython_debug/
 #  refer to https://docs.cursor.com/context/ignore-files
 .cursorignore
 .cursorindexingignore
-
-# Zed
-# Zed is the main editor that I use, and I don't want to force people to use my setup :laugh:
-.zed/
