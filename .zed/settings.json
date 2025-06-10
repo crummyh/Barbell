@@ -3,6 +3,7 @@
     "Python": {
       "language_servers": ["pyright", "ruff"],
       "format_on_save": "on",
+      "preferred_line_length": 120,
       "formatter": [
         {
           "code_actions": {
