@@ -1,14 +1,11 @@
 from fastapi import FastAPI
 
-from .routers import private_v1, public_v1
+from .routers import api_v1, web
 
 app = FastAPI()
 
 app.include_router(
-    public_v1.router,
-    prefix="/public/v1"
+    api_v1.router,
+    prefix="/api/v1"
 )
-app.include_router(
-    private_v1.router,
-    prefix="private/v1"
-)
+app.include_router(web.router)
