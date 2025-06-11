@@ -2,6 +2,7 @@ from datetime import datetime
 
 from sqlmodel import Field, SQLModel
 
+# ==========={ Tables }=========== #
 
 class Team(SQLModel, table=True):
     id: int = Field(index=True, primary_key=True)
@@ -25,3 +26,5 @@ class Image(SQLModel, table=True):
     created_at: datetime
     created_by: int = Field(foreign_key=Team.id)
     batch: int = Field(foreign_key=UploadBatch.id)
+
+# ==========={ Other }=========== #
