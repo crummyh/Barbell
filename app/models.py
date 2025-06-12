@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from pydantic import BaseModel
 from sqlmodel import Field, SQLModel
 
 # ==========={ Tables }=========== #
@@ -28,3 +29,12 @@ class Image(SQLModel, table=True):
     batch: int = Field(foreign_key=UploadBatch.id)
 
 # ==========={ Other }=========== #
+
+class StatsOut(BaseModel):
+    pass
+
+class TeamStatsOut(BaseModel):
+    pass
+
+class StatusOut(BaseModel):
+    pass
