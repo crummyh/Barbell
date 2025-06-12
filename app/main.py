@@ -1,7 +1,16 @@
+from contextlib import asynccontextmanager
+
 import uvicorn
 from fastapi import FastAPI
 
+from .database import init_db
 from .routers import api_v1, web
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_db()
+    yield
 
 description = """
 Docs and stuff goes here!!!
@@ -32,7 +41,8 @@ app = FastAPI(
         "name": "Elijah Crum",
         "email": "elijah@crums.us"
     },
-    openapi_tags=tags_metadata
+    openapi_tags=tags_metadata,
+    lifespan=lifespan
 )
 
 app.include_router(api_v1.router, prefix="/api/v1")

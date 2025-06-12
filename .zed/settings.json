@@ -1,7 +1,8 @@
 {
   "languages": {
     "Python": {
-      "language_servers": ["pyright", "ruff"],
+      // cspell is not needed, I just use it because I can't spell
+      "language_servers": ["pyright", "ruff", "cspell"],
       "format_on_save": "on",
       "preferred_line_length": 120,
       "formatter": [

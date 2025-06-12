@@ -12,3 +12,4 @@ def hash_key(api_key: str):
 
 def check_api_key(api_key: str):
     hash = hash_key(api_key)
+    # same = (hash == #Get hash from database)
