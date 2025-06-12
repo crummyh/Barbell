@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 
 from ..dependencies import api_key_scheme
+from ..models import StatsOut, StatusOut, TeamStatsOut
 
 router = APIRouter()
 
@@ -11,7 +12,8 @@ def get_stats():
     """
     Get stats about the entire database
     """
-    pass
+    out = StatsOut()
+    return out
 
 @router.get("/stats/team/{team_number}", tags=["Public", "Stats"])
 def get_team_stats(team_number: int):
@@ -20,13 +22,15 @@ def get_team_stats(team_number: int):
 
     - **team**: The team to look at
     """
-    pass
+    out = TeamStatsOut
+    return out
 
 # ========== { Private API } ==========
 
 @router.get("/status/{batch_id}", tags=["Auth Required",  "Stats"])
 def get_batch_status(batch_id: int, api_key: str = Depends(api_key_scheme)):
-    pass
+    out = StatusOut
+    return out
 
 @router.post("/upload", tags=["Auth Required"])
 def upload(api_key: str = Depends(api_key_scheme)):
