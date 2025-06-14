@@ -1,12 +1,11 @@
 import tarfile
 
-import config
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, UploadFile
 from fastapi.exceptions import HTTPException
 from sqlalchemy import func
 from sqlmodel import Session, select
-from starlette.datastructures import UploadFile
 
+from .. import config
 from ..database import get_session
 from ..dependencies import api_key_scheme, check_api_key
 from ..models import (
@@ -57,8 +56,7 @@ def get_batch_status(
     session: Session = Depends(get_session)
 ) -> StatusOut:
     team_id = check_api_key(api_key, session)
-    if not team_id:
-        raise HTTPException(status_code=403, detail="API Key is incorrect")
+
     out = StatusOut(
         batch_id=0,
         team=4786,
@@ -74,24 +72,11 @@ def get_batch_status(
 
 @router.post("/upload", tags=["Auth Required"])
 def upload(
-    api_key: str = Depends(api_key_scheme),
-    session: Session = Depends(get_session)
-):
-    team_id = check_api_key(api_key, session)
-    if not team_id:
-        raise HTTPException(status_code=403, detail="API Key is incorrect")
-    pass
-
-@router.get("/download", tags=["Auth Required"])
-def download_batch(
     archive: UploadFile,
     api_key: str = Depends(api_key_scheme),
     session: Session = Depends(get_session)
 ):
-
     team_id = check_api_key(api_key, session)
-    if not team_id:
-        raise HTTPException(status_code=403, detail="API Key is incorrect")
 
     if not tarfile.is_tarfile(archive.file):
         raise HTTPException(status_code=415, detail="File must be of type .tar.gz")
@@ -111,6 +96,16 @@ def download_batch(
         raise
     else:
         session.commit()
+
+    pass
+
+@router.get("/download", tags=["Auth Required"])
+def download_batch(
+    api_key: str = Depends(api_key_scheme),
+    session: Session = Depends(get_session)
+):
+    team_id = check_api_key(api_key, session)
+    pass
 
 
 
