@@ -29,25 +29,25 @@ This is mainly just here so that I don't forget
 ### Project Structure
 
 ```bash
-app/ # The main project dir (like src)
-├─ routers/ # API sections for endpoints
-│  ├─ api_v1.py # Publicly available API V1
-│  ├─ internal.py # Internal API for managing accounts ect.
-│  ├─ web.py # The actual webpages (Return HTML files)
-├─ services/ # Various process that can be completed on separate threads
-├─ static/ # Static files that are hosted in /static
-│  ├─ css/
-│  ├─ images/
-│  ├─ js/
-├─ templates/ # Jinja HTML templates
-├─ tests/ # Empty right now, but will have tests later
-├─ buckets.py # Manages S3 buckets and objects
-├─ config.py # Config options and constants
-├─ database.py # Manages the database connection and migration
-├─ dependencies.py # Security dependencies
-├─ helpers.py # Random common functions
-├─ main.py # Main entrypoint
-├─ models.py # The database schema and return models
+📁 app/                # The main project dir (like src)
+├── 📁 routers/        # API sections for endpoints
+│  ├─── 🐍 api_v1.py   # Publicly available API V1
+│  ├─── 🐍 internal.py # Internal API for managing accounts ect.
+│  └─── 🐍 web.py      # The actual webpages (Return HTML files)
+├── 📁 services/       # Various process that can be completed on separate threads
+├── 📁 static/         # Static files that are hosted in /static
+│  ├── 📁 css/
+│  ├── 📁 images/
+│  └── 📁 js/
+├── 📁 templates/      # Jinja HTML templates
+├── 📁 tests/          # Empty right now, but will have tests later
+├── 🐍 buckets.py      # Manages S3 buckets and objects
+├── 🐍 config.py       # Config options and constants
+├── 🐍 database.py     # Manages the database connection and migration
+├── 🐍 dependencies.py # Security dependencies
+├── 🐍 helpers.py      # Random common functions
+├── 🐍 main.py         # Main entrypoint
+└── 🐍 models.py       # The database schema and return models
 ```
 
 ### Running Locally
