@@ -3,10 +3,13 @@
 
 An *open* dataset allowing <abbr title="FIRST Robotics Competition">FRC</abbr> teams to upload match images, and download object detection datasets.
 
+> [!WARNING]
+> This project is in ***pre-alpha*** as of June 20, 2025. Everything is still at the "it works on my machine" point, except it doesn't even work for me! :sweat_smile:
+
 ![Static Badge](https://img.shields.io/badge/Licence-MIT-blue?style=for-the-badge)
 
 ## Todo:
-* Get a real name :sweat_smile:
+* Get a real name
 * Don't just copy PhotonVision's website
 * Finish all alpha endpoints
 
@@ -16,6 +19,7 @@ This is mainly just here so that I don't forget
 
 ### Libraries Used
 
+* Python 3
 * FastAPI
 * SQLModel
 * SlowAPI
@@ -49,6 +53,10 @@ app/ # The main project dir (like src)
 ### Running Locally
 Linux:
 ```bash
+# Pre-requirements
+# * Have git installed
+# * Have Python 3 installed
+
 # Setup
 git clone "https://github.com/crummyh/frcVisionDataset.git"
 cd frcVisionDataset
@@ -61,3 +69,9 @@ FastAPI dev app/main.py
 # When you are done run:
 deactivate
 ```
+
+Windows:
+Good luck, have fun!
+
+Mac:
+Probably similar to the Linux instructions, good luck!
