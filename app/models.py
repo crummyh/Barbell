@@ -27,7 +27,7 @@ class UploadBatch(SQLModel, table=True):
     __tablename__ = 'upload_batches' # type: ignore
 
     id: int | None = Field(default=None, index=True, primary_key=True)
-    team_id: int = Field(foreign_key="teams.id")
+    team_id: int = Field(foreign_key="teams.id", index=True)
     status: UploadStatus
     file_size: int | None
     images_valid: int = 0

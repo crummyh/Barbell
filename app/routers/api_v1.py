@@ -5,6 +5,8 @@ from fastapi.exceptions import HTTPException
 from sqlalchemy import func
 from sqlmodel import Session, select
 
+from app.helpers import get_id_from_team_number
+
 from .. import config
 from ..database import get_session
 from ..dependencies import api_key_scheme, check_api_key
@@ -38,8 +40,11 @@ def get_team_stats(team_number: int, session: Session = Depends(get_session)) ->
     """
     Get stats about individual teams
 
-    - **team**: The team to look at
+    - **team_number**: The team to look at
     """
+
+    team = get_id_from_team_number(team_number, session)
+
     out = TeamStatsOut(
         image_count=0,
         years_available=[2025],
@@ -119,5 +124,3 @@ def download_image(
     if not team_id:
         raise HTTPException(status_code=403, detail="API Key is incorrect")
     pass
-
-# ========== { Internal API } ==========
