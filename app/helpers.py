@@ -1,4 +1,8 @@
 
+import hashlib
+from typing import BinaryIO
+
+import config
 from sqlmodel import Session, select
 
 from app.models import Team
@@ -31,3 +35,13 @@ def get_team_from_number(team_number: int, session: Session) -> Team:
     if not team:
         raise LookupError()
     return team
+
+def get_hash_with_streaming(file: BinaryIO, algorithm: str) -> str:
+    h = hashlib.new(algorithm)
+    file.seek(0)
+    while True:
+        data = file.read(config.HASHING_BUF_SIZE)
+        if not data: break
+        h.update(data)
+
+    return h.hexdigest()

@@ -193,3 +193,9 @@ cython_debug/
 #  refer to https://docs.cursor.com/context/ignore-files
 .cursorignore
 .cursorindexingignore
+
+# Data for testing
+data/
+
+# Random file I use for testing stuff (duh)
+test_stuff.py

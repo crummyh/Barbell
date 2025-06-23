@@ -1,0 +1,32 @@
+# Status
+
+| Name             | URL             | Status      | Todo |
+|------------------|-----------------|-------------|------|
+| get_stats        | /stats          | Blocked     |      |
+| get_team_stats   | /stats/team/{#} | Close       |      |
+| get_batch_status | /status/{#}     | Framework   |      |
+| upload           | /upload         | Blocked     | Waiting for buckets |
+| download_batch   | /download       | Framework   |      |
+| download_image   | /download/{#}   | Framework   |      |
+
+
+Not Started
+: The endpoint has not been even created
+
+Framework
+: Endpoint is created, but not implemented
+
+In Progress
+: Started, just not done
+
+Blocked
+: Progress has started, just is stuck for now
+
+Close
+: Endpoint is very close to being done, just needs a bit more work
+
+Done
+: Endpoint is completed
+
+Needs expansion
+: A new feature is needed.

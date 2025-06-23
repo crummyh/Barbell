@@ -1,6 +1,10 @@
 {
   "version": "0.2",
   "language": "en",
-  "words": ["subapp"],
+  "words": [
+    "subapp",
+    "venv",
+    "fastapi"
+  ],
   "flagWords": []
 }

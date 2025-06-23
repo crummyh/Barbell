@@ -1,7 +1,9 @@
 from datetime import datetime
 from enum import Enum
+from uuid import uuid4
 
 from pydantic import BaseModel
+from pydantic.types import UUID4
 from sqlmodel import Field, SQLModel
 
 # ==========={ Enums & States }=========== #
@@ -26,22 +28,23 @@ class Team(SQLModel, table=True):
 class UploadBatch(SQLModel, table=True):
     __tablename__ = 'upload_batches' # type: ignore
 
-    id: int | None = Field(default=None, index=True, primary_key=True)
+    id: UUID4 | None = Field(default_factory=uuid4, index=True, primary_key=True)
     team_id: int = Field(foreign_key="teams.id", index=True)
     status: UploadStatus
     file_size: int | None
     images_valid: int = 0
     images_rejected: int = 0
     images_total: int | None = Field(default=None)
+    capture_time: datetime | None
     processing_time: int | None = Field(default=None)
 
 class Image(SQLModel, table=True):
     __tablename__ = 'images' # type: ignore
 
-    id: int | None = Field(default=None, index=True, primary_key=True)
+    id: UUID4 | None = Field(default_factory=uuid4, index=True, primary_key=True)
     hash: str | None
     created_at: datetime
-    created_by: int = Field(foreign_key="teams.id")
+    capture_time: int = Field(foreign_key="teams.id", index=True)
     batch: int = Field(foreign_key="upload_batches.id")
 
 # ==========={ Other }=========== #
@@ -55,7 +58,7 @@ class StatsOut(BaseModel):
 
 class TeamStatsOut(BaseModel):
     image_count: int
-    years_available: list[int]
+    years_available: set[int]
     upload_batches: int
 
 class StatusOut(BaseModel):

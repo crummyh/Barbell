@@ -1,11 +1,14 @@
+from hashlib import md5
 import tarfile
+from datetime import datetime
 
-from fastapi import APIRouter, Depends, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, UploadFile
 from fastapi.exceptions import HTTPException
 from sqlalchemy import func
 from sqlmodel import Session, select
 
-from app.helpers import get_id_from_team_number
+from app.buckets import create_upload_batch
+from app.helpers import get_hash_with_streaming, get_id_from_team_number
 
 from .. import config
 from ..database import get_session
@@ -43,12 +46,18 @@ def get_team_stats(team_number: int, session: Session = Depends(get_session)) ->
     - **team_number**: The team to look at
     """
 
-    team = get_id_from_team_number(team_number, session)
+    try:
+        team = get_id_from_team_number(team_number, session)
+    except LookupError:
+        raise HTTPException(status_code=404, detail="Team not found")
+
+    images = session.exec(select(Image).where(Image.capture_time == team)).all()
+    batches = session.exec(select(UploadBatch).where(UploadBatch.team_id == team)).all()
 
     out = TeamStatsOut(
-        image_count=0,
-        years_available=[2025],
-        upload_batches=2
+        image_count=len(images),
+        years_available=set([i.created_at.year for i in images]),
+        upload_batches=len(batches)
     )
     return out
 
@@ -57,8 +66,8 @@ def get_team_stats(team_number: int, session: Session = Depends(get_session)) ->
 @router.get("/status/{batch_id}", tags=["Auth Required",  "Stats"])
 def get_batch_status(
     batch_id: int,
-    api_key: str = Depends(api_key_scheme),
-    session: Session = Depends(get_session)
+    api_key:  str     = Depends(api_key_scheme),
+    session:  Session = Depends(get_session)
 ) -> StatusOut:
     team_id = check_api_key(api_key, session)
 
@@ -77,47 +86,67 @@ def get_batch_status(
 
 @router.post("/upload", tags=["Auth Required"])
 def upload(
-    archive: UploadFile,
-    api_key: str = Depends(api_key_scheme),
-    session: Session = Depends(get_session)
+    archive:          UploadFile,
+    hash:             str,
+    background_tasks: BackgroundTasks,
+    capture_time:     datetime = datetime.now(),
+    api_key:          str      = Depends(api_key_scheme),
+    session:          Session  = Depends(get_session)
 ):
     team_id = check_api_key(api_key, session)
 
     if not tarfile.is_tarfile(archive.file):
-        raise HTTPException(status_code=415, detail="File must be of type .tar.gz")
+        raise HTTPException(
+            status_code=415,
+            detail="File must be of type .tar.gz"
+        )
 
     if archive.size and (archive.size > config.MAX_FILE_SIZE):
-        raise HTTPException(status_code=413, detail=f"File too large. Max size: {config.MAX_FILE_SIZE / (1024**3):.1f}GB")
+        raise HTTPException(
+            status_code=413,
+            detail=f"File too large. Max size: {config.MAX_FILE_SIZE / (1024**3):.1f}GB"
+        )
+
+    if get_hash_with_streaming(archive.file, config.UPLOAD_INTEGRITY_HASH_ALGORITHM) != hash:
+        raise HTTPException(
+            status_code=400,
+            detail="Uploaded file is corrupted (hash mismatch)."
+        )
 
     try:
         batch = UploadBatch(
             team_id=team_id,
             status=UploadStatus.UPLOADING,
-            file_size=archive.size
+            file_size=archive.size,
+            capture_time=capture_time
         )
         session.add(batch)
-    except:
+    except:  # noqa: E722
         session.rollback()
-        raise
+        raise HTTPException(
+            status_code=500,
+            detail="There was an error adding the batch to the database. Sorry!"
+        )
     else:
         session.commit()
+
+        try:
+            create_upload_batch(archive.file, )
 
     pass
 
 @router.get("/download", tags=["Auth Required"])
 def download_batch(
-    api_key: str = Depends(api_key_scheme),
+    api_key: str     = Depends(api_key_scheme),
     session: Session = Depends(get_session)
 ):
     team_id = check_api_key(api_key, session)
     pass
 
-
-
 @router.get("/download/{image_id}", tags=["Auth Required"])
 def download_image(
     image_id: int,
-    api_key: str = Depends(api_key_scheme),
+    api_key: str     = Depends(api_key_scheme),
     session: Session = Depends(get_session)
 ):
     team_id = check_api_key(api_key, session)

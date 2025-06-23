@@ -12,6 +12,7 @@ An *open* dataset allowing <abbr title="FIRST Robotics Competition">FRC</abbr> t
 * Get a real name
 * Don't just copy PhotonVision's website
 * Finish all alpha endpoints
+  * Fix the UUID vs Hash issue
 
 ## Developing
 
@@ -25,6 +26,9 @@ This is mainly just here so that I don't forget
 * SlowAPI
 * Jinja
 * Bootstrap
+* AWS
+  * S3
+  * PostgreSQL
 
 ### Project Structure
 
@@ -65,7 +69,7 @@ source .venv/bin/activate
 pip install -r requirements.txt
 # Now start working!
 # To run the app run:
-FastAPI dev app/main.py
+fastapi dev app/main.py
 # When you are done run:
 deactivate
 ```
