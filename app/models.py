@@ -62,12 +62,11 @@ class TeamStatsOut(BaseModel):
     upload_batches: int
 
 class StatusOut(BaseModel):
-    batch_id: int
+    batch_id: UUID4
     team: int
     status: UploadStatus
-    file_size: int
-    images_valid: int
-    images_rejected: int
-    images_total: int
-    file_path: str | None
+    file_size: int | None
+    images_valid: int | None
+    images_rejected: int | None
+    images_total: int | None
     error_msg: str | None

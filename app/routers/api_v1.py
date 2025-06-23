@@ -1,14 +1,20 @@
-from hashlib import md5
 import tarfile
 from datetime import datetime
+from uuid import uuid4
 
 from fastapi import APIRouter, BackgroundTasks, Depends, UploadFile
 from fastapi.exceptions import HTTPException
+from pydantic.types import UUID4
 from sqlalchemy import func
 from sqlmodel import Session, select
 
 from app.buckets import create_upload_batch
-from app.helpers import get_hash_with_streaming, get_id_from_team_number
+from app.helpers import (
+    get_hash_with_streaming,
+    get_id_from_team_number,
+    get_team_from_id,
+)
+from app.services.image_processing import process_batch_async
 
 from .. import config
 from ..database import get_session
@@ -65,21 +71,20 @@ def get_team_stats(team_number: int, session: Session = Depends(get_session)) ->
 
 @router.get("/status/{batch_id}", tags=["Auth Required",  "Stats"])
 def get_batch_status(
-    batch_id: int,
+    batch_id: UUID4,
     api_key:  str     = Depends(api_key_scheme),
     session:  Session = Depends(get_session)
 ) -> StatusOut:
     team_id = check_api_key(api_key, session)
 
     out = StatusOut(
-        batch_id=0,
+        batch_id=uuid4(),
         team=4786,
         status=UploadStatus.UPLOADING,
         file_size=1,
         images_valid=0,
         images_rejected=0,
         images_total=0,
-        file_path=None,
         error_msg=None
     )
     return out
@@ -92,7 +97,16 @@ def upload(
     capture_time:     datetime = datetime.now(),
     api_key:          str      = Depends(api_key_scheme),
     session:          Session  = Depends(get_session)
-):
+) -> StatusOut:
+    """
+    Upload images to the dataset. Requires and API key
+
+    `archive`: The images in a .tar.gz archive
+
+    `hash`: A ***md5*** hash of the archive
+
+    `capture_time`: The rough time that the data was gathered
+    """
     team_id = check_api_key(api_key, session)
 
     if not tarfile.is_tarfile(archive.file):
@@ -131,9 +145,28 @@ def upload(
         session.commit()
 
         try:
-            create_upload_batch(archive.file, )
+            assert batch.id
+            create_upload_batch(archive.file, batch.id)
 
-    pass
+        except:  # noqa: E722
+            raise HTTPException(
+                status_code=500,
+                detail="There was an error creating a S3 object"
+            )
+
+        else:
+            background_tasks.add_task(process_batch_async, batch_id=batch.id, session=session)
+
+    return StatusOut(
+        batch_id=batch.id,
+        team=get_team_from_id(team_id, session).team_number,
+        status=UploadStatus.PROCESSING,
+        file_size=archive.size,
+        images_valid=None,
+        images_total=None,
+        images_rejected=None,
+        error_msg=None
+    )
 
 @router.get("/download", tags=["Auth Required"])
 def download_batch(

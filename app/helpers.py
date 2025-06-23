@@ -2,9 +2,9 @@
 import hashlib
 from typing import BinaryIO
 
-import config
 from sqlmodel import Session, select
 
+from app import config
 from app.models import Team
 
 

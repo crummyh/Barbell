@@ -9,7 +9,6 @@ from typing import BinaryIO
 from pydantic.types import UUID4
 
 from app import config
-from app.helpers import get_hash_with_streaming
 
 _init = False
 

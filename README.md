@@ -14,6 +14,9 @@ An *open* dataset allowing <abbr title="FIRST Robotics Competition">FRC</abbr> t
 * Finish all alpha endpoints
   * Fix the UUID vs Hash issue
 * Add analytics and admin dashboard?
+* Add docker stuff
+  * Learn docker
+*
 
 ## Developing
 
