@@ -13,6 +13,7 @@ An *open* dataset allowing <abbr title="FIRST Robotics Competition">FRC</abbr> t
 * Don't just copy PhotonVision's website
 * Finish all alpha endpoints
   * Fix the UUID vs Hash issue
+* Add analytics and admin dashboard?
 
 ## Developing
 
