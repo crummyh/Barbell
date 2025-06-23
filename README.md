@@ -1,4 +1,4 @@
-# RIGHT NOW THIS IS VIEW ONLY! It is for me only to work on, at least untill I get to alpha. Everything here is temportary and *will* be changed. You will find a CD topic when I am ready. See you then :wave:
+# RIGHT NOW THIS IS VIEW ONLY! It is for me only to work on, at least until I get to alpha. Everything here is temporary and *will* be changed. You will find a CD topic when I am ready. See you then :wave:
 
 # frcVisionDataset
 
