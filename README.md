@@ -1,5 +1,6 @@
-# frcVisionDataset
+# RIGHT NOW THIS IS VIEW ONLY! It is for me only to work on, at least untill I get to alpha. Everything here is temportary and *will* be changed. You will find a CD topic when I am ready. See you then :wave:
 
+# frcVisionDataset
 
 An *open* dataset allowing <abbr title="FIRST Robotics Competition">FRC</abbr> teams to upload match images, and download object detection datasets.
 
