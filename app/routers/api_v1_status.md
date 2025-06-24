@@ -2,13 +2,11 @@
 
 | Name             | URL             | Status      | Todo |
 |------------------|-----------------|-------------|------|
-| get_stats        | /stats          | Blocked     |      |
+| get_stats        | /stats          | In Progress     |      |
 | get_team_stats   | /stats/team/{#} | Close       |      |
 | get_batch_status | /status/{#}     | Framework   |      |
-| upload           | /upload         | Blocked     | Waiting for buckets |
+| upload           | /upload         | close       | async script needs work |
 | download_batch   | /download       | Framework   |      |
-| download_image   | /download/{#}   | Framework   |      |
-
 
 Not Started
 : The endpoint has not been even created

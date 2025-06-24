@@ -17,7 +17,17 @@ An *open* dataset allowing <abbr title="FIRST Robotics Competition">FRC</abbr> t
 * Add analytics and admin dashboard?
 * Add docker stuff
   * Learn docker
-*
+* Add better error handling
+* UUID hex vs str (w/ dashes)
+* Protect from SQL injection attacks
+* User metadata
+  * Capture time, event ect.
+* Internal methods:
+  * Account management
+  * Image Labeling
+* Rate limiting
+* Actually add labeling to image
+* Add consistency with types (IO[bytes] vs BinaryIO)
 
 ## Developing
 

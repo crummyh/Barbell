@@ -57,7 +57,7 @@ def get_team_stats(team_number: int, session: Session = Depends(get_session)) ->
     except LookupError:
         raise HTTPException(status_code=404, detail="Team not found")
 
-    images = session.exec(select(Image).where(Image.capture_time == team)).all()
+    images = session.exec(select(Image).where(Image.created_by == team)).all()
     batches = session.exec(select(UploadBatch).where(UploadBatch.team_id == team)).all()
 
     out = TeamStatsOut(
@@ -135,7 +135,7 @@ def upload(
             capture_time=capture_time
         )
         session.add(batch)
-    except:  # noqa: E722
+    except Exception:
         session.rollback()
         raise HTTPException(
             status_code=500,
@@ -148,7 +148,7 @@ def upload(
             assert batch.id
             create_upload_batch(archive.file, batch.id)
 
-        except:  # noqa: E722
+        except Exception:
             raise HTTPException(
                 status_code=500,
                 detail="There was an error creating a S3 object"
@@ -174,15 +174,4 @@ def download_batch(
     session: Session = Depends(get_session)
 ):
     team_id = check_api_key(api_key, session)
-    pass
-
-@router.get("/download/{image_id}", tags=["Auth Required"])
-def download_image(
-    image_id: int,
-    api_key: str     = Depends(api_key_scheme),
-    session: Session = Depends(get_session)
-):
-    team_id = check_api_key(api_key, session)
-    if not team_id:
-        raise HTTPException(status_code=403, detail="API Key is incorrect")
     pass

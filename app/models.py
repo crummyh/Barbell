@@ -35,17 +35,19 @@ class UploadBatch(SQLModel, table=True):
     images_valid: int = 0
     images_rejected: int = 0
     images_total: int | None = Field(default=None)
-    capture_time: datetime | None
-    processing_time: int | None = Field(default=None)
+    capture_time: datetime
+    start_time: datetime | None = None
+    estimated_processing_time_left: int | None = Field(default=None)
+    error_message: str | None = None
 
 class Image(SQLModel, table=True):
     __tablename__ = 'images' # type: ignore
 
     id: UUID4 | None = Field(default_factory=uuid4, index=True, primary_key=True)
-    hash: str | None
     created_at: datetime
-    capture_time: int = Field(foreign_key="teams.id", index=True)
-    batch: int = Field(foreign_key="upload_batches.id")
+    created_by: int = Field(foreign_key="teams.id", index=True)
+    batch: UUID4 = Field(foreign_key="upload_batches.id")
+    # TODO: Implement Labels
 
 # ==========={ Other }=========== #
 
