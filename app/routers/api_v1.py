@@ -14,7 +14,7 @@ from app.helpers import (
     get_team_from_id,
     get_team_number_from_id,
 )
-from app.services.image_processing import process_batch_async
+from app.services.image_processing import estimate_processing_time, process_batch_async
 
 from .. import config
 from ..database import get_session
@@ -92,6 +92,7 @@ def get_batch_status(
         images_valid=batch.images_valid,
         images_rejected=batch.images_rejected,
         images_total=batch.images_total,
+        estimated_time_left=estimate_processing_time(session,batch_id),
         error_msg=batch.error_message
     )
     return out
@@ -172,6 +173,7 @@ def upload(
         images_valid=None,
         images_total=None,
         images_rejected=None,
+        estimated_time_left=config.DEFAULT_PROCESSING_TIME,
         error_msg=None
     )
 
