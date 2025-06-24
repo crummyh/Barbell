@@ -14,6 +14,13 @@ class UploadStatus(Enum):
     COMPLETED  = "completed"
     FAILED     = "failed"
 
+class DownloadFormat(Enum):
+    YOLO5  = "yolo5"
+    YOLO8  = "yolo8"
+    YOLO11 = "yolo11"
+    COCO   = "coco"
+    RAW    = "raw"
+
 # ==========={ Tables }=========== #
 
 class Team(SQLModel, table=True):
@@ -22,7 +29,7 @@ class Team(SQLModel, table=True):
     id: int | None = Field(default=None, index=True, primary_key=True)
     team_number: int
     team_name: str | None
-    api_key: str | None = Field(index=True) # Hash, not full key
+    api_key: str | None = Field(index=True) # sha256 Hash, not full key
     created_at: datetime | None
 
 class UploadBatch(SQLModel, table=True):
@@ -34,7 +41,7 @@ class UploadBatch(SQLModel, table=True):
     file_size: int | None
     images_valid: int = 0
     images_rejected: int = 0
-    images_total: int | None = Field(default=None)
+    images_total: int = 0
     capture_time: datetime
     start_time: datetime | None = None
     estimated_processing_time_left: int | None = Field(default=None)
@@ -72,3 +79,5 @@ class StatusOut(BaseModel):
     images_rejected: int | None
     images_total: int | None
     error_msg: str | None
+
+class DownloadInfo(BaseModel):

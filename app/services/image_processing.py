@@ -122,3 +122,22 @@ def _validate_image(image_path: IO[bytes]) -> bool:
 def _validate_image_pre(image_member: tarfile.TarInfo) -> bool:
     """Validate image *before* extracting"""
     return Path(image_member.name).suffix.lower() in config.ALLOWED_IMAGE_EXTENSIONS
+
+def estimate_processing_time(session: Session, batch_id: UUID4) -> float:
+    """Estimate the time left in processing (in seconds)"""
+    batch = session.get(UploadBatch, batch_id)
+    if not batch:
+        raise IndexError("batch id not found")
+
+    if batch.status in {UploadStatus.COMPLETED, UploadStatus.FAILED}:
+        return 0
+
+    if batch.status == UploadStatus.UPLOADING:
+        return config.DEFAULT_PROCESSING_TIME
+
+    images_done = batch.images_valid + batch.images_rejected
+    progress = images_done / batch.images_total
+    assert batch.start_time
+    delta_time = (batch.start_time - datetime.now()).total_seconds()
+
+    return (delta_time/progress)

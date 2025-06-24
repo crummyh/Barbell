@@ -17,6 +17,12 @@ def get_team_from_id(id: int, session: Session) -> Team:
         raise LookupError()
     return team
 
+def get_team_number_from_id(id: int, session: Session) -> int:
+    """
+    Returns the team number that corresponds to the `id`
+    """
+    return get_team_from_id(id, session).team_number
+
 def get_id_from_team_number(team_number: int, session: Session) -> int:
     """
     Returns the internal db id of a team based off of its team number
@@ -29,7 +35,7 @@ def get_id_from_team_number(team_number: int, session: Session) -> int:
 
 def get_team_from_number(team_number: int, session: Session) -> Team:
     """
-    Returns the internal db id of a team based off of its team number
+    Returns the `Team` object corresponding to an actual team number
     """
     team = session.exec(select(Team).where(Team.team_number == team_number)).one_or_none()
     if not team:

@@ -28,6 +28,8 @@ An *open* dataset allowing <abbr title="FIRST Robotics Competition">FRC</abbr> t
 * Rate limiting
 * Actually add labeling to image
 * Add consistency with types (IO[bytes] vs BinaryIO)
+* Fix `image_processing.py` to be more concise (see [here](https://docs.sqlalchemy.org/en/21/orm/session_basics.html#framing-out-a-begin-commit-rollback-block))
+* Update everything to use `config.PROJECT_NAME`
 
 ## Developing
 

@@ -1,6 +1,5 @@
 import tarfile
 from datetime import datetime
-from uuid import uuid4
 
 from fastapi import APIRouter, BackgroundTasks, Depends, UploadFile
 from fastapi.exceptions import HTTPException
@@ -13,6 +12,7 @@ from app.helpers import (
     get_hash_with_streaming,
     get_id_from_team_number,
     get_team_from_id,
+    get_team_number_from_id,
 )
 from app.services.image_processing import process_batch_async
 
@@ -75,17 +75,24 @@ def get_batch_status(
     api_key:  str     = Depends(api_key_scheme),
     session:  Session = Depends(get_session)
 ) -> StatusOut:
-    team_id = check_api_key(api_key, session)
+    check_api_key(api_key, session)
+
+    batch = session.get(UploadBatch, batch_id)
+    if not batch:
+        raise HTTPException(
+            status_code=404,
+            detail="Batch not found"
+        )
 
     out = StatusOut(
-        batch_id=uuid4(),
-        team=4786,
-        status=UploadStatus.UPLOADING,
-        file_size=1,
-        images_valid=0,
-        images_rejected=0,
-        images_total=0,
-        error_msg=None
+        batch_id=batch_id,
+        team=get_team_number_from_id(batch.team_id, session),
+        status=batch.status,
+        file_size=batch.file_size,
+        images_valid=batch.images_valid,
+        images_rejected=batch.images_rejected,
+        images_total=batch.images_total,
+        error_msg=batch.error_message
     )
     return out
 

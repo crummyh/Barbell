@@ -2,10 +2,10 @@
 
 | Name             | URL             | Status      | Todo |
 |------------------|-----------------|-------------|------|
-| get_stats        | /stats          | In Progress     |      |
+| get_stats        | /stats          | In Progress |      |
 | get_team_stats   | /stats/team/{#} | Close       |      |
-| get_batch_status | /status/{#}     | Framework   |      |
-| upload           | /upload         | close       | async script needs work |
+| get_batch_status | /status/{#}     | Done        |      |
+| upload           | /upload         | Done        |      |
 | download_batch   | /download       | Framework   |      |
 
 Not Started
