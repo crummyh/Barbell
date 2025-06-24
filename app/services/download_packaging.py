@@ -6,10 +6,8 @@ the user to another URL where they can download the entire
 file.
 """
 
-from app.models import DownloadFormat
+from app.models import DownloadRequest
 
 
-async def create_download_bundle(
-    format: DownloadFormat,
-
-)
+async def create_download_bundle(request: DownloadRequest):
+    pass

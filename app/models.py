@@ -78,6 +78,14 @@ class StatusOut(BaseModel):
     images_valid: int | None
     images_rejected: int | None
     images_total: int | None
+    estimated_time_left: float | None
     error_msg: str | None
 
-class DownloadInfo(BaseModel):
+class DownloadRequest(BaseModel):
+    format: DownloadFormat
+    labels: list[str]
+    count: int
+    split: tuple[float, float, float] | None # Training / Validation / Testing
+    non_match_images: bool
+
+# class DownloadInfo(BaseModel):
