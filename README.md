@@ -5,11 +5,12 @@
 An *open* dataset allowing <abbr title="FIRST Robotics Competition">FRC</abbr> teams to upload match images, and download object detection datasets.
 
 > [!WARNING]
-> This project is in ***pre-alpha*** as of June 20, 2025. Everything is still at the "it works on my machine" point, except it doesn't even work for me! :sweat_smile:
+> This project is in ***pre-alpha*** as of June 24, 2025. Everything is still at the "it works on my machine" point, except it doesn't even work for me! :sweat_smile:
 
 ![Static Badge](https://img.shields.io/badge/Licence-MIT-blue?style=for-the-badge)
 
 ## Todo:
+* Sort this list
 * Get a real name
 * Don't just copy PhotonVision's website
 * Finish all alpha endpoints
@@ -30,6 +31,10 @@ An *open* dataset allowing <abbr title="FIRST Robotics Competition">FRC</abbr> t
 * Add consistency with types (IO[bytes] vs BinaryIO)
 * Fix `image_processing.py` to be more concise (see [here](https://docs.sqlalchemy.org/en/21/orm/session_basics.html#framing-out-a-begin-commit-rollback-block))
 * Update everything to use `config.PROJECT_NAME`
+* Use `Optional` instead of `| None` for optional values
+* Add endpoints for getting available labels
+* Add a "quality" value for images
+* Consistent absolute or relative imports: pick one and stick with it
 
 ## Developing
 
