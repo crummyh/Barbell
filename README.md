@@ -10,35 +10,12 @@ An *open* dataset allowing <abbr title="FIRST Robotics Competition">FRC</abbr> t
 ![Static Badge](https://img.shields.io/badge/Licence-MIT-blue?style=for-the-badge)
 
 ## Todo:
-* Sort this list
-* Get a real name
-* Don't just copy PhotonVision's website
-* Finish all alpha endpoints
-  * Fix the UUID vs Hash issue
-* Add analytics and admin dashboard?
-* Add docker stuff
-  * Learn docker
-* Add better error handling
-* UUID hex vs str (w/ dashes)
-* Protect from SQL injection attacks
-* User metadata
-  * Capture time, event ect.
-* Internal methods:
-  * Account management
-  * Image Labeling
-* Rate limiting
-* Actually add labeling to image
-* Add consistency with types (IO[bytes] vs BinaryIO)
-* Fix `image_processing.py` to be more concise (see [here](https://docs.sqlalchemy.org/en/21/orm/session_basics.html#framing-out-a-begin-commit-rollback-block))
-* Update everything to use `config.PROJECT_NAME`
-* Use `Optional` instead of `| None` for optional values
-* Add endpoints for getting available labels
-* Add a "quality" value for images
-* Consistent absolute or relative imports: pick one and stick with it
+
+See [issues](https://github.com/crummyh/frcVisionDataset/issues)
 
 ## Developing
 
-This is mainly just here so that I don't forget
+If you are interested in helping, read this then see [issues](https://github.com/crummyh/frcVisionDataset/issues) for how you can help
 
 ### Libraries Used
 
