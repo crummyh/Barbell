@@ -5,7 +5,8 @@
     "subapp",
     "venv",
     "fastapi",
-    "slowapi"
+    "slowapi",
+    "pydantic"
   ],
   "flagWords": []
 }

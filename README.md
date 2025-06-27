@@ -35,25 +35,33 @@ To access the PostgreSQL database, run `sudo -u postgres psql`
 ### Project Structure
 
 ```bash
-📁 app/                # The main project dir (like src)
-├── 📁 routers/        # API sections for endpoints
-│  ├─── 🐍 api_v1.py   # Publicly available API V1
-│  ├─── 🐍 internal.py # Internal API for managing accounts ect.
-│  └─── 🐍 web.py      # The actual webpages (Return HTML files)
-├── 📁 services/       # Various process that can be completed on separate threads
-├── 📁 static/         # Static files that are hosted in /static
-│  ├── 📁 css/
-│  ├── 📁 images/
-│  └── 📁 js/
-├── 📁 templates/      # Jinja HTML templates
-├── 📁 tests/          # Empty right now, but will have tests later
-├── 🐍 buckets.py      # Manages S3 buckets and objects
-├── 🐍 config.py       # Config options and constants
-├── 🐍 database.py     # Manages the database connection and migration
-├── 🐍 dependencies.py # Security dependencies
-├── 🐍 helpers.py      # Random common functions
-├── 🐍 main.py         # Main entrypoint
-└── 🐍 models.py       # The database schema and return models
+📁 app/
+├── 📁 api/
+│  ├─── 🐍 public_v1.py          # Publicly accessible API
+│  ├─── 🐍 internal_v1.py        # Management and account API
+│  └─── 🐍 web.py                # The website
+├── 📁 core/                     # App-level core logic/config
+│  ├─── 🐍 config.py             # Constants and configurable values
+│  ├─── 🐍 dependencies.py       # Security dependencies
+│  └─── 🐍 helpers.py            # Random common helper functions
+├── 📁 db/                       # Database managers
+│  └─── 🐍 database.py           # Manages the DB connection
+├── 📁 models/                   # Data models
+│  ├─── 🐍 models.py             # pydantic models for responses and requests
+│  └─── 🐍 schemas.py            # SQLModel schemas representing tables
+├── 📁 services/                 # Various services and abstractions
+│  └─── 🐍 buckets.py            # AWS S3 bucket manager
+├── 📁 tasks/                    # Asynchronous background tasks
+│  ├─── 🐍 download_packaging.py # Packages images for batch downloading
+│  └─── 🐍 image_processing.py   # Processes images for uploading
+├── 📁 tests/                    # Tests
+├── 📁 web/                      # Files that are for the website
+│  ├── 📁 static/                # Static files
+│  │  ├── 📁 css/                # CSS files
+│  │  ├── 📁 images/             # Images
+│  │  └── 📁 js/                 # JS files
+│  └─── 📁 templates/            # Jinja HTML templates
+└── 🐍 main.py                   # The main app entrypoint
 ```
 
 ### Running Locally
