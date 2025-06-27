@@ -7,27 +7,24 @@ from pydantic.types import UUID4
 from sqlalchemy import func
 from sqlmodel import Session, select
 
-from app.buckets import create_upload_batch
-from app.helpers import (
+from app.core import config
+from app.core.dependencies import api_key_scheme, check_api_key
+from app.core.helpers import (
     get_hash_with_streaming,
     get_id_from_team_number,
     get_team_from_id,
     get_team_number_from_id,
 )
-from app.services.image_processing import estimate_processing_time, process_batch_async
-
-from .. import config
-from ..database import get_session
-from ..dependencies import api_key_scheme, check_api_key
-from ..models import (
-    Image,
+from app.db.database import get_session
+from app.models.models import (
     StatsOut,
     StatusOut,
-    Team,
     TeamStatsOut,
-    UploadBatch,
     UploadStatus,
 )
+from app.models.schemas import Image, Team, UploadBatch
+from app.services.buckets import create_upload_batch
+from app.tasks.image_processing import estimate_processing_time, process_batch_async
 
 router = APIRouter()
 

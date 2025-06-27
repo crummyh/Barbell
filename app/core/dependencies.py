@@ -7,8 +7,8 @@ from slowapi import Limiter
 from slowapi.util import get_remote_address
 from sqlmodel import Session, select
 
-from .database import get_session
-from .models import Team
+from app.db.database import get_session
+from app.models.schemas import Team
 
 api_key_scheme = APIKeyHeader(name="x-api-key")
 limiter = Limiter(key_func=get_remote_address)

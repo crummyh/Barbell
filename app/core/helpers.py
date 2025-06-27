@@ -4,8 +4,8 @@ from typing import BinaryIO
 
 from sqlmodel import Session, select
 
-from app import config
-from app.models import Team
+from app.core import config
+from app.models.schemas import Team
 
 
 def get_team_from_id(id: int, session: Session) -> Team:

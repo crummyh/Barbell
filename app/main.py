@@ -6,8 +6,8 @@ from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
-from .database import init_db
-from .routers import api_v1, internal, web
+from app.api import internal_v1, public_v1, web
+from app.db.database import init_db
 
 
 @asynccontextmanager
@@ -53,8 +53,8 @@ app = FastAPI(
 )
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
-app.mount("/internal", internal.subapp)
-app.include_router(api_v1.router, prefix="/api/v1")
+app.mount("/internal", internal_v1.subapp)
+app.include_router(public_v1.router, prefix="/api/v1")
 app.include_router(web.router, include_in_schema=False)
 
 @app.get("/docs", include_in_schema=False)

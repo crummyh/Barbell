@@ -4,7 +4,8 @@
   "words": [
     "subapp",
     "venv",
-    "fastapi"
+    "fastapi",
+    "slowapi"
   ],
   "flagWords": []
 }

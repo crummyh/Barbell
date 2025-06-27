@@ -17,6 +17,9 @@ See [issues](https://github.com/crummyh/frcVisionDataset/issues)
 
 If you are interested in helping, read this then see [issues](https://github.com/crummyh/frcVisionDataset/issues) for how you can help
 
+Note to self:
+To access the PostgreSQL database, run `sudo -u postgres psql`
+
 ### Libraries Used
 
 * Python 3
