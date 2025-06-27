@@ -50,10 +50,21 @@ class UploadBatch(SQLModel, table=True):
 class Image(SQLModel, table=True):
     __tablename__ = 'images' # type: ignore
 
+    id: UUID4 | None = Field(index=True, primary_key=True)
+    created_at: datetime
+    created_by: int = Field(foreign_key="teams.id", index=True)
+    batch: UUID4 = Field(foreign_key="upload_batches.id")
+    # TODO: Implement Labels
+
+class PreImage(SQLModel, table=True):
+    __tablename__ = 'pre_images' # type: ignore
+
     id: UUID4 | None = Field(default_factory=uuid4, index=True, primary_key=True)
     created_at: datetime
     created_by: int = Field(foreign_key="teams.id", index=True)
     batch: UUID4 = Field(foreign_key="upload_batches.id")
+    reviewed: bool = False
+    labeled: bool = False
     # TODO: Implement Labels
 
 # ==========={ Other }=========== #
