@@ -1,3 +1,12 @@
+from datetime import datetime
+from uuid import uuid4
+
+from pydantic.types import UUID4
+from sqlmodel import Field, SQLModel
+
+from app.models.models import UploadStatus
+
+
 class Team(SQLModel, table=True):
     __tablename__ = 'teams' # type: ignore
 

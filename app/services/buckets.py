@@ -8,7 +8,7 @@ from typing import IO
 
 from pydantic.types import UUID4
 
-from app import config
+from app.core import config
 
 _init = False
 

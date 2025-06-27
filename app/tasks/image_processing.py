@@ -17,9 +17,9 @@ from typing import IO
 from pydantic.types import UUID4
 from sqlmodel import Session
 
-from app import config
-from app.buckets import create_image, get_upload_batch
-from app.models import PreImage, UploadBatch, UploadStatus
+from app.core import config
+from app.models.schemas import PreImage, UploadBatch, UploadStatus
+from app.services.buckets import create_image, get_upload_batch
 
 
 async def process_batch_async(batch_id: UUID4, session: Session):
