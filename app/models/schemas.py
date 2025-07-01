@@ -2,7 +2,7 @@ from datetime import datetime
 from uuid import uuid4
 
 from pydantic.types import UUID4
-from sqlmodel import Field, SQLModel
+from sqlmodel import JSON, Field, SQLModel
 
 from app.models.models import UploadStatus
 
@@ -42,6 +42,7 @@ class Image(SQLModel, table=True):
     created_at: datetime
     created_by: int = Field(foreign_key="teams.id", index=True)
     batch: UUID4 = Field(foreign_key="upload_batches.id")
+    labels: JSON | None = None
     # TODO: Implement Labels
 
 class PreImage(SQLModel, table=True):
@@ -51,6 +52,5 @@ class PreImage(SQLModel, table=True):
     created_at: datetime
     created_by: int = Field(foreign_key="teams.id", index=True)
     batch: UUID4 = Field(foreign_key="upload_batches.id")
+    labels: JSON | None = None
     reviewed: bool = False
-    labeled: bool = False
-    # TODO: Implement Labels

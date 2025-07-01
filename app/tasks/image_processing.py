@@ -98,7 +98,7 @@ async def process_batch_async(batch_id: UUID4, session: Session):
             # all failed, the batch is a failure.
             _update_batch_property("status", UploadStatus.FAILED)
         else:
-            # but and at least some worked we are done!
+            # but if at least some worked then we are done!
             _update_batch_property("status", UploadStatus.COMPLETED)
 
     except Exception as e:
