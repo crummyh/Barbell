@@ -123,13 +123,13 @@ def upload(
     if archive.size and (archive.size > config.MAX_FILE_SIZE):
         raise HTTPException(
             status_code=413,
-            detail=f"File too large. Max size: {config.MAX_FILE_SIZE / (1024**3):.1f}GB"
+            detail=f"File is too large. Max size: {config.MAX_FILE_SIZE / (1024**3):.1f}GB"
         )
 
     if get_hash_with_streaming(archive.file, config.UPLOAD_INTEGRITY_HASH_ALGORITHM) != hash:
         raise HTTPException(
             status_code=400,
-            detail="Uploaded file is corrupted (hash mismatch)."
+            detail="Uploaded file is corrupted (hash mismatch) (Are you using md5?)"
         )
 
     try:

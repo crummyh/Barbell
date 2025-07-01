@@ -13,8 +13,12 @@ class Team(SQLModel, table=True):
     id: int | None = Field(default=None, index=True, primary_key=True)
     team_number: int
     team_name: str | None
-    api_key: str | None = Field(index=True) # sha256 Hash, not full key
     created_at: datetime | None
+
+    # Security:
+    api_key: str | None = Field(index=True) # sha256 Hash, not full key
+    email: str | None = None
+    disabled: bool | None = None
 
 class UploadBatch(SQLModel, table=True):
     __tablename__ = 'upload_batches' # type: ignore

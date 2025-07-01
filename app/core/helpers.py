@@ -47,7 +47,8 @@ def get_hash_with_streaming(file: BinaryIO, algorithm: str) -> str:
     file.seek(0)
     while True:
         data = file.read(config.HASHING_BUF_SIZE)
-        if not data: break
+        if not data:
+            break
         h.update(data)
 
     return h.hexdigest()

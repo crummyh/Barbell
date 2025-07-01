@@ -52,8 +52,8 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
-app.mount("/internal", internal_v1.subapp)
+app.mount("/static", StaticFiles(directory="app/web/static"), name="static")
+app.mount("/internal", internal_v1.subapp) # TODO: Disable docs
 app.include_router(public_v1.router, prefix="/api/v1")
 app.include_router(web.router, include_in_schema=False)
 
