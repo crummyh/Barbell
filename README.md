@@ -17,8 +17,9 @@ See [issues](https://github.com/crummyh/frcVisionDataset/issues)
 
 If you are interested in helping, read this then see [issues](https://github.com/crummyh/frcVisionDataset/issues) for how you can help
 
-Note to self:
-To access the PostgreSQL database, run `sudo -u postgres psql`
+Notes to self:
+* To access the PostgreSQL database, run `sudo -u postgres psql`
+* Try to use `git pull --rebase` instead of just pull
 
 ### Libraries Used
 
