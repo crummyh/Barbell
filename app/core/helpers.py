@@ -2,10 +2,11 @@
 import hashlib
 from typing import BinaryIO
 
+from sqlalchemy import desc
 from sqlmodel import Session, select
 
 from app.core import config
-from app.models.schemas import Team
+from app.models.schemas import PreImage, Team
 
 
 def get_team_from_id(id: int, session: Session) -> Team:
@@ -52,3 +53,14 @@ def get_hash_with_streaming(file: BinaryIO, algorithm: str) -> str:
         h.update(data)
 
     return h.hexdigest()
+
+def get_most_recent_pre_image(session: Session) -> PreImage:
+    statement = (
+        select(PreImage).where(PreImage.labels is not None)
+        .order_by(desc(PreImage.upload_time)) # type: ignore
+        .limit(1)
+    )
+    image = session.exec(statement).one
+    if not image:
+        raise LookupError()
+    return image()

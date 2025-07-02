@@ -1,7 +1,11 @@
 from enum import Enum
+from typing import IO
 
+from fastapi import Response
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from pydantic.types import UUID4
+from sqlmodel import JSON
 
 # ==========={ Enums & States }=========== #
 
@@ -49,4 +53,16 @@ class DownloadRequest(BaseModel):
     count: tuple[int, int, int] | int # Training / Validation / Testing | Number
     non_match_images: bool
 
-# class DownloadInfo(BaseModel):
+class ReviewMetadata(BaseModel):
+    id: str
+    labels: JSON
+
+def image_response(file: IO[bytes]) -> Response:
+    file.seek(0)
+    return StreamingResponse(
+        file,
+        media_type="image",
+        headers={
+            "Content-Disposition": "attachment"
+        }
+    )
