@@ -22,6 +22,12 @@ class DownloadFormat(Enum):
     COCO   = "coco"
     RAW    = "raw"
 
+class UserRole(Enum):
+    DEFAULT     = "default"
+    TEAM_LEADER = "leader"
+    MODERATOR   = "mod"
+    ADMIN       = "admin"
+
 # ==========={ Responses }=========== #
 
 class StatsOut(BaseModel):
@@ -66,3 +72,12 @@ def image_response(file: IO[bytes]) -> Response:
             "Content-Disposition": "attachment"
         }
     )
+# ==========={ Security }=========== #
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class TokenData(BaseModel):
+    username: str | None = None
+    role: UserRole | None = None

@@ -1,5 +1,6 @@
+from typing import Annotated
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import UUID4
 from sqlmodel import Session
@@ -9,6 +10,10 @@ from app.core.helpers import get_most_recent_pre_image
 from app.db.database import get_session
 from app.models.models import ReviewMetadata, image_response
 from app.services import buckets
+from fastapi.responses import RedirectResponse
+
+from app.core.dependencies import get_current_active_user
+from app.models.schemas import User
 
 subapp = FastAPI()
 origins = [ # TODO: UPDATE WITH ACTUAL URL
@@ -48,3 +53,19 @@ def get_image(
 def update_image_review_status(token: Annotated[str, Depends(oauth2_scheme)]):
     # Security goes here
     pass
+@subapp.post("/token")
+def redirect_token():
+    """
+    Redirects requests from here to the main auth router
+    """
+    return RedirectResponse(url="/token", status_code=307)
+
+@subapp.get("/example")
+def test(
+    # user: Annotated[
+    #     User,
+    #     Depends(require_role(UserRole.TEAM_LEADER, UserRole.ADMIN, UserRole.MODERATOR))
+    # ]
+    user: Annotated[User, Depends(get_current_active_user)]
+):
+    return User

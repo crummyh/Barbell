@@ -5,7 +5,7 @@ from pydantic import EmailStr
 from pydantic.types import UUID4
 from sqlmodel import JSON, Column, DateTime, Field, SQLModel, func
 
-from app.models.models import UploadStatus
+from app.models.models import UploadStatus, UserRole
 
 
 class User(SQLModel, table=True):
@@ -18,8 +18,7 @@ class User(SQLModel, table=True):
     disabled: bool = False
     created_at: datetime
     team: int | None = Field(foreign_key="teams.id", index=True)
-    is_moderator: bool = False
-    is_admin: bool = False
+    role: UserRole
 
 class Team(SQLModel, table=True):
     __tablename__ = "teams" # type: ignore
