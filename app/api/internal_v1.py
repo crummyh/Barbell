@@ -1,6 +1,5 @@
-from typing import Annotated
 
-from fastapi import Depends, FastAPI
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import UUID4
 from sqlmodel import Session
