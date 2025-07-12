@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import IO
+from typing import IO, Optional
 
 from fastapi import Response
 from fastapi.responses import StreamingResponse
@@ -23,10 +23,10 @@ class DownloadFormat(Enum):
     RAW    = "raw"
 
 class UserRole(Enum):
-    DEFAULT     = "default"
-    TEAM_LEADER = "leader"
-    MODERATOR   = "mod"
-    ADMIN       = "admin"
+    DEFAULT     = 0
+    TEAM_LEADER = 1
+    MODERATOR   = 2
+    ADMIN       = 3
 
 # ==========={ Responses }=========== #
 
@@ -46,12 +46,12 @@ class StatusOut(BaseModel):
     batch_id: UUID4
     team: int
     status: UploadStatus
-    file_size: int | None
-    images_valid: int | None
-    images_rejected: int | None
-    images_total: int | None
-    estimated_time_left: float | None
-    error_msg: str | None
+    file_size: Optional[int]
+    images_valid: Optional[int]
+    images_rejected: Optional[int]
+    images_total: Optional[int]
+    estimated_time_left: Optional[float]
+    error_msg: Optional[str]
 
 class DownloadRequest(BaseModel):
     format: DownloadFormat
@@ -79,5 +79,5 @@ class Token(BaseModel):
     token_type: str
 
 class TokenData(BaseModel):
-    username: str | None = None
-    role: UserRole | None = None
+    username: Optional[str] = None
+    role: Optional[UserRole] = None

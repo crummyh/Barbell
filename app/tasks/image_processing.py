@@ -1,13 +1,4 @@
-"""
-No mater what I do this file is horrible. I'm going to do my best
-to add comments and make it readable. But I *will* fail. Therefor,
-I am creating this counter:
 
-problems_from_here = 1
-
-Feel free to update it every time there is something wrong relating
-to this file!
-"""
 
 import tarfile
 from datetime import datetime, timezone
@@ -73,7 +64,7 @@ async def process_batch_async(batch_id: UUID4, session: Session):
                     if _validate_image(image):
                         image_entry = PreImage(
                             created_at=batch.capture_time,
-                            created_by=batch.team_id,
+                            created_by=batch.team,
                             batch=batch_id
                         )
                         session.add(image_entry)

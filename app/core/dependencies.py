@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, timezone
-from typing import Annotated
+from typing import Annotated, Optional
 
 import jwt
 from fastapi import Depends, HTTPException, Request, Security, status
@@ -57,7 +57,7 @@ def authenticate_user(
     session: Annotated[Session, Depends(get_session)],
     username: str,
     password: str
-) -> User | None:
+) -> Optional[User]:
     user = session.exec(select(User).where(User.username == username)).one_or_none()
     if not user:
         return None
@@ -66,7 +66,7 @@ def authenticate_user(
         return None
     return user
 
-def create_access_token(data: dict, expires_delta: timedelta | None = None):
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
@@ -122,9 +122,18 @@ def require_role(*roles: UserRole):
         if user.role not in roles:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Requires role: {roles}, but you have: {user.role}",
+                detail=f"Requires role: {[i.name for i in roles]}, but you have: {user.role.name}",
             )
         return user
     return role_checker
 
+def minimum_role(role: UserRole):
+    def role_checker(user: User = Depends(get_current_active_user)):
+        if user.role.value <= role.value:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Requires role: {role.name} or greater, but you have: {user.role.name}",
+            )
+        return user
+    return role_checker
 limiter = Limiter(key_func=get_remote_address)
