@@ -3,10 +3,9 @@ from typing import Any, Dict
 from uuid import UUID, uuid4
 
 from pydantic import EmailStr
-from sqlmodel import Field, SQLModel
+from sqlmodel import JSON, Field, SQLModel
 
 from app.core import config
-from app.core.dependencies import generate_api_key
 from app.models.models import UploadStatus, UserRole
 
 
@@ -30,7 +29,7 @@ class Team(SQLModel, table=True):
     team_number: int = Field(index=True, unique=True, ge=0, le=config.MAX_TEAM_NUMB)
     team_name: str | None = Field(default=None, max_length=config.MAX_TEAM_NAME_LEN)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    api_key: str | None = Field(default=None, index=True, unique=True, default_factory=generate_api_key)
+    api_key: str | None = Field(default=None, index=True, unique=True)
     disabled: bool = Field(default=False)
     leader_user: int | None = Field(default=None, foreign_key="users.id", index=True)
 
@@ -56,7 +55,7 @@ class Image(SQLModel, table=True):
     created_at: datetime = Field(index=True)
     created_by: int = Field(foreign_key="teams.id", index=True)
     batch: UUID = Field(foreign_key="upload_batches.id")
-    labels: Dict[str, Any] | None = Field(default=None)
+    labels: Dict[str, Any] | None = Field(default=None, sa_type=JSON)
 
 class PreImage(SQLModel, table=True):
     __tablename__ = "pre_images" # type: ignore
@@ -65,5 +64,5 @@ class PreImage(SQLModel, table=True):
     created_at: datetime = Field(index=True)
     created_by: int = Field(foreign_key="teams.id", index=True)
     batch: UUID = Field(foreign_key="upload_batches.id")
-    labels: Dict[str, Any] | None = Field(default=None)
+    labels: Dict[str, Any] | None = Field(default=None, sa_type=JSON)
     reviewed: bool = Field(default=False)
