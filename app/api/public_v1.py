@@ -9,7 +9,12 @@ from sqlalchemy import func
 from sqlmodel import Session, select
 
 from app.core import config
-from app.core.dependencies import generate_api_key, handle_api_key
+from app.core.dependencies import (
+    RateLimiter,
+    generate_api_key,
+    get_password_hash,
+    handle_api_key,
+)
 from app.core.helpers import (
     get_hash_with_streaming,
     get_id_from_team_number,
@@ -31,7 +36,7 @@ router = APIRouter()
 
 # ========== { Public API } ========== #
 
-@router.get("/stats", tags=["Public", "Stats"])
+@router.get("/stats", tags=["Public", "Stats"], dependencies=[Depends(RateLimiter(requests_limit=20, time_window=10))])
 def get_stats(session: Annotated[Session, Depends(get_session)]) -> StatsOut:
     """
     Get stats about the entire database
@@ -42,7 +47,7 @@ def get_stats(session: Annotated[Session, Depends(get_session)]) -> StatsOut:
     )
     return out
 
-@router.get("/stats/team/{team_number}", tags=["Public", "Stats"])
+@router.get("/stats/team/{team_number}", tags=["Public", "Stats"], dependencies=[Depends(RateLimiter(requests_limit=10, time_window=10))])
 def get_team_stats(team_number: int, session: Annotated[Session, Depends(get_session)]) -> TeamStatsOut:
     """
     Get stats about individual teams
@@ -67,7 +72,7 @@ def get_team_stats(team_number: int, session: Annotated[Session, Depends(get_ses
 
 # ========== { Auth API } ========== #
 
-@router.get("/status/{batch_id}", tags=["Auth Required",  "Stats"])
+@router.get("/status/{batch_id}", tags=["Auth Required",  "Stats"], dependencies=[Depends(RateLimiter(requests_limit=30, time_window=10))])
 def get_batch_status(
     batch_id: UUID4,
     team: Annotated[Team, Depends(handle_api_key)],
@@ -94,7 +99,7 @@ def get_batch_status(
     )
     return out
 
-@router.post("/upload", tags=["Auth Required"])
+@router.post("/upload", tags=["Auth Required"], dependencies=[Depends(RateLimiter(requests_limit=2, time_window=60))])
 def upload(
     archive:          UploadFile,
     hash:             str,
@@ -174,7 +179,7 @@ def upload(
         error_msg=None
     )
 
-@router.get("/download", tags=["Auth Required"])
+@router.get("/download", tags=["Auth Required"], dependencies=[Depends(RateLimiter(requests_limit=1, time_window=60))])
 def download_batch(
     team: Annotated[str, Depends(handle_api_key)],
     session: Annotated[Session, Depends(get_session)]
@@ -183,13 +188,13 @@ def download_batch(
 
 # ==========={ Management }=========== #
 
-@router.put("/rotate-key")
+@router.put("/rotate-key", dependencies=[Depends(RateLimiter(requests_limit=1, time_window=60))])
 def rotate_api_key(
     team: Annotated[Team, Depends(handle_api_key)],
     session: Annotated[Session, Depends(get_session)]
 ):
     try:
-        team.api_key = generate_api_key()
+        team.api_key = get_password_hash(generate_api_key())
         session.add(team)
     except Exception:
         session.rollback()
