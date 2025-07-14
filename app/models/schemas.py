@@ -2,7 +2,6 @@ from datetime import datetime, timezone
 from uuid import UUID, uuid4
 
 from pydantic import EmailStr
-from sqlalchemy import JSON, Column
 from sqlmodel import JSON, Column, Field, SQLModel
 
 from app.core import config
@@ -55,7 +54,6 @@ class Image(SQLModel, table=True):
     id: UUID | None = Field(index=True, primary_key=True)
     created_at: datetime = Field(index=True)
     created_by: int = Field(foreign_key="teams.id", index=True)
-    upload_time: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     batch: UUID = Field(foreign_key="upload_batches.id")
     labels: dict | None = Field(default=None, sa_column=Column(JSON))
 

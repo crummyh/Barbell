@@ -3,6 +3,7 @@ from typing import Annotated
 
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
 from pydantic import UUID4
 from sqlmodel import Session
 
@@ -11,10 +12,6 @@ from app.core.helpers import get_most_recent_pre_image
 from app.db.database import get_session
 from app.models.models import ReviewMetadata, image_response
 from app.services import buckets
-from fastapi.responses import RedirectResponse
-from sqlmodel import Session
-
-from app.db.database import get_session
 
 subapp = FastAPI()
 origins = [ # TODO: UPDATE WITH ACTUAL URL
