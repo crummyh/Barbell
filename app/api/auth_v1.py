@@ -54,14 +54,14 @@ def register_user(
     if new_user.team:
         try:
             session.exec(select(Team).where(Team.team_number == new_user.team))
-        except:
+        except Exception:
             raise HTTPException(
                 status_code=HTTP_404_NOT_FOUND,
                 detail="Team does not exist"
             )
     try:
         session.exec(select(User).where(User.email == new_user.email)).one()
-    except:
+    except Exception:
         pass
     else:
         raise HTTPException(
@@ -71,7 +71,7 @@ def register_user(
 
     try:
         session.exec(select(User).where(User.username == new_user.email)).one()
-    except:
+    except Exception:
         pass
     else:
         raise HTTPException(
@@ -113,7 +113,7 @@ def verify_email_code(
         user.code = None
         user.disabled = True
         session.add(user)
-    except:
+    except Exception:
         session.rollback()
     else:
         session.commit()

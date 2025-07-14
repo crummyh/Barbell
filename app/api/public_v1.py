@@ -191,7 +191,7 @@ def rotate_api_key(
     try:
         team.api_key = generate_api_key()
         session.add(team)
-    except:
+    except Exception:
         session.rollback()
     else:
         session.commit()
