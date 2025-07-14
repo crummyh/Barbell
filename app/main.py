@@ -1,9 +1,8 @@
 from contextlib import asynccontextmanager
 
 import uvicorn
-from fastapi import FastAPI, Request
-from fastapi.openapi.docs import get_swagger_ui_html
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI
+from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html
 from fastapi.staticfiles import StaticFiles
 
 from app.api import auth_v1, internal_v1, public_v1, web
@@ -51,7 +50,9 @@ app = FastAPI(
         "url": "https://github.com/crummyh/frcVisonDataset/blob/main/LICENSE"
     },
     openapi_tags=tags_metadata,
-    lifespan=lifespan
+    lifespan=lifespan,
+    docs_url=None,
+    redoc_url=None
 )
 
 app.mount("/static", StaticFiles(directory="app/web/static"), name="static")
@@ -60,20 +61,36 @@ app.include_router(public_v1.router, prefix="/api/v1")
 app.include_router(web.router, include_in_schema=False)
 app.include_router(auth_v1.router)
 
-@app.get("/docs", include_in_schema=False)
-async def swagger_ui_html(req: Request) -> HTMLResponse:
-    root_path = req.scope.get("root_path", "").rstrip("/")
-    openapi_url = root_path + app.openapi_url # type: ignore
-    oauth2_redirect_url = app.swagger_ui_oauth2_redirect_url
-    if oauth2_redirect_url:
-        oauth2_redirect_url = root_path + oauth2_redirect_url
+# @app.get("/docs", include_in_schema=False)
+# async def swagger_ui_html(req: Request) -> HTMLResponse:
+#     root_path = req.scope.get("root_path", "").rstrip("/")
+#     openapi_url = root_path + app.openapi_url # type: ignore
+#     oauth2_redirect_url = app.swagger_ui_oauth2_redirect_url
+#     if oauth2_redirect_url:
+#         oauth2_redirect_url = root_path + oauth2_redirect_url
+#     return get_swagger_ui_html(
+#         openapi_url=openapi_url,
+#         title=app.title + " - Swagger UI",
+#         oauth2_redirect_url=oauth2_redirect_url,
+#         init_oauth=app.swagger_ui_init_oauth,
+#         swagger_favicon_url="/static/images/favicon.png",
+#         swagger_ui_parameters=app.swagger_ui_parameters,
+#     )
+
+@app.get("/docs/api", include_in_schema=False)
+def overridden_swagger():
     return get_swagger_ui_html(
-        openapi_url=openapi_url,
+        openapi_url="/openapi.json",
         title=app.title + " - Swagger UI",
-        oauth2_redirect_url=oauth2_redirect_url,
-        init_oauth=app.swagger_ui_init_oauth,
-        swagger_favicon_url="/static/images/favicon.png",
-        swagger_ui_parameters=app.swagger_ui_parameters,
+        swagger_favicon_url="/static/images/favicon.ico",
+    )
+
+@app.get("/docs/api/redoc", include_in_schema=False)
+def overridden_redoc():
+    return get_redoc_html(
+        openapi_url="/openapi.json",
+        title=app.title + " - Swagger UI",
+        redoc_favicon_url="/static/images/favicon.ico",
     )
 
 if __name__ == "__main__":
