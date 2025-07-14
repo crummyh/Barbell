@@ -8,6 +8,7 @@ from starlette.status import HTTP_404_NOT_FOUND, HTTP_409_CONFLICT
 
 from app.core import config
 from app.core.dependencies import (
+    RateLimiter,
     authenticate_user,
     create_access_token,
     generate_verification_code,
@@ -21,7 +22,7 @@ from app.services.email.email import send_verification_email
 
 router = APIRouter()
 
-@router.post("/token")
+@router.post("/token", dependencies=[Depends(RateLimiter(requests_limit=10, time_window=5))])
 def login(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     session: Annotated[Session, Depends(get_session)]
@@ -40,13 +41,13 @@ def login(
     )
     return Token(access_token=access_token, token_type="bearer")
 
-@router.get("/users/me")
+@router.get("/users/me", dependencies=[Depends(RateLimiter(requests_limit=10, time_window=5))])
 async def read_users_me(
     current_user: Annotated[User, Depends(get_current_active_user)],
 ):
     return current_user
 
-@router.post("/register/user")
+@router.post("/register/user", dependencies=[Depends(RateLimiter(requests_limit=1, time_window=10))])
 def register_user(
     new_user: Annotated[NewUserData, Query()],
     session: Annotated[Session, Depends(get_session)]
@@ -95,7 +96,7 @@ def register_user(
         session.commit()
         send_verification_email(user)
 
-@router.get("/verify")
+@router.get("/verify", dependencies=[Depends(RateLimiter(requests_limit=2, time_window=10))])
 def verify_email_code(
     code: str,
     session: Annotated[Session, Depends(get_session)]
@@ -118,6 +119,6 @@ def verify_email_code(
     else:
         session.commit()
 
-@router.post("register/team")
+@router.post("register/team", dependencies=[Depends(RateLimiter(requests_limit=1, time_window=10))])
 def register_team():
     pass

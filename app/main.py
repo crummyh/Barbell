@@ -61,22 +61,6 @@ app.include_router(public_v1.router, prefix="/api/v1")
 app.include_router(web.router, include_in_schema=False)
 app.include_router(auth_v1.router)
 
-# @app.get("/docs", include_in_schema=False)
-# async def swagger_ui_html(req: Request) -> HTMLResponse:
-#     root_path = req.scope.get("root_path", "").rstrip("/")
-#     openapi_url = root_path + app.openapi_url # type: ignore
-#     oauth2_redirect_url = app.swagger_ui_oauth2_redirect_url
-#     if oauth2_redirect_url:
-#         oauth2_redirect_url = root_path + oauth2_redirect_url
-#     return get_swagger_ui_html(
-#         openapi_url=openapi_url,
-#         title=app.title + " - Swagger UI",
-#         oauth2_redirect_url=oauth2_redirect_url,
-#         init_oauth=app.swagger_ui_init_oauth,
-#         swagger_favicon_url="/static/images/favicon.png",
-#         swagger_ui_parameters=app.swagger_ui_parameters,
-#     )
-
 @app.get("/docs/api", include_in_schema=False)
 def overridden_swagger():
     return get_swagger_ui_html(

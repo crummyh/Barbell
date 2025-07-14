@@ -7,7 +7,7 @@ from fastapi.responses import RedirectResponse
 from pydantic import UUID4
 from sqlmodel import Session
 
-from app.core.dependencies import oauth2_scheme
+from app.core.dependencies import RateLimiter, oauth2_scheme
 from app.core.helpers import get_most_recent_pre_image
 from app.db.database import get_session
 from app.models.models import ReviewMetadata, image_response
@@ -26,7 +26,7 @@ subapp.add_middleware(
     allow_headers=['*'],
 )
 
-@subapp.get("/review-image")
+@subapp.get("/review-image", dependencies=[Depends(RateLimiter(requests_limit=5, time_window=5))])
 def get_image_for_review(
     token: Annotated[str, Depends(oauth2_scheme)],
     session: Session = Depends(get_session)
@@ -40,33 +40,20 @@ def get_image_for_review(
         labels = image.labels
     )
 
-@subapp.get("/image/{image_id}")
+@subapp.put("/review-image", dependencies=[Depends(RateLimiter(requests_limit=5, time_window=5))])
+def update_image_review_status(token: Annotated[str, Depends(oauth2_scheme)]):
+    pass
+
+@subapp.get("/image/{image_id}", dependencies=[Depends(RateLimiter(requests_limit=5, time_window=5))])
 def get_image(
     image_id: UUID4,
     token: Annotated[str, Depends(oauth2_scheme)],
 ):
     return image_response(buckets.get_image(image_id))
 
-@subapp.put("/review-image")
-def update_image_review_status(token: Annotated[str, Depends(oauth2_scheme)]):
-    # Security goes here
-    pass
-@subapp.post("/token")
+@subapp.post("/token", dependencies=[Depends(RateLimiter(requests_limit=10, time_window=5))])
 def redirect_token():
     """
     Redirects requests from here to the main auth router
     """
     return RedirectResponse(url="/token", status_code=307)
-
-
-# @subapp.get("/test")
-# def read_users_me(
-#     current_user: Annotated[User, Depends(minimum_role(UserRole.MODERATOR))],
-# ):
-#     return current_user
-
-@subapp.put("/rollback-db")
-def rollback_database(
-    session: Annotated[Session, Depends(get_session)]
-):
-    session.rollback()
