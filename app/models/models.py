@@ -1,11 +1,10 @@
 from enum import Enum
-from typing import IO, Optional
+from typing import IO, Any, Dict, Optional
 
 from fastapi import Response
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, EmailStr
 from pydantic.types import UUID4
-from sqlmodel import JSON
 
 # ==========={ Enums & States }=========== #
 
@@ -63,7 +62,7 @@ class DownloadRequest(BaseModel):
 
 class ReviewMetadata(BaseModel):
     id: str
-    labels: JSON
+    labels: Dict[str, Any]
 
 class NewUserData(BaseModel):
     username: str
