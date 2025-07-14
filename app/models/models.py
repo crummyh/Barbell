@@ -3,7 +3,7 @@ from typing import IO, Optional
 
 from fastapi import Response
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from pydantic.types import UUID4
 from sqlmodel import JSON
 
@@ -53,6 +53,8 @@ class StatusOut(BaseModel):
     estimated_time_left: Optional[float]
     error_msg: Optional[str]
 
+# ==========={ Requests }=========== #
+
 class DownloadRequest(BaseModel):
     format: DownloadFormat
     labels: list[str]
@@ -62,6 +64,12 @@ class DownloadRequest(BaseModel):
 class ReviewMetadata(BaseModel):
     id: str
     labels: JSON
+
+class NewUserData(BaseModel):
+    username: str
+    email: EmailStr
+    password: str
+    team: Optional[int] = None
 
 def image_response(file: IO[bytes]) -> Response:
     file.seek(0)

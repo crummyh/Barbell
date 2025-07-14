@@ -9,7 +9,7 @@ from sqlalchemy import func
 from sqlmodel import Session, select
 
 from app.core import config
-from app.core.dependencies import handle_api_key
+from app.core.dependencies import generate_api_key, handle_api_key
 from app.core.helpers import (
     get_hash_with_streaming,
     get_id_from_team_number,
@@ -56,7 +56,7 @@ def get_team_stats(team_number: int, session: Annotated[Session, Depends(get_ses
         raise HTTPException(status_code=404, detail="Team not found")
 
     images = session.exec(select(Image).where(Image.created_by == team)).all()
-    batches = session.exec(select(UploadBatch).where(UploadBatch.team_id == team)).all()
+    batches = session.exec(select(UploadBatch).where(UploadBatch.team == team)).all()
 
     out = TeamStatsOut(
         image_count=len(images),
@@ -70,7 +70,7 @@ def get_team_stats(team_number: int, session: Annotated[Session, Depends(get_ses
 @router.get("/status/{batch_id}", tags=["Auth Required",  "Stats"])
 def get_batch_status(
     batch_id: UUID4,
-    api_key: Annotated[str, Depends(handle_api_key)],
+    team: Annotated[Team, Depends(handle_api_key)],
     session: Annotated[Session, Depends(get_session)]
 ) -> StatusOut:
 
@@ -83,7 +83,7 @@ def get_batch_status(
 
     out = StatusOut(
         batch_id=batch_id,
-        team=get_team_number_from_id(batch.team_id, session),
+        team=get_team_number_from_id(batch.team, session),
         status=batch.status,
         file_size=batch.file_size,
         images_valid=batch.images_valid,
@@ -99,7 +99,7 @@ def upload(
     archive:          UploadFile,
     hash:             str,
     background_tasks: BackgroundTasks,
-    api_key: Annotated[str, Depends(handle_api_key)],
+    team: Annotated[Team, Depends(handle_api_key)],
     session: Annotated[Session, Depends(get_session)],
     capture_time:     datetime = datetime.now(timezone.utc)
 ) -> StatusOut:
@@ -132,9 +132,9 @@ def upload(
         )
 
     try:
-        team_id = int(api_key)
+        assert team.id
         batch = UploadBatch(
-            team_id=team_id,
+            team=team.id,
             status=UploadStatus.UPLOADING,
             file_size=archive.size,
             capture_time=capture_time
@@ -164,7 +164,7 @@ def upload(
 
     return StatusOut(
         batch_id=batch.id,
-        team=get_team_from_id(team_id, session).team_number,
+        team=get_team_from_id(team.id, session).team_number,
         status=UploadStatus.PROCESSING,
         file_size=archive.size,
         images_valid=None,
@@ -176,7 +176,7 @@ def upload(
 
 @router.get("/download", tags=["Auth Required"])
 def download_batch(
-    api_key: Annotated[str, Depends(handle_api_key)],
+    team: Annotated[str, Depends(handle_api_key)],
     session: Annotated[Session, Depends(get_session)]
 ):
     pass
@@ -185,7 +185,16 @@ def download_batch(
 
 @router.put("/rotate-key")
 def rotate_api_key(
-    api_key: Annotated[str, Depends(handle_api_key)],
+    team: Annotated[Team, Depends(handle_api_key)],
     session: Annotated[Session, Depends(get_session)]
 ):
-    pass
+    try:
+        team.api_key = generate_api_key()
+        session.add(team)
+    except:
+        session.rollback()
+    else:
+        session.commit()
+
+    session.refresh(team)
+    return team.api_key

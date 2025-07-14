@@ -38,6 +38,7 @@ Notes to self:
 ```bash
 📁 app/                          # Holds the main app
 ├── 📁 api/                      # The actual endpoints
+│  ├─── 🐍 auth.py               # Manages accounts and signin
 │  ├─── 🐍 public_v1.py          # Publicly accessible API
 │  ├─── 🐍 internal_v1.py        # Management and account API
 │  └─── 🐍 web.py                # The website
@@ -83,6 +84,8 @@ chmod +x setup.sh
 # Now start working!
 # To run the app run:
 fastapi dev app/main.py
+# And if you need to send emails run this in a separate window
+sudo python3 -m smtpd -c DebuggingServer -n localhost:1025
 # When you are done run:
 deactivate
 ```

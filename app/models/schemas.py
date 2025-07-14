@@ -2,11 +2,11 @@ from datetime import datetime, timezone
 from uuid import UUID, uuid4
 
 from pydantic import EmailStr
-from pydantic.types import UUID4
-from sqlmodel import JSON, Column, DateTime, Field, SQLModel, func
 from sqlalchemy import JSON, Column
+from sqlmodel import JSON, Column, Field, SQLModel
 
 from app.core import config
+from app.core.dependencies import generate_api_key
 from app.models.models import UploadStatus, UserRole
 
 
@@ -17,10 +17,11 @@ class User(SQLModel, table=True):
     username:   str             = Field(index=True, max_length=config.MAX_USERNAME_LEN)
     email:      EmailStr | None = Field(default=None, unique=True, nullable=True)
     password:   str | None      = Field(default=None, max_length=config.MAX_PASSWORD_LENGTH)
-    disabled:   bool            = Field(default=False)
+    disabled:   bool            = Field(default=True)
     created_at: datetime        = Field(default_factory=lambda: datetime.now(timezone.utc))
     team:       int | None      = Field(default=None, foreign_key="teams.id", index=True)
     role:       UserRole        = Field(default=UserRole.DEFAULT)
+    code:       str | None      = Field(max_length=config.VERIFICATION_CODE_STR_LEN)
 
 class Team(SQLModel, table=True):
     __tablename__ = "teams" # type: ignore
@@ -29,7 +30,7 @@ class Team(SQLModel, table=True):
     team_number: int        = Field(index=True, unique=True, ge=0, le=config.MAX_TEAM_NUMB)
     team_name:   str | None = Field(default=None, max_length=config.MAX_TEAM_NAME_LEN)
     created_at:  datetime   = Field(default_factory=lambda: datetime.now(timezone.utc))
-    api_key:     str | None = Field(default=None, index=True, unique=True)
+    api_key:     str | None = Field(default=None, index=True, unique=True, default_factory=generate_api_key)
     disabled:    bool       = Field(default=False)
     leader_user: int | None = Field(default=None, foreign_key="users.id", index=True)
 
@@ -54,16 +55,16 @@ class Image(SQLModel, table=True):
     id: UUID | None = Field(index=True, primary_key=True)
     created_at: datetime = Field(index=True)
     created_by: int = Field(foreign_key="teams.id", index=True)
-    upload_time: datetime = Field(default_factory=datetime.now, sa_column=Column(DateTime(), server_default=func.now()))
+    upload_time: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     batch: UUID = Field(foreign_key="upload_batches.id")
     labels: dict | None = Field(default=None, sa_column=Column(JSON))
 
 class PreImage(SQLModel, table=True):
     __tablename__ = "pre_images" # type: ignore
 
-    id: UUID | None = Field(index=True, primary_key=True)
-    created_at: datetime = Field(index=True)
-    created_by: int = Field(foreign_key="teams.id", index=True)
-    batch: UUID = Field(foreign_key="upload_batches.id")
-    labels: dict | None = Field(default=None, sa_column=Column(JSON))
-    reviewed: bool = Field(default=False)
+    id:         UUID | None = Field(index=True, primary_key=True)
+    created_at: datetime    = Field(index=True)
+    created_by: int         = Field(foreign_key="teams.id", index=True)
+    batch:      UUID        = Field(foreign_key="upload_batches.id")
+    labels:     dict | None = Field(default=None, sa_column=Column(JSON))
+    reviewed:   bool        = Field(default=False)

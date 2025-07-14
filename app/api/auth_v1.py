@@ -1,20 +1,23 @@
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.security import OAuth2PasswordRequestForm
-from sqlmodel import Session
+from sqlmodel import Session, select
+from starlette.status import HTTP_404_NOT_FOUND, HTTP_409_CONFLICT
 
 from app.core import config
 from app.core.dependencies import (
     authenticate_user,
     create_access_token,
+    generate_verification_code,
     get_current_active_user,
     get_password_hash,
 )
 from app.db.database import get_session
-from app.models.models import Token, UserRole
-from app.models.schemas import User
+from app.models.models import NewUserData, Token
+from app.models.schemas import Team, User
+from app.services.email.email import send_verification_email
 
 router = APIRouter()
 
@@ -43,26 +46,78 @@ async def read_users_me(
 ):
     return current_user
 
-@router.post("/test/create-user")
-def create_user(
-    username: str,
-    email: str,
-    password: str,
-    role: UserRole,
+@router.post("/register/user")
+def register_user(
+    new_user: Annotated[NewUserData, Query()],
     session: Annotated[Session, Depends(get_session)]
 ):
-    user = User(
-        username=username,
-        email=email,
-        password=get_password_hash(password),
-        created_at=datetime.now(timezone.utc),
-        team=None,
-        role=role
-    )
+    if new_user.team:
+        try:
+            session.exec(select(Team).where(Team.team_number == new_user.team))
+        except:
+            raise HTTPException(
+                status_code=HTTP_404_NOT_FOUND,
+                detail="Team does not exist"
+            )
     try:
+        session.exec(select(User).where(User.email == new_user.email)).one()
+    except:
+        pass
+    else:
+        raise HTTPException(
+            status_code=HTTP_409_CONFLICT,
+            detail="Email is taken"
+        )
+
+    try:
+        session.exec(select(User).where(User.username == new_user.email)).one()
+    except:
+        pass
+    else:
+        raise HTTPException(
+            status_code=HTTP_409_CONFLICT,
+            detail="Username is taken"
+        )
+
+    try:
+        user = User(
+            username=new_user.username,
+            email=new_user.email,
+            password=get_password_hash(new_user.password),
+            team=new_user.team,
+            code=generate_verification_code(session)
+        )
         session.add(user)
     except:
         session.rollback()
         raise
     else:
         session.commit()
+        send_verification_email(user)
+
+@router.get("/verify")
+def verify_email_code(
+    code: str,
+    session: Annotated[Session, Depends(get_session)]
+):
+    try:
+        user = session.exec(select(User).where(User.code == code)).one()
+
+    except Exception:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail="Incorrect Verification Code"
+        )
+
+    try:
+        user.code = None
+        user.disabled = True
+        session.add(user)
+    except:
+        session.rollback()
+    else:
+        session.commit()
+
+@router.post("register/team")
+def register_team():
+    pass

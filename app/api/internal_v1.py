@@ -1,3 +1,4 @@
+
 from typing import Annotated
 
 from fastapi import Depends, FastAPI
@@ -11,10 +12,9 @@ from app.db.database import get_session
 from app.models.models import ReviewMetadata, image_response
 from app.services import buckets
 from fastapi.responses import RedirectResponse
+from sqlmodel import Session
 
-from app.core.dependencies import minimum_role
-from app.models.models import UserRole
-from app.models.schemas import User
+from app.db.database import get_session
 
 subapp = FastAPI()
 origins = [ # TODO: UPDATE WITH ACTUAL URL
@@ -61,18 +61,15 @@ def redirect_token():
     """
     return RedirectResponse(url="/token", status_code=307)
 
-# @subapp.get("/example")
-# def test(
-#     # user: Annotated[
-#     #     User,
-#     #     Depends(require_role(UserRole.TEAM_LEADER, UserRole.ADMIN, UserRole.MODERATOR))
-#     # ]
-#     user: Annotated[User, Depends(get_current_active_user)]
-# ):
-#     return User
 
-@subapp.get("/test")
-def read_users_me(
-    current_user: Annotated[User, Depends(minimum_role(UserRole.MODERATOR))],
+# @subapp.get("/test")
+# def read_users_me(
+#     current_user: Annotated[User, Depends(minimum_role(UserRole.MODERATOR))],
+# ):
+#     return current_user
+
+@subapp.put("/rollback-db")
+def rollback_database(
+    session: Annotated[Session, Depends(get_session)]
 ):
-    return current_user
+    session.rollback()

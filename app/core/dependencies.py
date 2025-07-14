@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from secrets import token_hex, token_urlsafe
 from typing import Annotated, Optional
 
 import jwt
@@ -42,6 +43,9 @@ async def handle_api_key(req: Request, db: SessionDep, key: str = Security(api_k
         )
 
     yield api_key_data
+
+def generate_api_key() -> str:
+    return token_hex(config.API_KEY_LEN)
 
 # ==========={ Passwords }=========== #
 
@@ -137,3 +141,13 @@ def minimum_role(role: UserRole):
         return user
     return role_checker
 limiter = Limiter(key_func=get_remote_address)
+
+def generate_verification_code(
+    session: Annotated[Session, Depends(get_session)]
+) -> str:
+    while True:
+        code = token_urlsafe(config.VERIFICATION_CODE_BYTES_LEN)
+        try:
+            exists_in_db = session.exec(select(User).where(User.code == code)).one()
+        except Exception:
+            return code
