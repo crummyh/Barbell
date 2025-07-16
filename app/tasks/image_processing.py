@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import IO
 
+from PIL import Image
 from pydantic.types import UUID4
 from sqlmodel import Session
 
@@ -73,6 +74,8 @@ async def process_batch_async(batch_id: UUID4):
                             session.add(image_entry)
                             session.flush()
 
+                            _force_image_format(image)
+
                             assert image_entry.id # The ID is generated, so we assume it exists
                             create_image(image, image_entry.id) # Add the image to S3
 
@@ -104,6 +107,10 @@ async def process_batch_async(batch_id: UUID4):
             raise
         else:
             session.commit()
+
+def _force_image_format(image: IO[bytes]):
+    with Image.open(image) as img:
+        img.save(image, format=config.IMAGE_STORAGE_FORMAT)
 
 def _validate_image(image_path: IO[bytes]) -> bool:
     """Validate image meets requirements (640x640, etc.)"""
