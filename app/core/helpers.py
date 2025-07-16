@@ -2,11 +2,11 @@
 import hashlib
 from typing import BinaryIO
 
-from sqlalchemy import desc
+from sqlalchemy import asc
 from sqlmodel import Session, select
 
 from app.core import config
-from app.models.schemas import PreImage, Team
+from app.models.schemas import PreImage, Team, User
 
 
 def get_team_from_id(id: int, session: Session) -> Team:
@@ -54,13 +54,27 @@ def get_hash_with_streaming(file: BinaryIO, algorithm: str) -> str:
 
     return h.hexdigest()
 
-def get_most_recent_pre_image(session: Session) -> PreImage:
+def get_pre_image_labeled(session: Session) -> PreImage:
     statement = (
-        select(PreImage).where(PreImage.labels is not None)
-        .order_by(desc(PreImage.upload_time)) # type: ignore
+        select(PreImage).where(PreImage.labels != None)  # noqa: E711
+        .order_by(asc(PreImage.created_at)) # type: ignore
         .limit(1)
     )
     image = session.exec(statement).one
     if not image:
         raise LookupError()
     return image()
+
+def get_pre_image_all(session: Session) -> PreImage:
+    statement = (
+        select(PreImage)
+        .order_by(asc(PreImage.created_at)) # type: ignore
+        .limit(1)
+    )
+    image = session.exec(statement).one
+    if not image:
+        raise LookupError()
+    return image()
+
+def get_user_from_username(username: str, session: Session) -> User:
+    return session.exec(select(User).where(User.username == username)).one()

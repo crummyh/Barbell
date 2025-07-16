@@ -8,8 +8,6 @@ from fastapi import Depends, HTTPException, Request, Security, status
 from fastapi.security import APIKeyHeader, OAuth2PasswordBearer
 from jwt.exceptions import InvalidTokenError
 from passlib.context import CryptContext
-from slowapi import Limiter
-from slowapi.util import get_remote_address
 from sqlmodel import Session, select
 
 from app.core import config
@@ -27,23 +25,30 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # ==========={ API Keys }=========== #
 
-api_key_scheme = APIKeyHeader(name="x-api-key")
+# Combines a key and team number:
+# {KEY}:{TEAM NUMBER}
+api_auth_scheme = APIKeyHeader(name="x-api-auth", auto_error=False)
 
-async def handle_api_key(req: Request, db: SessionDep, key: str = Security(api_key_scheme)):
-    res = db.exec(
-        select(Team).where(Team.api_key == key).where(not Team.disabled)
-    )
+async def handle_api_key(
+    db: SessionDep,
+    token: str = Security(api_auth_scheme)
+):
+    try:
+        key_id, key = token.split(":", 1)
 
-    api_key_data = res.one_or_none()
+        res = db.exec(select(Team).where(Team.team_number == int(key_id)).where(Team.disabled == False))  # noqa: E712
+        team = res.one()
 
-    # No API key found:
-    if not api_key_data:
+        if not pwd_context.verify(key, team.api_key):
+            raise Exception("Invalid API key")
+
+        yield team
+
+    except Exception:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Missing or invalid API key"
+            detail="Invalid or missing API key"
         )
-
-    yield api_key_data
 
 def generate_api_key() -> str:
     return token_hex(config.API_KEY_LEN)
@@ -141,7 +146,6 @@ def minimum_role(role: UserRole):
             )
         return user
     return role_checker
-limiter = Limiter(key_func=get_remote_address)
 
 def generate_verification_code(
     session: Annotated[Session, Depends(get_session)]
@@ -149,12 +153,12 @@ def generate_verification_code(
     while True:
         code = token_urlsafe(config.VERIFICATION_CODE_BYTES_LEN)
         try:
-            exists_in_db = session.exec(select(User).where(User.code == code)).one()
+           session.exec(select(User).where(User.code == code)).one()
         except Exception:
             return code
 
 # ==========={ Rate Limiting }=========== #
-
+#
 request_counters = {}
 class RateLimiter:
     def __init__(self, requests_limit: int, time_window: int):

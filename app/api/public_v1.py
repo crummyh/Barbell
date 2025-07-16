@@ -28,8 +28,9 @@ from app.models.models import (
     TeamStatsOut,
     UploadStatus,
 )
-from app.models.schemas import Image, Team, UploadBatch
+from app.models.schemas import Image, PreImage, Team, UploadBatch
 from app.services.buckets import create_upload_batch
+from app.services.monitoring import get_uptime
 from app.tasks.image_processing import estimate_processing_time, process_batch_async
 
 router = APIRouter()
@@ -43,7 +44,9 @@ def get_stats(session: Annotated[Session, Depends(get_session)]) -> StatsOut:
     """
     out = StatsOut(
         image_count=session.exec(select(func.count()).select_from(Image)).one(),
-        team_count=session.exec(select(func.count()).select_from(Team)).one()
+        un_reviewed_image_count=session.exec(select(func.count()).select_from(PreImage)).one(),
+        team_count=session.exec(select(func.count()).select_from(Team)).one(),
+        uptime=get_uptime()
     )
     return out
 
@@ -61,10 +64,12 @@ def get_team_stats(team_number: int, session: Annotated[Session, Depends(get_ses
         raise HTTPException(status_code=404, detail="Team not found")
 
     images = session.exec(select(Image).where(Image.created_by == team)).all()
+    pre_images = session.exec(select(PreImage).where(PreImage.created_by == team)).all()
     batches = session.exec(select(UploadBatch).where(UploadBatch.team == team)).all()
 
     out = TeamStatsOut(
         image_count=len(images),
+        un_reviewed_image_count=len(pre_images),
         years_available=set([i.created_at.year for i in images]),
         upload_batches=len(batches)
     )
@@ -165,7 +170,7 @@ def upload(
             )
 
         else:
-            background_tasks.add_task(process_batch_async, batch_id=batch.id, session=session)
+            background_tasks.add_task(process_batch_async, batch_id=batch.id)
 
     return StatusOut(
         batch_id=batch.id,

@@ -1,10 +1,11 @@
+from datetime import datetime, timedelta
 from enum import Enum
 from typing import IO, Any, Dict, Optional
+from uuid import UUID
 
 from fastapi import Response
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, EmailStr
-from pydantic.types import UUID4
 
 # ==========={ Enums & States }=========== #
 
@@ -31,18 +32,20 @@ class UserRole(Enum):
 
 class StatsOut(BaseModel):
     image_count: int
+    un_reviewed_image_count: int
     team_count: int
     # years_available: list[int]
     # labels: dict[str, list[str]]
-    # uptime: str
+    uptime: timedelta
 
 class TeamStatsOut(BaseModel):
     image_count: int
+    un_reviewed_image_count: int
     years_available: set[int]
     upload_batches: int
 
 class StatusOut(BaseModel):
-    batch_id: UUID4
+    batch_id: UUID
     team: int
     status: UploadStatus
     file_size: Optional[int]
@@ -60,15 +63,16 @@ class DownloadRequest(BaseModel):
     count: tuple[int, int, int] | int # Training / Validation / Testing | Number
     non_match_images: bool
 
-class ReviewMetadata(BaseModel):
-    id: str
-    labels: Dict[str, Any]
-
 class NewUserData(BaseModel):
     username: str
     email: EmailStr
     password: str
     team: Optional[int] = None
+
+class NewTeamData(BaseModel):
+    team_number: int
+    team_name: str
+    leader_username: str
 
 def image_response(file: IO[bytes]) -> Response:
     file.seek(0)
@@ -79,6 +83,17 @@ def image_response(file: IO[bytes]) -> Response:
             "Content-Disposition": "attachment"
         }
     )
+
+# ==========={ Responses and Requests }=========== #
+
+class ReviewMetadata(BaseModel):
+    id: UUID
+    labels: Dict[str, Any] | None
+    created_at: datetime
+    created_by: int
+    batch: UUID
+    reviewed: bool
+
 # ==========={ Security }=========== #
 
 class Token(BaseModel):

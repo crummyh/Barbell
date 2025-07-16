@@ -9,7 +9,8 @@
     "pydantic",
     "dotenv",
     "redoc",
-    "Crum"
+    "Crum",
+    "creds"
   ],
   "flagWords": []
 }

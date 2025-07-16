@@ -4,19 +4,25 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlmodel import Session, select
-from starlette.status import HTTP_404_NOT_FOUND, HTTP_409_CONFLICT
+from starlette.status import (
+    HTTP_404_NOT_FOUND,
+    HTTP_409_CONFLICT,
+    HTTP_500_INTERNAL_SERVER_ERROR,
+)
 
 from app.core import config
 from app.core.dependencies import (
     RateLimiter,
     authenticate_user,
     create_access_token,
+    generate_api_key,
     generate_verification_code,
     get_current_active_user,
     get_password_hash,
 )
+from app.core.helpers import get_user_from_username
 from app.db.database import get_session
-from app.models.models import NewUserData, Token
+from app.models.models import NewTeamData, NewUserData, Token
 from app.models.schemas import Team, User
 from app.services.email.email import send_verification_email
 
@@ -54,7 +60,7 @@ def register_user(
 ):
     if new_user.team:
         try:
-            session.exec(select(Team).where(Team.team_number == new_user.team))
+            session.exec(select(Team).where(Team.team_number == new_user.team)).one()
         except Exception:
             raise HTTPException(
                 status_code=HTTP_404_NOT_FOUND,
@@ -119,6 +125,47 @@ def verify_email_code(
     else:
         session.commit()
 
-@router.post("register/team", dependencies=[Depends(RateLimiter(requests_limit=1, time_window=10))])
-def register_team():
-    pass
+@router.post("/register/team", dependencies=[Depends(RateLimiter(requests_limit=1, time_window=10))])
+def register_team(
+    new_team: Annotated[NewTeamData, Query()],
+    session: Annotated[Session, Depends(get_session)]
+):
+    try:
+        session.exec(select(Team).where(Team.team_number == new_team.team_number)).one()
+    except Exception:
+        pass
+    else:
+        raise HTTPException(
+            status_code=HTTP_409_CONFLICT,
+            detail="Team already exists"
+        )
+
+    new_team_leader = get_user_from_username(new_team.leader_username, session)
+    try:
+        session.exec(select(Team).where(Team.leader_user == new_team_leader.id)).one()
+    except Exception:
+        pass
+    else:
+        raise HTTPException(
+            status_code=HTTP_409_CONFLICT,
+            detail="Leader already leads another team"
+        )
+
+    try:
+        api_key = generate_api_key()
+        team = Team(
+            team_number=new_team.team_number,
+            team_name=new_team.team_name,
+            api_key=get_password_hash(api_key),
+            leader_user=new_team_leader.id
+        )
+        session.add(team)
+    except Exception:
+        session.rollback()
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to add team to database"
+        )
+    else:
+        session.commit()
+        return api_key

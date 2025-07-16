@@ -51,7 +51,7 @@ class UploadBatch(SQLModel, table=True):
 class Image(SQLModel, table=True):
     __tablename__ = "images" # type: ignore
 
-    id: UUID | None = Field(index=True, primary_key=True)
+    id: UUID | None = Field(default_factory=uuid4, primary_key=True)
     created_at: datetime = Field(index=True)
     created_by: int = Field(foreign_key="teams.id", index=True)
     batch: UUID = Field(foreign_key="upload_batches.id")
@@ -60,7 +60,7 @@ class Image(SQLModel, table=True):
 class PreImage(SQLModel, table=True):
     __tablename__ = "pre_images" # type: ignore
 
-    id: UUID | None = Field(index=True, primary_key=True)
+    id: UUID | None = Field(default_factory=uuid4, primary_key=True)
     created_at: datetime = Field(index=True)
     created_by: int = Field(foreign_key="teams.id", index=True)
     batch: UUID = Field(foreign_key="upload_batches.id")

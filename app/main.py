@@ -8,12 +8,14 @@ from fastapi.staticfiles import StaticFiles
 from app.api import auth_v1, internal_v1, public_v1, web
 from app.db.database import init_db
 from app.services import buckets
+from app.services.monitoring import start_monitor
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
     buckets.init()
+    start_monitor()
     yield
 
 description = """
