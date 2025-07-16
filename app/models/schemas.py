@@ -1,9 +1,9 @@
 from datetime import datetime, timezone
-from typing import Any, Dict
+from typing import List, Optional, Tuple
 from uuid import UUID, uuid4
 
 from pydantic import EmailStr
-from sqlmodel import JSON, Field, SQLModel
+from sqlmodel import Field, Relationship, SQLModel
 
 from app.core import config
 from app.models.models import UploadStatus, UserRole
@@ -48,6 +48,32 @@ class UploadBatch(SQLModel, table=True):
     estimated_processing_time_left: int | None = Field(default=None, ge=0)
     error_message: str | None = Field(default=None, max_length=500)
 
+class Annotation(SQLModel, table=True):
+    __tablename__ = "annotations" # type: ignore
+
+    id: int | None = Field(default=None, primary_key=True)
+    image_id: int = Field(foreign_key="images.id")
+    catagory_id: int = Field(foreign_key="label_categories.id", index=True)
+    iscrowd: bool = Field(default=False)
+    area: float | None = Field(default=None)
+    bbox: Tuple[int,int,int,int] = Field()
+
+    image: Optional["Image"] | Optional["PreImage"] = Relationship(back_populates="annotations")
+
+class LabelSuperCatagory(SQLModel, table=True):
+    __tablename__ = "label_super_categories" # type: ignore
+
+    id: int | None = Field(default=None, primary_key=True)
+    name: str | None = Field()
+
+class LabelCatagory(SQLModel, table=True):
+    __tablename__ = "label_categories" # type: ignore
+
+    id: int | None = Field(default=None, primary_key=True)
+    name: str = Field()
+    super_category: int | None = Field(foreign_key="label_super_categories.id")
+
+
 class Image(SQLModel, table=True):
     __tablename__ = "images" # type: ignore
 
@@ -55,7 +81,8 @@ class Image(SQLModel, table=True):
     created_at: datetime = Field(index=True)
     created_by: int = Field(foreign_key="teams.id", index=True)
     batch: UUID = Field(foreign_key="upload_batches.id")
-    labels: Dict[str, Any] | None = Field(default=None, sa_type=JSON)
+
+    annotations: Optional[List[Annotation]] = Relationship(back_populates="image")
 
 class PreImage(SQLModel, table=True):
     __tablename__ = "pre_images" # type: ignore
@@ -64,5 +91,6 @@ class PreImage(SQLModel, table=True):
     created_at: datetime = Field(index=True)
     created_by: int = Field(foreign_key="teams.id", index=True)
     batch: UUID = Field(foreign_key="upload_batches.id")
-    labels: Dict[str, Any] | None = Field(default=None, sa_type=JSON)
     reviewed: bool = Field(default=False)
+
+    annotations: Optional[List[Annotation]] = Relationship(back_populates="image")

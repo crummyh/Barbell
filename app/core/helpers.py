@@ -56,7 +56,7 @@ def get_hash_with_streaming(file: BinaryIO, algorithm: str) -> str:
 
 def get_pre_image_labeled(session: Session) -> PreImage:
     statement = (
-        select(PreImage).where(PreImage.labels != None)  # noqa: E711
+        select(PreImage).where(PreImage.annotations != None)  # noqa: E711
         .order_by(asc(PreImage.created_at)) # type: ignore
         .limit(1)
     )

@@ -1,11 +1,13 @@
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import IO, Any, Dict, Optional
+from typing import IO, List, Optional
 from uuid import UUID
 
 from fastapi import Response
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, EmailStr
+
+from app.models.schemas import Annotation
 
 # ==========={ Enums & States }=========== #
 
@@ -88,7 +90,7 @@ def image_response(file: IO[bytes]) -> Response:
 
 class ReviewMetadata(BaseModel):
     id: UUID
-    labels: Dict[str, Any] | None
+    annotations: Optional[List[Annotation]]
     created_at: datetime
     created_by: int
     batch: UUID

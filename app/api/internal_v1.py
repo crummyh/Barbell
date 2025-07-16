@@ -48,7 +48,7 @@ def get_image_for_review(
     assert image.id
     return ReviewMetadata(
         id=image.id,
-        labels=image.labels,
+        annotations=image.annotations,
         created_at=image.created_at,
         created_by=get_team_number_from_id(image.created_by, session),
         batch=image.batch,
@@ -74,7 +74,7 @@ def update_image_review_status(
         pre_image.created_at = new_data.created_at
         pre_image.created_by = get_id_from_team_number(new_data.created_by, session)
         pre_image.id = new_data.id
-        pre_image.labels = new_data.labels
+        pre_image.annotations = new_data.annotations
         pre_image.reviewed = new_data.reviewed
         session.add(pre_image)
 
@@ -84,7 +84,7 @@ def update_image_review_status(
             created_at=new_data.created_at,
             created_by=get_id_from_team_number(new_data.created_by, session),
             batch=new_data.batch,
-            labels=new_data.labels
+            annotations=new_data.annotations
         )
         session.add(image)
         session.delete(pre_image)
