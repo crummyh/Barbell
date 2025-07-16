@@ -18,7 +18,7 @@ from app.core.helpers import (
 )
 from app.db.database import get_session
 from app.models.models import ReviewMetadata, UserRole, image_response
-from app.models.schemas import PreImage, User
+from app.models.schemas import Image, PreImage, User
 from app.services import buckets
 
 subapp = FastAPI()
@@ -59,22 +59,36 @@ def get_image_for_review(
 def update_image_review_status(
     new_data: ReviewMetadata,
     session: Annotated[Session, Depends(get_session)],
-    token: Annotated[str, Depends(oauth2_scheme)]
+    token: Annotated[str, Depends(oauth2_scheme)],
+    approve: bool = True
 ):
-    image = session.get(PreImage, new_data.id)
-    if not image:
+    pre_image = session.get(PreImage, new_data.id)
+    if not pre_image:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
             detail="Image not found"
         )
 
-    image.batch = new_data.batch
-    image.created_at = new_data.created_at
-    image.created_by = get_id_from_team_number(new_data.created_by, session)
-    image.id = new_data.id
-    image.labels = new_data.labels
-    image.reviewed = new_data.reviewed
-    session.add(image)
+    if not approve:
+        pre_image.batch = new_data.batch
+        pre_image.created_at = new_data.created_at
+        pre_image.created_by = get_id_from_team_number(new_data.created_by, session)
+        pre_image.id = new_data.id
+        pre_image.labels = new_data.labels
+        pre_image.reviewed = new_data.reviewed
+        session.add(pre_image)
+
+    else:
+        image = Image(
+            id=new_data.id,
+            created_at=new_data.created_at,
+            created_by=get_id_from_team_number(new_data.created_by, session),
+            batch=new_data.batch,
+            labels=new_data.labels
+        )
+        session.add(image)
+        session.delete(pre_image)
+
     session.commit()
 
 @subapp.get("/image/{image_id}", dependencies=[Depends(RateLimiter(requests_limit=5, time_window=5))])
