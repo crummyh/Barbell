@@ -2,6 +2,7 @@
 import os
 
 from dotenv import load_dotenv
+from PIL import Image
 
 PROJECT_NAME = "Temp Name"
 MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024  # 2GB
@@ -10,7 +11,8 @@ IMAGES_BUCKET_NAME = "images"
 HASHING_BUF_SIZE = 65536
 BUCKET_NAME_HASH_ALGORITHM = "sha256"
 UPLOAD_INTEGRITY_HASH_ALGORITHM = "md5"
-ALLOWED_IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png"}
+ALLOWED_IMAGE_EXTENSIONS = {ex for ex, f in Image.registered_extensions().items() if f in Image.OPEN}
+IMAGE_STORAGE_FORMAT = "png"
 DEFAULT_PROCESSING_TIME = 100
 TEMPLATES_PATH = "web/templates"
 SECURE_ALGORITHM = "HS256"

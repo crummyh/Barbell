@@ -1,11 +1,16 @@
+from __future__ import annotations
+
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import IO, Any, Dict, Optional
+from typing import IO, TYPE_CHECKING, List, Optional
 from uuid import UUID
 
 from fastapi import Response
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, EmailStr
+
+if TYPE_CHECKING:
+    from app.models.schemas import Annotation
 
 # ==========={ Enums & States }=========== #
 
@@ -14,13 +19,6 @@ class UploadStatus(Enum):
     PROCESSING = "processing"
     COMPLETED  = "completed"
     FAILED     = "failed"
-
-class DownloadFormat(Enum):
-    YOLO5  = "yolo5"
-    YOLO8  = "yolo8"
-    YOLO11 = "yolo11"
-    COCO   = "coco"
-    RAW    = "raw"
 
 class UserRole(Enum):
     DEFAULT     = 0
@@ -58,7 +56,6 @@ class StatusOut(BaseModel):
 # ==========={ Requests }=========== #
 
 class DownloadRequest(BaseModel):
-    format: DownloadFormat
     labels: list[str]
     count: tuple[int, int, int] | int # Training / Validation / Testing | Number
     non_match_images: bool
@@ -88,7 +85,7 @@ def image_response(file: IO[bytes]) -> Response:
 
 class ReviewMetadata(BaseModel):
     id: UUID
-    labels: Dict[str, Any] | None
+    annotations: Optional[List[Annotation]]
     created_at: datetime
     created_by: int
     batch: UUID
