@@ -20,13 +20,6 @@ class UploadStatus(Enum):
     COMPLETED  = "completed"
     FAILED     = "failed"
 
-class DownloadFormat(Enum):
-    YOLO5  = "yolo5"
-    YOLO8  = "yolo8"
-    YOLO11 = "yolo11"
-    COCO   = "coco"
-    RAW    = "raw"
-
 class UserRole(Enum):
     DEFAULT     = 0
     TEAM_LEADER = 1
@@ -63,7 +56,6 @@ class StatusOut(BaseModel):
 # ==========={ Requests }=========== #
 
 class DownloadRequest(BaseModel):
-    format: DownloadFormat
     labels: list[str]
     count: tuple[int, int, int] | int # Training / Validation / Testing | Number
     non_match_images: bool
