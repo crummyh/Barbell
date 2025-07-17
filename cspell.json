@@ -10,7 +10,9 @@
     "dotenv",
     "redoc",
     "Crum",
-    "creds"
+    "creds",
+    "Annotatable",
+    "preimage"
   ],
   "flagWords": []
 }

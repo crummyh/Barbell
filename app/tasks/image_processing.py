@@ -11,7 +11,8 @@ from sqlmodel import Session
 
 from app.core import config
 from app.db.database import engine
-from app.models.schemas import PreImage, UploadBatch, UploadStatus
+from app.models.models import UploadStatus
+from app.models.schemas import PreImage, UploadBatch
 from app.services.buckets import create_image, get_upload_batch
 
 

@@ -8,7 +8,7 @@ from pydantic import UUID4
 from sqlmodel import Session
 from starlette.status import HTTP_404_NOT_FOUND
 
-from app.core.dependencies import RateLimiter, oauth2_scheme, require_role
+from app.core.dependencies import RateLimiter, minimum_role, require_role
 from app.core.helpers import (
     get_id_from_team_number,
     get_pre_image_all,
@@ -36,7 +36,7 @@ subapp.add_middleware(
 
 @subapp.get("/review-image", dependencies=[Depends(RateLimiter(requests_limit=5, time_window=5))])
 def get_image_for_review(
-    token: Annotated[str, Depends(oauth2_scheme)],
+    current_user: Annotated[User, Security(minimum_role(UserRole.MODERATOR))],
     session: Annotated[Session, Depends(get_session)],
     only_labeled: bool = True
 ) -> ReviewMetadata:
@@ -59,7 +59,7 @@ def get_image_for_review(
 def update_image_review_status(
     new_data: ReviewMetadata,
     session: Annotated[Session, Depends(get_session)],
-    token: Annotated[str, Depends(oauth2_scheme)],
+    current_user: Annotated[User, Security(minimum_role(UserRole.MODERATOR))],
     approve: bool = True
 ):
     pre_image = session.get(PreImage, new_data.id)
@@ -94,7 +94,7 @@ def update_image_review_status(
 @subapp.get("/image/{image_id}", dependencies=[Depends(RateLimiter(requests_limit=5, time_window=5))])
 def get_image(
     image_id: UUID4,
-    token: Annotated[str, Depends(oauth2_scheme)],
+    current_user: Annotated[User, Security(minimum_role(UserRole.MODERATOR))]
 ):
     return image_response(buckets.get_image(image_id))
 

@@ -1,13 +1,16 @@
+from __future__ import annotations
+
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import IO, List, Optional
+from typing import IO, TYPE_CHECKING, List, Optional
 from uuid import UUID
 
 from fastapi import Response
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, EmailStr
 
-from app.models.schemas import Annotation
+if TYPE_CHECKING:
+    from app.models.schemas import Annotation
 
 # ==========={ Enums & States }=========== #
 

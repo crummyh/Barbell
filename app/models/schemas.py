@@ -1,12 +1,16 @@
+from __future__ import annotations
+
 from datetime import datetime, timezone
-from typing import List, Optional, Tuple
+from enum import Enum
+from typing import List, Optional
 from uuid import UUID, uuid4
 
 from pydantic import EmailStr
-from sqlmodel import Field, Relationship, SQLModel
+from sqlalchemy import Column, String
+from sqlmodel import Field, Relationship, Session, SQLModel
 
+import app.models.models as models
 from app.core import config
-from app.models.models import UploadStatus, UserRole
 
 
 class User(SQLModel, table=True):
@@ -19,7 +23,7 @@ class User(SQLModel, table=True):
     disabled: bool = Field(default=True)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     team: int | None = Field(default=None, foreign_key="teams.id", index=True)
-    role: UserRole = Field(default=UserRole.DEFAULT)
+    role: models.UserRole = Field(default=models.UserRole.DEFAULT)
     code: str | None = Field(max_length=config.VERIFICATION_CODE_STR_LEN)
 
 class Team(SQLModel, table=True):
@@ -38,7 +42,7 @@ class UploadBatch(SQLModel, table=True):
 
     id: UUID | None = Field(default_factory=uuid4, primary_key=True)
     team: int = Field(foreign_key="teams.id", index=True)
-    status: UploadStatus = Field()
+    status: models.UploadStatus = Field()
     file_size: int | None = Field(default=None, ge=0, le=config.MAX_FILE_SIZE)
     images_valid: int = Field(default=0, ge=0)
     images_rejected: int = Field(default=0, ge=0)
@@ -48,17 +52,35 @@ class UploadBatch(SQLModel, table=True):
     estimated_processing_time_left: int | None = Field(default=None, ge=0)
     error_message: str | None = Field(default=None, max_length=500)
 
+class AnnotatableType(str, Enum):
+    image = "image"
+    preimage = "preimage"
+
 class Annotation(SQLModel, table=True):
     __tablename__ = "annotations" # type: ignore
 
     id: int | None = Field(default=None, primary_key=True)
-    image_id: int = Field(foreign_key="images.id")
+    image_type: AnnotatableType = Field(sa_column=Column(String, nullable=False))
+    image_id: int # ID of an Image or PreImage
     catagory_id: int = Field(foreign_key="label_categories.id", index=True)
     iscrowd: bool = Field(default=False)
     area: float | None = Field(default=None)
-    bbox: Tuple[int,int,int,int] = Field()
+    bbox_x: int | None = Field(default=None)
+    bbox_y: int | None = Field(default=None)
+    bbox_w: int | None = Field(default=None)
+    bbox_h: int | None = Field(default=None)
 
-    image: Optional["Image"] | Optional["PreImage"] = Relationship(back_populates="annotations")
+def get_annotation_target(session: Session, annotation: Annotation) -> Image | PreImage | None:
+    if annotation.image_type == AnnotatableType.image:
+        return session.get(Image, annotation.image_id)
+    elif annotation.image_type == AnnotatableType.preimage:
+        return session.get(PreImage, annotation.image_id)
+
+def set_bbox(annotation: Annotation, bbox: tuple[int,int,int,int]):
+    annotation.bbox_x = bbox[0]
+    annotation.bbox_y = bbox[1]
+    annotation.bbox_w = bbox[2]
+    annotation.bbox_h = bbox[3]
 
 class LabelSuperCatagory(SQLModel, table=True):
     __tablename__ = "label_super_categories" # type: ignore
@@ -72,7 +94,6 @@ class LabelCatagory(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     name: str = Field()
     super_category: int | None = Field(foreign_key="label_super_categories.id")
-
 
 class Image(SQLModel, table=True):
     __tablename__ = "images" # type: ignore
