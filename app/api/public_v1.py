@@ -1,12 +1,13 @@
 import tarfile
 from datetime import datetime, timezone
-from typing import Annotated
+from typing import Annotated, Sequence
 
 from fastapi import APIRouter, BackgroundTasks, Depends, UploadFile
 from fastapi.exceptions import HTTPException
 from pydantic.types import UUID4
 from sqlalchemy import func
 from sqlmodel import Session, select
+from starlette.status import HTTP_404_NOT_FOUND
 
 from app.core import config
 from app.core.dependencies import (
@@ -23,12 +24,14 @@ from app.core.helpers import (
 )
 from app.db.database import get_session
 from app.models.models import (
+    DownloadRequest,
+    ImageReviewStatus,
     StatsOut,
     StatusOut,
     TeamStatsOut,
     UploadStatus,
 )
-from app.models.schemas import Image, PreImage, Team, UploadBatch
+from app.models.schemas import Image, LabelSuperCategory, Team, UploadBatch
 from app.services.buckets import create_upload_batch
 from app.services.monitoring import get_uptime
 from app.tasks.image_processing import estimate_processing_time, process_batch_async
@@ -44,7 +47,7 @@ def get_stats(session: Annotated[Session, Depends(get_session)]) -> StatsOut:
     """
     out = StatsOut(
         image_count=session.exec(select(func.count()).select_from(Image)).one(),
-        un_reviewed_image_count=session.exec(select(func.count()).select_from(PreImage)).one(),
+        un_reviewed_image_count=session.exec(select(func.count()).select_from(Image).where(Image.review_status != ImageReviewStatus.APPROVED)).one(),
         team_count=session.exec(select(func.count()).select_from(Team)).one(),
         uptime=get_uptime()
     )
@@ -63,8 +66,8 @@ def get_team_stats(team_number: int, session: Annotated[Session, Depends(get_ses
     except LookupError:
         raise HTTPException(status_code=404, detail="Team not found")
 
-    images = session.exec(select(Image).where(Image.created_by == team)).all()
-    pre_images = session.exec(select(PreImage).where(PreImage.created_by == team)).all()
+    images = session.exec(select(Image).where(Image.created_by == team).where(Image.review_status == ImageReviewStatus.APPROVED)).all()
+    pre_images = session.exec(select(Image).where(Image.created_by == team).where(Image.review_status != ImageReviewStatus.APPROVED)).all()
     batches = session.exec(select(UploadBatch).where(UploadBatch.team == team)).all()
 
     out = TeamStatsOut(
@@ -74,6 +77,20 @@ def get_team_stats(team_number: int, session: Annotated[Session, Depends(get_ses
         upload_batches=len(batches)
     )
     return out
+
+@router.get("/stats/labels")
+def get_label_info(
+    session: Annotated[Session, Depends(get_session)]
+) -> Sequence[LabelSuperCategory]:
+    categories = session.exec(select(LabelSuperCategory)).all()
+
+    if not categories:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail="No categories found"
+        )
+
+    return categories
 
 # ========== { Auth API } ========== #
 
@@ -186,6 +203,7 @@ def upload(
 
 @router.get("/download", tags=["Auth Required"], dependencies=[Depends(RateLimiter(requests_limit=1, time_window=60))])
 def download_batch(
+    request: DownloadRequest,
     team: Annotated[str, Depends(handle_api_key)],
     session: Annotated[Session, Depends(get_session)]
 ):

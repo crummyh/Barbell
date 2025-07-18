@@ -12,7 +12,7 @@ from sqlmodel import Session
 from app.core import config
 from app.db.database import engine
 from app.models.models import UploadStatus
-from app.models.schemas import PreImage, UploadBatch
+from app.models.schemas import Image, UploadBatch
 from app.services.buckets import create_image, get_upload_batch
 
 
@@ -67,7 +67,7 @@ async def process_batch_async(batch_id: UUID4):
 
                         # Validate the image and add it to the database
                         if _validate_image(image):
-                            image_entry = PreImage(
+                            image_entry = Image(
                                 created_at=batch.capture_time,
                                 created_by=batch.team,
                                 batch=batch_id
@@ -110,7 +110,7 @@ async def process_batch_async(batch_id: UUID4):
             session.commit()
 
 def _force_image_format(image: IO[bytes]):
-    with Image.open(image) as img:
+    with image.open(image) as img:
         img.save(image, format=config.IMAGE_STORAGE_FORMAT)
 
 def _validate_image(image_path: IO[bytes]) -> bool:

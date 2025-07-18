@@ -26,6 +26,11 @@ class UserRole(Enum):
     MODERATOR   = 2
     ADMIN       = 3
 
+class ImageReviewStatus(Enum):
+    APPROVED = 0
+    AWAITING_LABELS = 1
+    NOT_REVIEWED = 2
+
 # ==========={ Responses }=========== #
 
 class StatsOut(BaseModel):
@@ -85,11 +90,11 @@ def image_response(file: IO[bytes]) -> Response:
 
 class ReviewMetadata(BaseModel):
     id: UUID
-    annotations: Optional[List[Annotation]]
+    annotations: List[Annotation] # Use [] full None
     created_at: datetime
     created_by: int
     batch: UUID
-    reviewed: bool
+    review_status: ImageReviewStatus
 
 # ==========={ Security }=========== #
 
