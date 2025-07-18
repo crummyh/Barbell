@@ -6,8 +6,8 @@ the user to another URL where they can download the entire
 file.
 """
 
-from app.models.models import DownloadRequest
+from uuid import UUID
 
 
-async def create_download_bundle(request: DownloadRequest):
+async def create_download_batch(batch_id: UUID):
     pass

@@ -1,7 +1,7 @@
 import time
 from datetime import datetime, timedelta, timezone
 from secrets import token_hex, token_urlsafe
-from typing import Annotated, Optional
+from typing import Annotated, AsyncGenerator, Optional
 
 import jwt
 from fastapi import Depends, HTTPException, Request, Security, status
@@ -32,7 +32,7 @@ api_auth_scheme = APIKeyHeader(name="x-api-auth", auto_error=False)
 async def handle_api_key(
     db: SessionDep,
     token: str = Security(api_auth_scheme)
-):
+) -> AsyncGenerator[Team, None]:
     try:
         key_id, key = token.split(":", 1)
 

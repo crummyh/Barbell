@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import IO, TYPE_CHECKING, List, Optional
+from typing import IO, TYPE_CHECKING, Dict, List, Optional
 from uuid import UUID
 
 from fastapi import Response
@@ -19,6 +19,13 @@ class UploadStatus(Enum):
     PROCESSING = "processing"
     COMPLETED  = "completed"
     FAILED     = "failed"
+
+class DownloadStatus(Enum):
+    STARTING = "starting"
+    ASSEMBLING = "assembling"
+    COMPRESSING = "compressing"
+    READY = "ready"
+    FAILED = "failed"
 
 class UserRole(Enum):
     DEFAULT     = 0
@@ -47,7 +54,7 @@ class TeamStatsOut(BaseModel):
     years_available: set[int]
     upload_batches: int
 
-class StatusOut(BaseModel):
+class UploadStatusOut(BaseModel):
     batch_id: UUID
     team: int
     status: UploadStatus
@@ -58,12 +65,25 @@ class StatusOut(BaseModel):
     estimated_time_left: Optional[float]
     error_msg: Optional[str]
 
+class DownloadStatusOut(BaseModel):
+    id: UUID | None
+    team: int
+    status: DownloadStatus
+    file_size: int | None
+    non_match_images: bool
+    image_count: int | None
+    annotations: Dict[str, bool | Dict[str, bool]]
+    start_time: datetime
+    estimated_processing_time_left: int | None
+    hash: str | None
+    error_message: str | None
+
 # ==========={ Requests }=========== #
 
 class DownloadRequest(BaseModel):
-    labels: list[str]
-    count: tuple[int, int, int] | int # Training / Validation / Testing | Number
-    non_match_images: bool
+    annotations: Dict[str, Dict[str, bool] | bool]
+    count: int
+    non_match_images: bool = True
 
 class NewUserData(BaseModel):
     username: str

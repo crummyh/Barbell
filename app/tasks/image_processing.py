@@ -4,9 +4,9 @@ import tarfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import IO
+from uuid import UUID
 
 from PIL import Image as PIL_Image
-from pydantic.types import UUID4
 from sqlmodel import Session
 
 from app.core import config
@@ -16,7 +16,7 @@ from app.models.schemas import Image, UploadBatch
 from app.services.buckets import create_image, get_upload_batch
 
 
-async def process_batch_async(batch_id: UUID4):
+async def process_batch_async(batch_id: UUID):
 
     with Session(engine) as session:
 
