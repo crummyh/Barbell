@@ -6,7 +6,7 @@ from sqlalchemy import asc
 from sqlmodel import Session, select
 
 from app.core import config
-from app.models.schemas import PreImage, Team, User
+from app.models.schemas import Image, Team, User
 
 
 def get_team_from_id(id: int, session: Session) -> Team:
@@ -54,27 +54,27 @@ def get_hash_with_streaming(file: BinaryIO, algorithm: str) -> str:
 
     return h.hexdigest()
 
-def get_pre_image_labeled(session: Session) -> PreImage:
+def get_un_reviewed_img_labeled(session: Session) -> Image:
     statement = (
-        select(PreImage).where(PreImage.annotations != None)  # noqa: E711
-        .order_by(asc(PreImage.created_at)) # type: ignore
+        select(Image).where(Image.annotations != [])  # noqa: E711
+        .order_by(asc(Image.created_at)) # type: ignore
         .limit(1)
     )
-    image = session.exec(statement).one
+    image = session.exec(statement).one()
     if not image:
         raise LookupError()
-    return image()
+    return image
 
-def get_pre_image_all(session: Session) -> PreImage:
+def get_un_reviewed_img(session: Session) -> Image:
     statement = (
-        select(PreImage)
-        .order_by(asc(PreImage.created_at)) # type: ignore
+        select(Image)
+        .order_by(asc(Image.created_at)) # type: ignore
         .limit(1)
     )
-    image = session.exec(statement).one
+    image = session.exec(statement).one()
     if not image:
         raise LookupError()
-    return image()
+    return image
 
 def get_user_from_username(username: str, session: Session) -> User:
     return session.exec(select(User).where(User.username == username)).one()

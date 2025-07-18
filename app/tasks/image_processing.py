@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import IO
 
-from PIL import Image
+from PIL import Image as PIL_Image
 from pydantic.types import UUID4
 from sqlmodel import Session
 
@@ -110,14 +110,13 @@ async def process_batch_async(batch_id: UUID4):
             session.commit()
 
 def _force_image_format(image: IO[bytes]):
-    with image.open(image) as img:
+    with PIL_Image.open(image) as img:
         img.save(image, format=config.IMAGE_STORAGE_FORMAT)
 
 def _validate_image(image_path: IO[bytes]) -> bool:
     """Validate image meets requirements (640x640, etc.)"""
     try:
-        from PIL import Image
-        with Image.open(image_path) as img:
+        with PIL_Image.open(image_path) as img:
             return img.size == (640, 640)
     except Exception:
         return False
