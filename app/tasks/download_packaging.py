@@ -9,7 +9,7 @@ import json
 import random
 import tarfile
 from datetime import datetime, timezone
-from io import BytesIO, StringIO
+from io import BytesIO, TextIOWrapper
 from uuid import UUID
 
 from sqlmodel import Session, func, select
@@ -24,6 +24,7 @@ from app.services.buckets import (
     update_download_batch,
 )
 
+# Define a base template for manifests
 BASE_COCO_MANIFEST = {
     "info": {
         "description": "",
@@ -42,16 +43,19 @@ BASE_COCO_MANIFEST = {
 }
 
 def create_download_batch(batch_id: UUID):
-    print(f"Starting background task for batch_id={batch_id}")
     with Session(engine) as session:
-        batch = session.get(DownloadBatch, batch_id)
+        batch = session.get(DownloadBatch, batch_id) # Get the batch
 
         if not batch:
             raise ValueError(f"DownloadBatch with id {batch_id} not found")
 
         try:
-            manifest = BASE_COCO_MANIFEST.copy()
-            annotation_category_id_list = []
+            batch.status = DownloadStatus.ASSEMBLING_LABELS
+            session.add(batch)
+            session.commit()
+
+            manifest = BASE_COCO_MANIFEST.copy() # Make a copy of the manifest
+            annotation_category_id_list = [] # Store the selected ids so I don't have to loop later
 
             for super_catagory, categories in batch.annotations.items():
                 if not categories:
@@ -72,6 +76,7 @@ def create_download_batch(batch_id: UUID):
                             })
                             annotation_category_id_list.append(catagory_id)
                     else:
+                        # The entire catagory should be used
                         derived_categories = session.exec(
                             select(LabelSuperCategory)
                             .where(LabelSuperCategory.name == super_catagory)
@@ -84,6 +89,10 @@ def create_download_batch(batch_id: UUID):
                                 "name": category.name
                             })
                             annotation_category_id_list.append(category.id)
+
+            batch.status = DownloadStatus.ASSEMBLING_IMAGES
+            session.add(batch)
+            session.commit()
 
             archive_obj = BytesIO()
             archive = tarfile.open(fileobj=archive_obj, mode="w:gz")
@@ -126,19 +135,33 @@ def create_download_batch(batch_id: UUID):
                             ]
                         })
 
-            manifest_obj = StringIO()
-            json.dump(manifest, manifest_obj, cls=UUIDEncoder)
+            batch.status = DownloadStatus.ADDING_MANIFEST
+            session.add(batch)
+            session.commit()
 
-            manifest_obj_data = manifest_obj.read().encode("utf-8")
-            manifest_obj = BytesIO(manifest_obj_data)
+            manifest_obj = BytesIO()
+            with TextIOWrapper(manifest_obj, encoding="utf-8", write_through=True) as wrapper:
+                json.dump(manifest, wrapper, cls=UUIDEncoder)
+                manifest_obj.seek(0)
 
-            tar_info = tarfile.TarInfo(name="manifest.json")
-            tar_info.size = len(manifest_obj_data)
-            tar_info.mtime = datetime.now(timezone.utc).timestamp()
-            tar_info.mode = 0o644
+                tar_info = tarfile.TarInfo(name="manifest.json")
 
-            archive.addfile(tarinfo=tar_info, fileobj=manifest_obj)
+                manifest_obj.seek(0, 2)  # Move to end to get size
+                tar_info.size = manifest_obj.tell()
+                manifest_obj.seek(0)     # Rewind for reading
+
+                tar_info.mtime = datetime.now(timezone.utc).timestamp()
+                tar_info.mode = 0o644
+
+                archive.addfile(tarinfo=tar_info, fileobj=manifest_obj)
+
+            archive.close()
+            archive_obj.seek(0)
             update_download_batch(batch_id, archive_obj)
+
+            batch.status = DownloadStatus.READY
+            session.add(batch)
+            session.commit()
 
         except Exception as e:
             session.rollback()

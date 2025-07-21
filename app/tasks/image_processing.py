@@ -129,7 +129,7 @@ def _validate_image_pre(image_member: tarfile.TarInfo) -> bool:
     """Validate image *before* extracting"""
     return Path(image_member.name).suffix.lower() in config.ALLOWED_IMAGE_EXTENSIONS
 
-def estimate_processing_time(session: Session, batch_id: UUID) -> float:
+def estimate_upload_processing_time(session: Session, batch_id: UUID) -> float:
     """Estimate the time left in processing (in seconds)"""
     batch = session.get(UploadBatch, batch_id)
     if not batch:

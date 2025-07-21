@@ -37,10 +37,10 @@ def get_upload_batch(uuid: UUID) -> BinaryIO:
     return _download_file(str(uuid), config.UPLOAD_BATCHES_BUCKET_NAME)
 
 def update_download_batch(uuid: UUID, new_archive: BinaryIO):
-    _upload_file(new_archive, config.DOWNLOAD_BATCHES_BUCKET_NAME, str(uuid))
+    _upload_file(new_archive, config.DOWNLOAD_BATCHES_BUCKET_NAME, str(uuid) + ".tar.gz")
 
 def get_download_batch(uuid: UUID) -> BinaryIO:
-    return _download_file(str(uuid), config.UPLOAD_BATCHES_BUCKET_NAME)
+    return _download_file(str(uuid) + ".tar.gz", config.UPLOAD_BATCHES_BUCKET_NAME)
 
 def create_image(image: BinaryIO, uuid: UUID):
     if not _init:

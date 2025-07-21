@@ -45,7 +45,6 @@ class UploadBatch(SQLModel, table=True):
     images_total: int = Field(default=0, ge=0)
     capture_time: datetime = Field()
     start_time: datetime | None = Field(default=None)
-    estimated_processing_time_left: int | None = Field(default=None, ge=0)
     error_message: str | None = Field(default=None, max_length=500)
 
 class DownloadBatch(SQLModel, table=True):
@@ -54,12 +53,10 @@ class DownloadBatch(SQLModel, table=True):
     id: UUID | None = Field(default_factory=uuid4, primary_key=True)
     team: int = Field(foreign_key="teams.id")
     status: models.DownloadStatus = Field()
-    file_size: int | None = Field(default=None, ge=0)
     non_match_images: bool = Field(default=True)
     image_count: int = Field(ge=1, le=config.MAX_DOWNLOAD_COUNT)
     annotations: Dict[str, Union[bool, Dict[str, bool]]] = Field(sa_column=Column(JSON))
     start_time: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    estimated_processing_time_left: int | None = Field(default=None, ge=0)
     hash: str | None = Field(default=None)
     error_message: str | None = Field(default=None, max_length=500)
 

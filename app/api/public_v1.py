@@ -43,7 +43,10 @@ from app.models.schemas import (
 from app.services.buckets import create_upload_batch
 from app.services.monitoring import get_uptime
 from app.tasks.download_packaging import create_download_batch
-from app.tasks.image_processing import estimate_processing_time, process_batch_async
+from app.tasks.image_processing import (
+    estimate_upload_processing_time,
+    process_batch_async,
+)
 
 router = APIRouter()
 
@@ -103,8 +106,8 @@ def get_label_info(
 
 # ========== { Auth API } ========== #
 
-@router.get("/status/{batch_id}", tags=["Auth Required",  "Stats"], dependencies=[Depends(RateLimiter(requests_limit=30, time_window=10))])
-def get_batch_status(
+@router.get("/status/upload/{batch_id}", tags=["Auth Required",  "Stats"], dependencies=[Depends(RateLimiter(requests_limit=30, time_window=10))])
+def get_upload_batch_status(
     batch_id: UUID4,
     team: Annotated[Team, Depends(handle_api_key)],
     session: Annotated[Session, Depends(get_session)]
@@ -125,7 +128,7 @@ def get_batch_status(
         images_valid=batch.images_valid,
         images_rejected=batch.images_rejected,
         images_total=batch.images_total,
-        estimated_time_left=estimate_processing_time(session,batch_id),
+        estimated_time_left=estimate_upload_processing_time(session,batch_id),
         error_msg=batch.error_message
     )
     return out
@@ -210,6 +213,33 @@ def upload(
         error_msg=None
     )
 
+@router.get("/status/download/{batch_id}", tags=["Auth Required",  "Stats"], dependencies=[Depends(RateLimiter(requests_limit=30, time_window=10))])
+def get_download_batch_status(
+    batch_id: UUID4,
+    team: Annotated[Team, Depends(handle_api_key)],
+    session: Annotated[Session, Depends(get_session)]
+) -> DownloadStatusOut:
+
+    batch = session.get(DownloadBatch, batch_id)
+    if not batch:
+        raise HTTPException(
+            status_code=404,
+            detail="Batch not found"
+        )
+
+    out = DownloadStatusOut(
+        id=batch_id,
+        team=get_team_number_from_id(batch.team, session),
+        status=batch.status,
+        non_match_images=batch.non_match_images,
+        image_count=batch.image_count,
+        annotations=batch.annotations,
+        start_time=batch.start_time,
+        hash=batch.hash,
+        error_message=batch.error_message
+    )
+    return out
+
 @router.post("/download", tags=["Auth Required"], dependencies=[Depends(RateLimiter(requests_limit=1, time_window=60))])
 def download_batch(
     request: DownloadRequest,
@@ -244,12 +274,10 @@ def download_batch(
             id=batch.id,
             team=batch.team,
             status=batch.status,
-            file_size=batch.file_size,
             non_match_images=batch.non_match_images,
             image_count=batch.image_count,
             annotations=batch.annotations,
             start_time=batch.start_time,
-            estimated_processing_time_left=batch.estimated_processing_time_left,
             hash=batch.hash,
             error_message=batch.error_message
         )

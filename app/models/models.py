@@ -19,8 +19,9 @@ class UploadStatus(Enum):
 
 class DownloadStatus(Enum):
     STARTING = "starting"
-    ASSEMBLING = "assembling"
-    COMPRESSING = "compressing"
+    ASSEMBLING_LABELS = "assembling_labels"
+    ASSEMBLING_IMAGES = "assembling_images"
+    ADDING_MANIFEST = "adding_manifest"
     READY = "ready"
     FAILED = "failed"
 
@@ -66,12 +67,10 @@ class DownloadStatusOut(BaseModel):
     id: UUID | None
     team: int
     status: DownloadStatus
-    file_size: int | None
     non_match_images: bool
     image_count: int | None
     annotations: Dict[str, bool | Dict[str, bool]]
     start_time: datetime
-    estimated_processing_time_left: int | None
     hash: str | None
     error_message: str | None
 
