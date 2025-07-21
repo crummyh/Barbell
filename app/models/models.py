@@ -2,15 +2,12 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import IO, TYPE_CHECKING, List, Optional
+from typing import BinaryIO, Dict, List, Optional
 from uuid import UUID
 
 from fastapi import Response
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, EmailStr
-
-if TYPE_CHECKING:
-    from app.models.schemas import Annotation
 
 # ==========={ Enums & States }=========== #
 
@@ -20,11 +17,24 @@ class UploadStatus(Enum):
     COMPLETED  = "completed"
     FAILED     = "failed"
 
+class DownloadStatus(Enum):
+    STARTING = "starting"
+    ASSEMBLING_LABELS = "assembling_labels"
+    ASSEMBLING_IMAGES = "assembling_images"
+    ADDING_MANIFEST = "adding_manifest"
+    READY = "ready"
+    FAILED = "failed"
+
 class UserRole(Enum):
     DEFAULT     = 0
     TEAM_LEADER = 1
     MODERATOR   = 2
     ADMIN       = 3
+
+class ImageReviewStatus(Enum):
+    APPROVED = "approved"
+    AWAITING_LABELS = "awaiting_labels"
+    NOT_REVIEWED = "not_reviewed"
 
 # ==========={ Responses }=========== #
 
@@ -42,7 +52,7 @@ class TeamStatsOut(BaseModel):
     years_available: set[int]
     upload_batches: int
 
-class StatusOut(BaseModel):
+class UploadStatusOut(BaseModel):
     batch_id: UUID
     team: int
     status: UploadStatus
@@ -53,12 +63,23 @@ class StatusOut(BaseModel):
     estimated_time_left: Optional[float]
     error_msg: Optional[str]
 
+class DownloadStatusOut(BaseModel):
+    id: UUID | None
+    team: int
+    status: DownloadStatus
+    non_match_images: bool
+    image_count: int | None
+    annotations: Dict[str, bool | Dict[str, bool]]
+    start_time: datetime
+    hash: str | None
+    error_message: str | None
+
 # ==========={ Requests }=========== #
 
 class DownloadRequest(BaseModel):
-    labels: list[str]
-    count: tuple[int, int, int] | int # Training / Validation / Testing | Number
-    non_match_images: bool
+    annotations: Dict[str, Dict[str, bool] | bool]
+    count: int
+    non_match_images: bool = True
 
 class NewUserData(BaseModel):
     username: str
@@ -71,7 +92,7 @@ class NewTeamData(BaseModel):
     team_name: str
     leader_username: str
 
-def image_response(file: IO[bytes]) -> Response:
+def image_response(file: BinaryIO) -> Response:
     file.seek(0)
     return StreamingResponse(
         file,
@@ -85,11 +106,11 @@ def image_response(file: IO[bytes]) -> Response:
 
 class ReviewMetadata(BaseModel):
     id: UUID
-    annotations: Optional[List[Annotation]]
+    annotations: List["Annotation"] # Use [] for None
     created_at: datetime
     created_by: int
     batch: UUID
-    reviewed: bool
+    review_status: ImageReviewStatus
 
 # ==========={ Security }=========== #
 
@@ -100,3 +121,8 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     username: Optional[str] = None
     role: Optional[UserRole] = None
+
+# I'm sorry
+from app.models.schemas import Annotation  # noqa: E402
+
+ReviewMetadata.model_rebuild()

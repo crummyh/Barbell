@@ -2,21 +2,22 @@
 
 import tarfile
 from datetime import datetime, timezone
+from io import BytesIO
 from pathlib import Path
-from typing import IO
+from typing import BinaryIO
+from uuid import UUID
 
-from PIL import Image
-from pydantic.types import UUID4
+from PIL import Image as PIL_Image
 from sqlmodel import Session
 
 from app.core import config
 from app.db.database import engine
 from app.models.models import UploadStatus
-from app.models.schemas import PreImage, UploadBatch
+from app.models.schemas import Image, UploadBatch
 from app.services.buckets import create_image, get_upload_batch
 
 
-async def process_batch_async(batch_id: UUID4):
+async def process_batch_async(batch_id: UUID):
 
     with Session(engine) as session:
 
@@ -67,7 +68,7 @@ async def process_batch_async(batch_id: UUID4):
 
                         # Validate the image and add it to the database
                         if _validate_image(image):
-                            image_entry = PreImage(
+                            image_entry = Image(
                                 created_at=batch.capture_time,
                                 created_by=batch.team,
                                 batch=batch_id
@@ -75,7 +76,7 @@ async def process_batch_async(batch_id: UUID4):
                             session.add(image_entry)
                             session.flush()
 
-                            _force_image_format(image)
+                            image = _force_image_format(image)
 
                             assert image_entry.id # The ID is generated, so we assume it exists
                             create_image(image, image_entry.id) # Add the image to S3
@@ -109,15 +110,17 @@ async def process_batch_async(batch_id: UUID4):
         else:
             session.commit()
 
-def _force_image_format(image: IO[bytes]):
-    with Image.open(image) as img:
-        img.save(image, format=config.IMAGE_STORAGE_FORMAT)
+def _force_image_format(image: BinaryIO) -> BytesIO:
+    with PIL_Image.open(image) as img:
+        output = BytesIO()
+        img.save(output, format=config.IMAGE_STORAGE_FORMAT)
+        output.seek(0)
+        return output
 
-def _validate_image(image_path: IO[bytes]) -> bool:
+def _validate_image(image_path: BinaryIO) -> bool:
     """Validate image meets requirements (640x640, etc.)"""
     try:
-        from PIL import Image
-        with Image.open(image_path) as img:
+        with PIL_Image.open(image_path) as img:
             return img.size == (640, 640)
     except Exception:
         return False
@@ -126,7 +129,7 @@ def _validate_image_pre(image_member: tarfile.TarInfo) -> bool:
     """Validate image *before* extracting"""
     return Path(image_member.name).suffix.lower() in config.ALLOWED_IMAGE_EXTENSIONS
 
-def estimate_processing_time(session: Session, batch_id: UUID4) -> float:
+def estimate_upload_processing_time(session: Session, batch_id: UUID) -> float:
     """Estimate the time left in processing (in seconds)"""
     batch = session.get(UploadBatch, batch_id)
     if not batch:

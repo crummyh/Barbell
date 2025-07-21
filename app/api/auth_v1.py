@@ -118,7 +118,7 @@ def verify_email_code(
 
     try:
         user.code = None
-        user.disabled = True
+        user.disabled = False
         session.add(user)
     except Exception:
         session.rollback()
