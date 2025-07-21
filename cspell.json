@@ -5,14 +5,14 @@
     "subapp",
     "venv",
     "fastapi",
-    "slowapi",
     "pydantic",
     "dotenv",
     "redoc",
     "Crum",
     "creds",
     "Annotatable",
-    "preimage"
+    "supercategory",
+    "iscrowd"
   ],
   "flagWords": []
 }

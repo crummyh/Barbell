@@ -55,7 +55,7 @@ def get_stats(session: Annotated[Session, Depends(get_session)]) -> StatsOut:
     Get stats about the entire database
     """
     out = StatsOut(
-        image_count=session.exec(select(func.count()).select_from(Image)).one(),
+        image_count=session.exec(select(func.count()).select_from(Image).where(Image.review_status == ImageReviewStatus.APPROVED)).one(),
         un_reviewed_image_count=session.exec(select(func.count()).select_from(Image).where(Image.review_status != ImageReviewStatus.APPROVED)).one(),
         team_count=session.exec(select(func.count()).select_from(Team)).one(),
         uptime=get_uptime()
@@ -210,13 +210,13 @@ def upload(
         error_msg=None
     )
 
-@router.get("/download", tags=["Auth Required"], dependencies=[Depends(RateLimiter(requests_limit=1, time_window=60))])
+@router.post("/download", tags=["Auth Required"], dependencies=[Depends(RateLimiter(requests_limit=1, time_window=60))])
 def download_batch(
     request: DownloadRequest,
     background_tasks: BackgroundTasks,
     team: Annotated[Team, Depends(handle_api_key)],
     session: Annotated[Session, Depends(get_session)]
-) -> DownloadStatusOut:
+):
     try:
         assert team.id
         batch = DownloadBatch(
@@ -228,7 +228,7 @@ def download_batch(
         )
         session.add(batch)
         session.commit()
-        session.flush()
+        session.refresh(batch)
         assert batch.id
 
     except Exception:
@@ -238,6 +238,7 @@ def download_batch(
         )
 
     else:
+        # return {"id": str(batch.id)}
         background_tasks.add_task(create_download_batch, batch_id=batch.id)
         return DownloadStatusOut(
             id=batch.id,

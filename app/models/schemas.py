@@ -56,7 +56,7 @@ class DownloadBatch(SQLModel, table=True):
     status: models.DownloadStatus = Field()
     file_size: int | None = Field(default=None, ge=0)
     non_match_images: bool = Field(default=True)
-    image_count: int | None = Field(ge=1, le=config.MAX_DOWNLOAD_COUNT)
+    image_count: int = Field(ge=1, le=config.MAX_DOWNLOAD_COUNT)
     annotations: Dict[str, Union[bool, Dict[str, bool]]] = Field(sa_column=Column(JSON))
     start_time: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     estimated_processing_time_left: int | None = Field(default=None, ge=0)
@@ -79,7 +79,7 @@ class Annotation(SQLModel, table=True):
     __tablename__ = "annotations" # type: ignore
 
     id: int | None = Field(default=None, primary_key=True)
-    image_id: int = Field(foreign_key="images.id")
+    image_id: UUID = Field(foreign_key="images.id")
     category_id: int = Field(foreign_key="label_categories.id", index=True)
     iscrowd: bool = Field(default=False)
     area: float | None = Field(default=None)

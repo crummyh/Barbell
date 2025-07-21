@@ -2,15 +2,12 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import IO, TYPE_CHECKING, Dict, List, Optional
+from typing import BinaryIO, Dict, List, Optional
 from uuid import UUID
 
 from fastapi import Response
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, EmailStr
-
-if TYPE_CHECKING:
-    from app.models.schemas import Annotation
 
 # ==========={ Enums & States }=========== #
 
@@ -34,9 +31,9 @@ class UserRole(Enum):
     ADMIN       = 3
 
 class ImageReviewStatus(Enum):
-    APPROVED = 0
-    AWAITING_LABELS = 1
-    NOT_REVIEWED = 2
+    APPROVED = "approved"
+    AWAITING_LABELS = "awaiting_labels"
+    NOT_REVIEWED = "not_reviewed"
 
 # ==========={ Responses }=========== #
 
@@ -96,7 +93,7 @@ class NewTeamData(BaseModel):
     team_name: str
     leader_username: str
 
-def image_response(file: IO[bytes]) -> Response:
+def image_response(file: BinaryIO) -> Response:
     file.seek(0)
     return StreamingResponse(
         file,
@@ -110,7 +107,7 @@ def image_response(file: IO[bytes]) -> Response:
 
 class ReviewMetadata(BaseModel):
     id: UUID
-    annotations: List[Annotation] # Use [] full None
+    annotations: List["Annotation"] # Use [] for None
     created_at: datetime
     created_by: int
     batch: UUID
@@ -125,3 +122,8 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     username: Optional[str] = None
     role: Optional[UserRole] = None
+
+# I'm sorry
+from app.models.schemas import Annotation  # noqa: E402
+
+ReviewMetadata.model_rebuild()

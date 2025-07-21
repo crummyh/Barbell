@@ -2,8 +2,9 @@
 
 import tarfile
 from datetime import datetime, timezone
+from io import BytesIO
 from pathlib import Path
-from typing import IO
+from typing import BinaryIO
 from uuid import UUID
 
 from PIL import Image as PIL_Image
@@ -75,7 +76,7 @@ async def process_batch_async(batch_id: UUID):
                             session.add(image_entry)
                             session.flush()
 
-                            _force_image_format(image)
+                            image = _force_image_format(image)
 
                             assert image_entry.id # The ID is generated, so we assume it exists
                             create_image(image, image_entry.id) # Add the image to S3
@@ -109,11 +110,14 @@ async def process_batch_async(batch_id: UUID):
         else:
             session.commit()
 
-def _force_image_format(image: IO[bytes]):
+def _force_image_format(image: BinaryIO) -> BytesIO:
     with PIL_Image.open(image) as img:
-        img.save(image, format=config.IMAGE_STORAGE_FORMAT)
+        output = BytesIO()
+        img.save(output, format=config.IMAGE_STORAGE_FORMAT)
+        output.seek(0)
+        return output
 
-def _validate_image(image_path: IO[bytes]) -> bool:
+def _validate_image(image_path: BinaryIO) -> bool:
     """Validate image meets requirements (640x640, etc.)"""
     try:
         with PIL_Image.open(image_path) as img:
@@ -125,7 +129,7 @@ def _validate_image_pre(image_member: tarfile.TarInfo) -> bool:
     """Validate image *before* extracting"""
     return Path(image_member.name).suffix.lower() in config.ALLOWED_IMAGE_EXTENSIONS
 
-def estimate_processing_time(session: Session, batch_id: UUID4) -> float:
+def estimate_processing_time(session: Session, batch_id: UUID) -> float:
     """Estimate the time left in processing (in seconds)"""
     batch = session.get(UploadBatch, batch_id)
     if not batch:
