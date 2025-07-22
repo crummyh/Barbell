@@ -1,0 +1,31 @@
+version: "3.10"
+services:
+  web:
+    build: .
+    container_name: frcVisionDataset
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    env_file:
+      - .env
+      - .env.db
+    environment:
+      - DATABASE_URL=postgresql+psycopg2://myuser:mypassword@db:5432/myappdb
+    volumes:
+      - .:/app
+    restart: always
+
+  db:
+    image: postgres:16
+    container_name: postgres-db
+    restart: always
+    env_file:
+      - .env.db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
