@@ -1,10 +1,8 @@
 
 from sqlmodel import Session, SQLModel, create_engine
 
-# PASSWORD IS "testing_pw"
+from app.core.config import DATABASE_URL
 
-DATABASE_URL = "postgresql://postgres:testing_pw@localhost/frc_vision_testing"
-# connect_args = {"check_same_thread": False}
 connect_args = {}
 
 engine = create_engine(DATABASE_URL, echo=True)

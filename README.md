@@ -50,7 +50,11 @@ Notes to self:
 │  ├─── 🐍 models.py             # pydantic models for responses and requests
 │  └─── 🐍 schemas.py            # SQLModel schemas representing tables
 ├── 📁 services/                 # Various services and abstractions
-│  └─── 🐍 buckets.py            # AWS S3 bucket manager
+│  ├── 📁 email/                 # Email stuff
+│  │  ├── 📁 templates/          # Email templates
+│  │  └─── 🐍 email.py           # Email server connection and tasks
+│  ├─── 🐍 buckets.py            # AWS S3 bucket manager
+│  └─── 🐍 monitoring.py         # App status tracking
 ├── 📁 tasks/                    # Asynchronous background tasks
 │  ├─── 🐍 download_packaging.py # Packages images for batch downloading
 │  └─── 🐍 image_processing.py   # Processes images for uploading
@@ -69,7 +73,7 @@ Linux:
 ```bash
 # Pre-requirements
 # * Have git installed
-# * Have Python 3.10+ installed
+# * Have Docker Compose installed
 
 # Setup
 git clone "https://github.com/crummyh/frcVisionDataset.git" # (Or use ssh)
@@ -79,11 +83,23 @@ source .venv/bin/activate
 pip install -r requirements.txt
 chmod +x setup.sh
 ./setup.sh
+
+# Rename .env.db.example to .env.db!!!
+
 # Now start working!
-# To run the app run:
-fastapi dev app/main.py
-# And if you need to send emails run this in a separate window
+
+# To run the app use:
+docker compose up --build
+
+# And if you need to send emails run this in a separate window.
 sudo python3 -m smtpd -c DebuggingServer -n localhost:1025
+
+# To connect to the database use:
+psql -h localhost -p 5432 -U myuser -d myappdb
+
+# To close the app run:
+docker compose down
+
 # When you are done run:
 deactivate
 ```
