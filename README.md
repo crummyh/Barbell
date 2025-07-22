@@ -16,13 +16,9 @@ See [issues](https://github.com/crummyh/frcVisionDataset/issues)
 
 If you are interested in helping, read this then take a look at [issues](https://github.com/crummyh/frcVisionDataset/issues) to see what I am working on.
 
-Notes to self:
-* To access the PostgreSQL database, run `sudo -u postgres psql`
-* Try to use `git pull --rebase` instead of just pull
-
 ### Libraries Used
 
-* Python 3
+* Python 3.10
 * FastAPI
 * SQLModel
 * Jinja
