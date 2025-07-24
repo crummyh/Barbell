@@ -15,6 +15,14 @@ services:
       - .:/app
     restart: always
 
+  frontend:
+    image: node:18
+    working_dir: /frontend
+    volumes:
+      - ./frontend:/frontend
+    command: >
+      npx sass scss/custom.scss ../app/web/static/css/custom.css
+
   db:
     image: postgres:16
     container_name: postgres-db
