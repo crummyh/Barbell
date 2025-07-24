@@ -36,7 +36,7 @@
 <nav class="navbar navbar-expand-lg navbar-primary navbar-dark bg-primary">
     <div class="container-xxl">
         <a href="/" class="navbar-brand">
-            <span class="fw-bold text-light">App Name</span>
+            <span class="fw-bold text-light-emphasis">App Name</span>
         </a>
         <!-- Toggle for mobile nav -->
         <button
@@ -56,7 +56,7 @@
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item dropdown">
                     <a
-                        class="nav-link dropdown-toggle"
+                        class="nav-link dropdown-toggle text-light"
                         href="#"
                         role="button"
                         data-bs-toggle="dropdown"
@@ -66,16 +66,20 @@
                     </a>
                     <ul class="dropdown-menu">
                         <li>
-                            <a class="dropdown-item" href="/docs">Main Docs</a>
+                            <a class="dropdown-item text-light" href="/docs"
+                                >Main Docs</a
+                            >
                         </li>
                         <li><hr class="dropdown-divider" /></li>
                         <li>
-                            <a class="dropdown-item" href="/docs/tools"
+                            <a
+                                class="dropdown-item text-light"
+                                href="/docs/tools"
                                 >Tool Docs</a
                             >
                         </li>
                         <li>
-                            <a class="dropdown-item" href="/docs/api"
+                            <a class="dropdown-item text-light" href="/docs/api"
                                 >API Docs</a
                             >
                         </li>
@@ -90,12 +94,13 @@
                         type="button"
                         title="Toggle theme"
                         aria-label="Toggle theme"
+                        style="margin-top: 3px"
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             aria-hidden="true"
-                            width="1em"
-                            height="1em"
+                            width="24px"
+                            height="24px"
                             fill="currentColor"
                             stroke-linecap="round"
                             class="theme-toggle__classic"
@@ -121,12 +126,10 @@
                     </button>
                 </li>
                 <li class="nav-item">
-                    <div class="btn-group" role="group">
-                        <a href="/login" class="btn btn-outline-light">Login</a>
-                        <a href="/register" class="btn btn-outline-light"
-                            >Register</a
-                        >
-                    </div>
+                    <a href="/login" class="nav-link text-white" nav>Log In</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/register" class="nav-link text-white">Register</a>
                 </li>
             </ul>
         </div>

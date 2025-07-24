@@ -1,6 +1,6 @@
 .theme-toggle,
 .theme-toggle-item {
-    color: rgba(255, 255, 255, 0.55);
+    color: var(255, 255, 255, 1);
 }
 .theme-toggle :hover,
 .theme-toggle-item :hover {
