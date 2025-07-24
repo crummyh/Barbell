@@ -68,7 +68,6 @@ async def labeling(request: Request):
 
 # ========== { Docs } ========== #
 
-
 @router.get("/docs", response_class=HTMLResponse)
 async def docs(request: Request):
     return templates.TemplateResponse(
@@ -80,4 +79,11 @@ async def docs(request: Request):
 async def tool_docs(request: Request):
     return templates.TemplateResponse(
         request=request, name="tool-docs.html", context={}
+    )
+
+# ========== { Other } ========== #
+
+def not_found_page(request: Request):
+    return templates.TemplateResponse(
+        request=request, name="404.html", context={}
     )
