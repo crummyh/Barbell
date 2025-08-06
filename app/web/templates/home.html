@@ -1,4 +1,41 @@
-{% extends "base-page.html" %} {% block title %}App Name{% endblock %} {% block
-content %}
-<div>content goes here</div>
-{% endblock %}
+{% extends "base-page.html" %} {% set content_classes = "p-0" %} {% block title
+%}App Name{% endblock %} {% block content %}
+<style>
+    section {
+        padding: 60px 0;
+    }
+    .vh-100-nonav {
+        height: calc(100vh - 56px) !important;
+    }
+    .bg-image {
+        background-image: url(https://placehold.co/2560x1440/212529/dee2e6);
+        background-position: center;
+    }
+</style>
+<section id="intro" class="bg-image">
+    <div class="container-lg">
+        <div class="row justify-content-center vh-100 align-items-center">
+            <div class="col-md-8 text-center">
+                <h1>
+                    <div class="display-2">App name</div>
+                    <div class="display-5 text-muted">Lorem ipsum dolor.</div>
+                </h1>
+                <p class="lead my-4 text-musted">
+                    Lorem ipsum dolor sit amet, consectetur adipisicing elit.
+                </p>
+                <a href="#section-2" class="btn btn-secondary btn-lg"
+                    >Quick Start</a
+                >
+            </div>
+        </div>
+    </div>
+    <!-- </section>
+<section id="section-2">
+    <div
+        class="container d-flex align-items-center justify-content-center min-vh-100 bg-primary"
+    >
+        <h1 class="display-1">Section 2</h1>
+    </div>
+</section> -->
+    {% endblock %}
+</section>

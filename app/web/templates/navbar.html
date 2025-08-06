@@ -1,39 +1,6 @@
-<!-- <nav class="navbar navbar-expand-lg bg-body-tertiary">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="#">Name</a>
-        <button
-            class="navbar-toggler"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#navbarSupportedContent"
-            aria-controls="navbarSupportedContent"
-            aria-expanded="false"
-            aria-label="Toggle navigation"
-        >
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="#"
-                        >Home</a
-                    >
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/docs">Docs</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/docs">Github</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/docs">Sign In</a>
-                </li>
-            </ul>
-        </div>
-    </div>
-</nav> -->
-
-<nav class="navbar navbar-expand-lg navbar-primary navbar-dark bg-primary">
+<nav
+    class="navbar navbar-expand-lg navbar-primary navbar-dark bg-primary fixed-top"
+>
     <div class="container-xxl">
         <a href="/" class="navbar-brand">
             <span class="fw-bold text-light-emphasis">App Name</span>
@@ -87,43 +54,128 @@
                 </li>
             </ul>
             <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                <li class="nav-item theme-toggle-item justify-content-end">
+                <li class="nav-item dropdown">
                     <button
-                        class="btn theme-toggle"
+                        class="btn btn-link nav-link dropdown-toggle d-flex align-items-center py-2"
                         id="bd-theme"
                         type="button"
-                        title="Toggle theme"
-                        aria-label="Toggle theme"
-                        style="margin-top: 3px"
+                        aria-expanded="false"
+                        data-bs-toggle="dropdown"
+                        data-bs-display="static"
+                        aria-label="Toggle theme (dark)"
+                        style="padding-top: 13px"
+                    >
+                        <iconify-icon
+                            icon="bi:moon-stars-fill"
+                            width="16"
+                            height="16"
+                            aria-hidden="true"
+                            class="theme-icon-active"
+                        ></iconify-icon>
+                        <span class="d-lg-none ms-2" id="bd-theme-text"
+                            >Toggle theme</span
+                        >
+                    </button>
+                    <ul
+                        class="dropdown-menu dropdown-menu-end"
+                        aria-labelledby="bd-theme-text"
+                    >
+                        <li>
+                            <button
+                                type="button"
+                                class="dropdown-item d-flex align-items-center"
+                                data-bs-theme-value="light"
+                                aria-pressed="false"
+                            >
+                                <iconify-icon
+                                    icon="bi:sun-fill"
+                                    width="16"
+                                    height="16"
+                                    aria-hidden="true"
+                                    class="me-2"
+                                ></iconify-icon>
+                                Light
+                                <iconify-icon
+                                    icon="bi:check2"
+                                    width="16"
+                                    height="16"
+                                    aria-hidden="true"
+                                    class="bi d-none ms-auto"
+                                ></iconify-icon>
+                            </button>
+                        </li>
+                        <li>
+                            <button
+                                type="button"
+                                class="dropdown-item d-flex align-items-center active"
+                                data-bs-theme-value="dark"
+                                aria-pressed="true"
+                            >
+                                <iconify-icon
+                                    icon="bi:moon-stars-fill"
+                                    width="16"
+                                    height="16"
+                                    aria-hidden="true"
+                                    class="me-2"
+                                ></iconify-icon>
+                                Dark
+                                <iconify-icon
+                                    icon="bi:check2"
+                                    width="16"
+                                    height="16"
+                                    aria-hidden="true"
+                                    class="bi d-none ms-auto"
+                                ></iconify-icon>
+                            </button>
+                        </li>
+                        <li>
+                            <button
+                                type="button"
+                                class="dropdown-item d-flex align-items-center"
+                                data-bs-theme-value="auto"
+                                aria-pressed="false"
+                            >
+                                <iconify-icon
+                                    icon="bi:circle-half"
+                                    width="16"
+                                    height="16"
+                                    aria-hidden="true"
+                                    class="me-2"
+                                ></iconify-icon>
+                                Auto
+                                <iconify-icon
+                                    icon="bi:check2"
+                                    width="16"
+                                    height="16"
+                                    aria-hidden="true"
+                                    class="bi d-none ms-auto"
+                                ></iconify-icon>
+                            </button>
+                        </li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a
+                        class="nav-link"
+                        href="https://github.com/crummyh/frcVisionDataset"
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
-                            aria-hidden="true"
-                            width="24px"
-                            height="24px"
-                            fill="currentColor"
-                            stroke-linecap="round"
-                            class="theme-toggle__classic"
-                            viewBox="0 0 32 32"
+                            viewBox="0 0 512 499.36"
+                            role="img"
+                            class="navbar-nav-svg"
+                            height="16"
+                            width="16"
                         >
-                            <clipPath id="theme-toggle__classic__cutout">
-                                <path d="M0-5h30a1 1 0 0 0 9 13v24H0Z" />
-                            </clipPath>
-                            <g clip-path="url(#theme-toggle__classic__cutout)">
-                                <circle cx="16" cy="16" r="9.34" />
-                                <g stroke="currentColor" stroke-width="1.5">
-                                    <path d="M16 5.5v-4" />
-                                    <path d="M16 30.5v-4" />
-                                    <path d="M1.5 16h4" />
-                                    <path d="M26.5 16h4" />
-                                    <path d="m23.4 8.6 2.8-2.8" />
-                                    <path d="m5.7 26.3 2.9-2.9" />
-                                    <path d="m5.8 5.8 2.8 2.8" />
-                                    <path d="m23.4 23.4 2.9 2.9" />
-                                </g>
-                            </g>
+                            <title>GitHub</title>
+                            <path
+                                fill="currentColor"
+                                fill-rule="evenodd"
+                                d="M256 0C114.64 0 0 114.61 0 256c0 113.09 73.34 209 175.08 242.9 12.8 2.35 17.47-5.56 17.47-12.34 0-6.08-.22-22.18-.35-43.54-71.2 15.49-86.2-34.34-86.2-34.34-11.64-29.57-28.42-37.45-28.42-37.45-23.27-15.84 1.73-15.55 1.73-15.55 25.69 1.81 39.21 26.38 39.21 26.38 22.84 39.12 59.92 27.82 74.5 21.27 2.33-16.54 8.94-27.82 16.25-34.22-56.84-6.43-116.6-28.43-116.6-126.49 0-27.95 10-50.8 26.35-68.69-2.63-6.48-11.42-32.5 2.51-67.75 0 0 21.49-6.88 70.4 26.24a242.65 242.65 0 0 1 128.18 0c48.87-33.13 70.33-26.24 70.33-26.24 14 35.25 5.18 61.27 2.55 67.75 16.41 17.9 26.31 40.75 26.31 68.69 0 98.35-59.85 120-116.88 126.32 9.19 7.9 17.38 23.53 17.38 47.41 0 34.22-.31 61.83-.31 70.23 0 6.85 4.61 14.81 17.6 12.31C438.72 464.97 512 369.08 512 256.02 512 114.62 397.37 0 256 0z"
+                            ></path>
                         </svg>
-                    </button>
+                        <small class="d-lg-none ms-2">GitHub</small>
+                    </a>
                 </li>
                 <li class="nav-item">
                     <a href="/login" class="nav-link text-white" nav>Log In</a>
@@ -135,4 +187,4 @@
         </div>
     </div>
 </nav>
-<script src="static/js/theme-toggle.js"></script>
+<script src="/static/js/theme-toggle.js"></script>

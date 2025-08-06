@@ -1,4 +1,50 @@
-{% extends "base-page.html" %} {% block title %}Login{% endblock %} {% block
-content %}
-<div>content goes here</div>
+{% extends "base-page.html" %} {% set navbar = false %} {% block title %}Login{%
+endblock %} {% block content %}
+
+<style>
+    .size-till-small {
+        width: 100%;
+    }
+    @media screen and (width >= 576px) {
+        .size-till-small {
+            width: 24rem;
+            margin: 0 auto;
+            box-sizing: border-box;
+        }
+    }
+</style>
+
+<div class="container content-center">
+    <div class="size-till-small justify-content-center mt-5">
+        <img
+            src="/static/images/logo.svg"
+            alt=""
+            width="64px"
+            class="mb-3 d-block mx-auto"
+        />
+        <h3 class="text-center">Sign in to App</h3>
+        <form class="d-grid gap-2">
+            <div class="mb-3 mt-t">
+                <label for="emailInput" class="form-label">Email address</label>
+                <input
+                    type="email"
+                    class="form-control"
+                    id="emailInput"
+                    aria-describedby="emailHelp"
+                />
+            </div>
+            <div class="mb-3">
+                <div class="d-flex justify-content-between">
+                    <label for="pwInput" class="form-label">Password</label>
+                    <a href="#" class="text-muted small text-decoration-none"
+                        >Forgot?</a
+                    >
+                </div>
+                <input type="password" class="form-control" id="pwInput" />
+            </div>
+            <button type="submit" class="btn btn-primary mb-2">Sign in</button>
+        </form>
+    </div>
+</div>
+
 {% endblock %}

@@ -2,8 +2,6 @@
  * Color mode toggler for Bootstrap's docs (https://getbootstrap.com/)
  * Copyright 2011-2025 The Bootstrap Authors
  * Licensed under the Creative Commons Attribution 3.0 Unported License.
- *
- * Modified by Elijah Crum
  */
 
 (() => {
@@ -36,24 +34,39 @@
     }
   };
 
-  const getOppositeTheme = (theme) => {
-    if (theme === "dark") {
-      return "light";
+  setTheme(getPreferredTheme());
+
+  const showActiveTheme = (theme, focus = false) => {
+    const themeSwitcher = document.querySelector("#bd-theme");
+
+    if (!themeSwitcher) {
+      return;
     }
-    if (theme === "light") {
-      return "dark";
-    } else {
-      theme = getPreferredTheme();
-      if (theme === "dark") {
-        return "light";
-      }
-      if (theme === "light") {
-        return "dark";
-      }
+
+    const themeSwitcherText = document.querySelector("#bd-theme-text");
+    const activeThemeIcon = document.querySelector(".theme-icon-active");
+    const btnToActive = document.querySelector(
+      `[data-bs-theme-value="${theme}"]`,
+    );
+    const svgOfActiveBtn = btnToActive
+      .querySelector("iconify-icon")
+      .getAttribute("icon");
+
+    document.querySelectorAll("[data-bs-theme-value]").forEach((element) => {
+      element.classList.remove("active");
+      element.setAttribute("aria-pressed", "false");
+    });
+
+    btnToActive.classList.add("active");
+    btnToActive.setAttribute("aria-pressed", "true");
+    activeThemeIcon.setAttribute("icon", svgOfActiveBtn);
+    const themeSwitcherLabel = `${themeSwitcherText.textContent} (${btnToActive.dataset.bsThemeValue})`;
+    themeSwitcher.setAttribute("aria-label", themeSwitcherLabel);
+
+    if (focus) {
+      themeSwitcher.focus();
     }
   };
-
-  setTheme(getPreferredTheme());
 
   window
     .matchMedia("(prefers-color-scheme: dark)")
@@ -65,17 +78,15 @@
     });
 
   window.addEventListener("DOMContentLoaded", () => {
-    const toggle = document.getElementById("bd-theme");
-    if (getPreferredTheme() === "dark") {
-      toggle.classList.add("theme-toggle--toggled");
-    }
-    toggle.addEventListener("click", () => {
-      const theme = getOppositeTheme(
-        toggle.getAttribute("data-bs-theme-value"),
-      );
-      toggle.classList.toggle("theme-toggle--toggled");
-      setStoredTheme(theme);
-      setTheme(theme);
+    showActiveTheme(getPreferredTheme());
+
+    document.querySelectorAll("[data-bs-theme-value]").forEach((toggle) => {
+      toggle.addEventListener("click", () => {
+        const theme = toggle.getAttribute("data-bs-theme-value");
+        setStoredTheme(theme);
+        setTheme(theme);
+        showActiveTheme(theme, true);
+      });
     });
   });
 })();

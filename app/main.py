@@ -20,7 +20,7 @@ async def lifespan(app: FastAPI):
     yield
 
 description = """
-Docs and stuff goes here!!!
+I need to put docs and stuff here
 """
 
 tags_metadata = [
