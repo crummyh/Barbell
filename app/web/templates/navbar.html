@@ -5,7 +5,7 @@
     }
 </style>
 <nav
-    class="navbar navbar-expand-lg navbar-primary navbar-dark bg-primary fixed-top"
+    class="navbar navbar-expand-lg navbar-primary navbar-dark bg-primary sticky-top"
 >
     <div class="container-xxl">
         <a href="/" class="navbar-brand">
@@ -172,30 +172,57 @@
                     <a href="/register" class="nav-link text-white">Register</a>
                 </li>
                 {% else %}
-                <button
-                    class="btn btn-link nav-link dropdown-toggle d-flex align-items-center py-2 px-2"
-                    type="button"
-                    aria-expanded="false"
-                    data-bs-toggle="dropdown"
-                    data-bs-display="static"
-                >
-                    <iconify-icon
-                        icon="bi:person-circle"
-                        width="16"
-                        height="16"
-                    ></iconify-icon>
-                </button>
-                <span class="d-lg-none ms-2">Account</span>
-                <ul class="dropdown-menu">
-                    <li>
-                        <a href="account" class="dropdown-item">My Account</a>
-                    </li>
-                    <li>
-                        <a href="#" class="dropdown-item" id="logoutLink"
-                            >Logout</a
-                        >
-                    </li>
-                </ul>
+                <div class="dropdown">
+                    <button
+                        class="btn btn-link nav-link dropdown-toggle d-flex align-items-center py-2 px-2"
+                        type="button"
+                        aria-expanded="false"
+                        data-bs-toggle="dropdown"
+                        data-bs-display="static"
+                    >
+                        <iconify-icon
+                            icon="bi:person-circle"
+                            width="16"
+                            height="16"
+                        ></iconify-icon>
+                    </button>
+                    <span class="d-lg-none ms-2">Account</span>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a href="/account" class="dropdown-item"
+                                ><iconify-icon
+                                    icon="bi:person-circle"
+                                    width="16"
+                                    height="16"
+                                    class="me-2"
+                                ></iconify-icon
+                                >My Account</a
+                            >
+                        </li>
+                        <li>
+                            <a href="/dashboard" class="dropdown-item"
+                                ><iconify-icon
+                                    icon="bi:display-fill"
+                                    width="16"
+                                    height="16"
+                                    class="me-2"
+                                ></iconify-icon
+                                >Dashboard</a
+                            >
+                        </li>
+                        <li>
+                            <a href="#" class="dropdown-item" id="logoutLink"
+                                ><iconify-icon
+                                    icon="bi:box-arrow-in-left"
+                                    width="16"
+                                    height="16"
+                                    class="me-2"
+                                ></iconify-icon
+                                >Logout</a
+                            >
+                        </li>
+                    </ul>
+                </div>
                 <script>
                     document
                         .getElementById("logoutLink")

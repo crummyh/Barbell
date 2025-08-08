@@ -1,4 +1,106 @@
-{% extends "base-page.html" %} {% block title %}Dashboard{% endblock %} {% block
+{% extends "base-page.html" %} {% set content_padding = "" %} {% set page_numb =
+page_numb | default(0) %} {% block title %}Dashboard{% endblock %} {% block
 content %}
-<div>todo</div>
+
+<div class="container-fluid vh-100 bg-body-secondary">
+    {% block dashboard %}{% endblock %}
+</div>
+
+{% endblock %} {% block post_content %}
+
+<style>
+    .nav-pills {
+        --bs-nav-pills-link-active-bg: var(--bs-secondary-bg);
+    }
+    .nav-link.active {
+        border-top-left-radius: 0px;
+        border-top-right-radius: 0px;
+    }
+</style>
+<ul class="nav nav-pills nav-fill sticky-bottom pb-2 px-2 bg-body">
+    <li class="nav-item">
+        <a
+            class="nav-link {% if page_numb == 0 %}active{% endif %}"
+            aria-current="page"
+            href="/dashboard"
+            ><iconify-icon
+                class="me-2 mt-2"
+                icon="bi:house-door-fill"
+                width="16"
+                height="16"
+            ></iconify-icon
+            >Home</a
+        >
+    </li>
+    <li class="nav-item">
+        <a
+            class="nav-link {% if page_numb == 1 %}active{% endif %}"
+            aria-current="page"
+            href="/dashboard/users"
+            ><iconify-icon
+                class="me-2 mt-2"
+                icon="bi:people-fill"
+                width="16"
+                height="16"
+            ></iconify-icon
+            >Users</a
+        >
+    </li>
+    <li class="nav-item">
+        <a
+            class="nav-link {% if page_numb == 2 %}active{% endif %}"
+            aria-current="page"
+            href="/dashboard/images"
+            ><iconify-icon
+                class="me-2 mt-2"
+                icon="bi:images"
+                width="16"
+                height="16"
+            ></iconify-icon
+            >Images</a
+        >
+    </li>
+    <li class="nav-item">
+        <a
+            class="nav-link {% if page_numb == 3 %}active{% endif %}"
+            aria-current="page"
+            href="/dashboard/upload"
+            ><iconify-icon
+                class="me-2 mt-2"
+                icon="bi:cloud-upload-fill"
+                width="16"
+                height="16"
+            ></iconify-icon
+            >Upload</a
+        >
+    </li>
+    <li class="nav-item">
+        <a
+            class="nav-link {% if page_numb == 4 %}active{% endif %}"
+            aria-current="page"
+            href="/dashboard/download"
+            ><iconify-icon
+                class="me-2 mt-2"
+                icon="bi:cloud-download-fill"
+                width="16"
+                height="16"
+            ></iconify-icon
+            >Download</a
+        >
+    </li>
+    <li class="nav-item">
+        <a
+            class="nav-link {% if page_numb == 5 %}active{% endif %}"
+            aria-current="page"
+            href="/dashboard/settings"
+            ><iconify-icon
+                class="me-2 mt-2"
+                icon="bi:gear-fill"
+                width="16"
+                height="16"
+            ></iconify-icon
+            >Settings</a
+        >
+    </li>
+</ul>
 {% endblock %}

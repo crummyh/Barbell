@@ -103,9 +103,7 @@ async def dashboard(
     session: Annotated[Session, Depends(get_session)],
     user: User | None = Depends(get_current_user)
 ):
-    print("USER IS OPENING DASHBOARD")
     if user is None:
-        print("USER IS NONE")
         return RedirectResponse("/login")
 
     user_out = UserOut(
@@ -118,7 +116,117 @@ async def dashboard(
     )
 
     return templates.TemplateResponse(
-        request=request, name="dashboard.html", context={"user": user_out}
+        request=request, name="dashboard-home.html", context={"user": user_out}
+    )
+
+@router.get("/dashboard/images", response_class=HTMLResponse)
+async def dashboard_images(
+    request: Request,
+    session: Annotated[Session, Depends(get_session)],
+    user: User | None = Depends(get_current_user)
+):
+    if user is None:
+        return RedirectResponse("/login")
+
+    user_out = UserOut(
+        username=user.username,
+        email=user.email,
+        disabled=user.disabled,
+        created_at=user.created_at,
+        team_number=get_team_number_from_id(user.team, session),
+        role=user.role
+    )
+
+    return templates.TemplateResponse(
+        request=request, name="dashboard-images.html", context={"user": user_out}
+    )
+
+@router.get("/dashboard/upload", response_class=HTMLResponse)
+async def dashboard_upload(
+    request: Request,
+    session: Annotated[Session, Depends(get_session)],
+    user: User | None = Depends(get_current_user)
+):
+    if user is None:
+        return RedirectResponse("/login")
+
+    user_out = UserOut(
+        username=user.username,
+        email=user.email,
+        disabled=user.disabled,
+        created_at=user.created_at,
+        team_number=get_team_number_from_id(user.team, session),
+        role=user.role
+    )
+
+    return templates.TemplateResponse(
+        request=request, name="dashboard-upload.html", context={"user": user_out}
+    )
+
+@router.get("/dashboard/download", response_class=HTMLResponse)
+async def dashboard_download(
+    request: Request,
+    session: Annotated[Session, Depends(get_session)],
+    user: User | None = Depends(get_current_user)
+):
+    if user is None:
+        return RedirectResponse("/login")
+
+    user_out = UserOut(
+        username=user.username,
+        email=user.email,
+        disabled=user.disabled,
+        created_at=user.created_at,
+        team_number=get_team_number_from_id(user.team, session),
+        role=user.role
+    )
+
+    return templates.TemplateResponse(
+        request=request, name="dashboard-download.html", context={"user": user_out}
+    )
+
+@router.get("/dashboard/settings", response_class=HTMLResponse)
+async def dashboard_settings(
+    request: Request,
+    session: Annotated[Session, Depends(get_session)],
+    user: User | None = Depends(get_current_user)
+):
+    if user is None:
+        return RedirectResponse("/login")
+
+    user_out = UserOut(
+        username=user.username,
+        email=user.email,
+        disabled=user.disabled,
+        created_at=user.created_at,
+        team_number=get_team_number_from_id(user.team, session),
+        role=user.role
+    )
+
+    return templates.TemplateResponse(
+        request=request, name="dashboard-settings.html", context={"user": user_out}
+    )
+
+@router.get("/dashboard/users", response_class=HTMLResponse)
+async def dashboard_users(
+    request: Request,
+    session: Annotated[Session, Depends(get_session)],
+    user: User | None = Depends(get_current_user)
+):
+    if user is None:
+        return RedirectResponse("/login")
+
+    user_out = UserOut(
+        username=user.username,
+        email=user.email,
+        disabled=user.disabled,
+        created_at=user.created_at,
+        team_number=get_team_number_from_id(user.team, session),
+        role=user.role
+    )
+
+    return templates.TemplateResponse(
+        request=request, name="dashboard-users.html", context={"user": user_out}
     )
 
 @router.get("/account", response_class=HTMLResponse)
