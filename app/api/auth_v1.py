@@ -53,9 +53,9 @@ async def read_users_me(
 ):
     return current_user
 
-@router.post("/register/user", dependencies=[Depends(RateLimiter(requests_limit=1, time_window=10))])
+@router.post("/register", dependencies=[Depends(RateLimiter(requests_limit=1, time_window=10))])
 def register_user(
-    new_user: Annotated[NewUserData, Query()],
+    new_user: NewUserData,
     session: Annotated[Session, Depends(get_session)]
 ):
     if new_user.team:

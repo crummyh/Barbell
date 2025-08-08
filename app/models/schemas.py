@@ -13,9 +13,9 @@ class User(SQLModel, table=True):
     __tablename__ = "users" # type: ignore
 
     id: int | None = Field(default=None, primary_key=True)
-    username: str = Field(index=True, max_length=config.MAX_USERNAME_LEN)
+    username: str = Field(index=True, max_length=config.MAX_USERNAME_LEN, min_length=config.MIN_USERNAME_LEN)
     email: EmailStr | None = Field(default=None, unique=True, nullable=True)
-    password: str | None = Field(default=None, max_length=config.MAX_PASSWORD_LENGTH)
+    password: str | None = Field(default=None, max_length=config.MAX_PASSWORD_LENGTH, min_length=config.MIN_PASSWORD_LENGTH)
     disabled: bool = Field(default=True)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     team: int | None = Field(default=None, foreign_key="teams.id", index=True)

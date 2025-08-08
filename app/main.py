@@ -62,7 +62,7 @@ app.mount("/static", StaticFiles(directory="app/web/static"), name="static")
 app.mount("/internal", internal_v1.subapp) # TODO: Disable docs
 app.include_router(public_v1.router, prefix="/api/v1")
 app.include_router(web.router, include_in_schema=False)
-app.include_router(auth_v1.router)
+app.include_router(auth_v1.router, prefix="/auth/v1")
 
 @app.get("/docs/api", include_in_schema=False)
 def overridden_swagger():
@@ -88,7 +88,8 @@ def not_found_error(request: Request, exc: HTTPException):
 
 @app.exception_handler(404)
 def not_found_exception_handler(request: Request, exc: HTTPException):
-    if "api" in str(request.url).replace(str(request.base_url),""):
+    path = str(request.url).replace(str(request.base_url),"")
+    if "api" in path or "auth" in path:
         return not_found_error(request, exc)
     else:
         return web.not_found_page(request=request)

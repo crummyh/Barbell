@@ -1,0 +1,22 @@
+<mjml>
+    <mj-head>
+        <mj-font
+            name="Armata"
+            href="https://fonts.googleapis.com/css2?family=Armata&display=swap"
+        />
+    </mj-head>
+    <mj-body>
+        <mj-section>
+            <mj-column>
+                <mj-divider border-color="#157a83"></mj-divider>
+
+                <mj-text
+                    font-size="20px"
+                    color="#157a83"
+                    font-family="Armata, Arial"
+                    >{{ code }}</mj-text
+                >
+            </mj-column>
+        </mj-section>
+    </mj-body>
+</mjml>

@@ -23,7 +23,8 @@ endblock %} {% block content %}
             class="mb-3 d-block mx-auto"
         />
         <h3 class="text-center">Sign in to App</h3>
-        <form class="d-grid gap-2">
+        <div id="errorPlaceholder"></div>
+        <form id="loginForm" class="d-grid gap-2">
             <div class="mb-3 mt-t">
                 <label for="emailInput" class="form-label">Email address</label>
                 <input
@@ -44,7 +45,15 @@ endblock %} {% block content %}
             </div>
             <button type="submit" class="btn btn-primary mb-2">Sign in</button>
         </form>
+        <div class="d-flex">
+            <a
+                href="/register"
+                class="small text-muted mx-auto text-decoration-none"
+                >Don't have an account?</a
+            >
+        </div>
     </div>
 </div>
+<script src="/static/js/login.js"></script>
 
 {% endblock %}

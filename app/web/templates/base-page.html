@@ -33,7 +33,7 @@ navbar | default(true) %}
 
         <main
             id="content"
-            class="my-auto {{ contemt_padding }}{{ custom_content_styles }}"
+            class="my-auto {{ content_padding }}{{ custom_content_styles }}"
         >
             {% block content %}{% endblock %}
         </main>
@@ -44,5 +44,6 @@ navbar | default(true) %}
             crossorigin="anonymous"
         ></script>
         <script src="https://code.iconify.design/iconify-icon/3.0.0/iconify-icon.min.js"></script>
+        {% block fileEnd %}{% endblock %} {{ fileEnd }}
     </body>
 </html>

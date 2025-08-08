@@ -1,4 +1,111 @@
-{% extends "base-page.html" %} {% block title %}Register{% endblock %} {% block
-content %}
-<div>content goes here</div>
+{% extends "base-page.html" %} {% set navbar = false %} {% block title %}Login{%
+endblock %} {% block content %}
+
+<style>
+    .size-till-small {
+        width: 100%;
+    }
+    @media screen and (width >= 576px) {
+        .size-till-small {
+            width: 24rem;
+            margin: 0 auto;
+            box-sizing: border-box;
+        }
+    }
+</style>
+
+<div class="container content-center">
+    <div class="size-till-small justify-content-center mt-5">
+        <img
+            src="/static/images/logo.svg"
+            alt=""
+            width="64px"
+            class="mb-3 d-block mx-auto"
+        />
+        <h3 class="text-center">Create Account</h3>
+        <div id="errorPlaceholder"></div>
+        <form class="d-grid gap-2" id="registerForm">
+            <div class="mb-3 mt-t">
+                <label for="emailInput" class="form-label">Email address</label>
+                <input
+                    type="email"
+                    class="form-control"
+                    id="emailInput"
+                    aria-describedby="emailHelp"
+                    required
+                />
+            </div>
+            <div class="mb-3">
+                <div class="d-flex justify-content-between">
+                    <label for="usernameInput" class="form-label"
+                        >Username</label
+                    >
+                    <div class="text-muted small text-decoration-none">
+                        3-50 characters
+                    </div>
+                </div>
+                <input
+                    type="text"
+                    class="form-control"
+                    id="usernameInput"
+                    aria-describedby="usernameHelp"
+                    required
+                    minlength="3"
+                    maxlength="50"
+                />
+            </div>
+            <div class="mb-3">
+                <div class="d-flex justify-content-between">
+                    <label for="pwInput" class="form-label">Password</label>
+                    <div class="text-muted small text-decoration-none">
+                        5-128 characters
+                    </div>
+                </div>
+                <input
+                    type="password"
+                    class="form-control"
+                    id="pwInput"
+                    aria-describedby="passwordHelp"
+                    required
+                    minlength="5"
+                    maxlength="128"
+                />
+            </div>
+            <div class="mb-3 form-check d-flex justify-content-between">
+                <input
+                    class="form-check-input"
+                    type="checkbox"
+                    value=""
+                    id="checkDefault"
+                    required
+                />
+                <label class="form-check-label" for="checkDefault">
+                    I am over 13 years old
+                </label>
+                <a
+                    href="#"
+                    data-bs-toggle="tooltip"
+                    data-bs-title="This is due to the Children's Online Privacy Protection Act's requirements. If you have an issue, email me."
+                >
+                    <iconify-icon
+                        icon="bi:info-circle-fill"
+                        width="16"
+                        height="16"
+                    ></iconify-icon
+                ></a>
+            </div>
+            <button type="submit" class="btn btn-primary mb-2">
+                Create Account
+            </button>
+        </form>
+        <div class="d-flex small text-muted mx-auto">
+            By creating an account, you agree to the Terms of Service. We'll
+            occasionally send you account-related emails.
+        </div>
+    </div>
+</div>
+<script src="/static/js/register.js"></script>
+
+{% endblock %} {% block fileEnd %}
+<script src="/static/js/tooltips.js"></script>
 {% endblock %}

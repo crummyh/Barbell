@@ -46,10 +46,10 @@ async def dashboard(request: Request):
         request=request, name="dashboard.html", context={}
     )
 
-@router.get("/acount", response_class=HTMLResponse)
-async def acount(request: Request):
+@router.get("/account", response_class=HTMLResponse)
+async def account(request: Request):
     return templates.TemplateResponse(
-        request=request, name="acount.html", context={}
+        request=request, name="account.html", context={}
     )
 
 # ========== { Internal Pages } ========== #

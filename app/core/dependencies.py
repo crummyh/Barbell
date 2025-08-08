@@ -70,7 +70,9 @@ def authenticate_user(
 ) -> Optional[User]:
     user = session.exec(select(User).where(User.username == username)).one_or_none()
     if not user:
-        return None
+        user = session.exec(select(User).where(User.email == username)).one_or_none()
+        if not user:
+            return None
     assert user.password
     if not verify_password(password, user.password):
         return None

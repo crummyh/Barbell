@@ -205,3 +205,4 @@ test_stuff.py
 frontend/node_modules
 app/static/css/custom.css
 frontend/scss/*.css
+app/services/email/templates/*.html
