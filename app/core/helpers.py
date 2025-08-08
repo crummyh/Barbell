@@ -19,11 +19,16 @@ def get_team_from_id(id: int, session: Session) -> Team:
         raise LookupError()
     return team
 
-def get_team_number_from_id(id: int, session: Session) -> int:
+def get_team_number_from_id(id: int | None, session: Session) -> int:
     """
     Returns the team number that corresponds to the `id`
     """
-    return get_team_from_id(id, session).team_number
+    if id is None:
+        return 0
+    try:
+        return get_team_from_id(id, session).team_number
+    except LookupError:
+        return 0
 
 def get_id_from_team_number(team_number: int, session: Session) -> int:
     """

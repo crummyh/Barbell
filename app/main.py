@@ -87,7 +87,10 @@ def not_found_error(request: Request, exc: HTTPException):
     )
 
 @app.exception_handler(404)
-def not_found_exception_handler(request: Request, exc: HTTPException):
+def not_found_exception_handler(
+    request: Request,
+    exc: HTTPException,
+):
     path = str(request.url).replace(str(request.base_url),"")
     if "api" in path or "auth" in path:
         return not_found_error(request, exc)

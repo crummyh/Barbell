@@ -23,7 +23,7 @@ services:
       - ./app/services/email/templates:/frontend/compiled_emails
     command: >
       sh -c "
-        npx sass scss/custom.scss ../app/web/static/css/custom.css &&
+        npx sass scss/custom.scss ../app/web/static/css/custom.css --no-source-map &&
         npx mjml email_templates/*.mjml -o ../app/services/email/templates
       "
 

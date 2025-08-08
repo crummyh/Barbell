@@ -16,6 +16,7 @@ document
           username,
           password,
         }),
+        credentials: "include",
       });
 
       const data = await response.json();
@@ -26,9 +27,7 @@ document
         return;
       }
 
-      localStorage.setItem("access_token", data.access_token);
-
-      window.location.href = "/dashboard"; // change to your secure page
+      window.location.href = "/dashboard";
     } catch (err) {
       console.error("Login error:", err);
       showError("Login failed. See console for details.");

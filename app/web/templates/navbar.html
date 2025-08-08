@@ -164,17 +164,57 @@
                     </ul>
                 </li>
                 <!-- Account / Signin -->
+                {% if user == None %}
                 <li class="nav-item" id="accountHolder">
-                    <div class="d-flex gap-2">
-                        <a href="/login" class="nav-link text-white">Log In</a>
-                        <a href="/register" class="nav-link text-white"
-                            >Register</a
-                        >
-                    </div>
+                    <a href="/login" class="nav-link text-white">Log In</a>
                 </li>
+                <li class="nav-item">
+                    <a href="/register" class="nav-link text-white">Register</a>
+                </li>
+                {% else %}
+                <button
+                    class="btn btn-link nav-link dropdown-toggle d-flex align-items-center py-2 px-2"
+                    type="button"
+                    aria-expanded="false"
+                    data-bs-toggle="dropdown"
+                    data-bs-display="static"
+                >
+                    <iconify-icon
+                        icon="bi:person-circle"
+                        width="16"
+                        height="16"
+                    ></iconify-icon>
+                </button>
+                <span class="d-lg-none ms-2">Account</span>
+                <ul class="dropdown-menu">
+                    <li>
+                        <a href="account" class="dropdown-item">My Account</a>
+                    </li>
+                    <li>
+                        <a href="#" class="dropdown-item" id="logoutLink"
+                            >Logout</a
+                        >
+                    </li>
+                </ul>
+                <script>
+                    document
+                        .getElementById("logoutLink")
+                        .addEventListener("click", async function (e) {
+                            e.preventDefault();
+                            try {
+                                await fetch("/auth/v1/logout", {
+                                    method: "GET",
+                                    credentials: "include",
+                                });
+                                window.location.href = "/login";
+                            } catch (err) {
+                                console.error("Logout failed", err);
+                            }
+                        });
+                </script>
+                {% endif %}
             </ul>
         </div>
     </div>
 </nav>
 <script src="/static/js/theme-toggle.js"></script>
-<script src="/static/js/navbar-auth.js"></script>

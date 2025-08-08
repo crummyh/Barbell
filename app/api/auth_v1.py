@@ -1,7 +1,8 @@
 from datetime import timedelta
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
+from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlmodel import Session, select
 from starlette.status import (
@@ -22,7 +23,7 @@ from app.core.dependencies import (
 )
 from app.core.helpers import get_user_from_username
 from app.db.database import get_session
-from app.models.models import NewTeamData, NewUserData, Token
+from app.models.models import NewTeamData, NewUserData
 from app.models.schemas import Team, User
 from app.services.email.email import send_verification_email
 
@@ -30,6 +31,7 @@ router = APIRouter()
 
 @router.post("/token", dependencies=[Depends(RateLimiter(requests_limit=10, time_window=5))])
 def login(
+    response: Response,
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     session: Annotated[Session, Depends(get_session)]
 ):
@@ -45,7 +47,18 @@ def login(
     access_token = create_access_token(
         data={"sub": user.username, "role": user.role.name}, expires_delta=access_token_expires
     )
-    return Token(access_token=access_token, token_type="bearer")
+
+    resp = JSONResponse(content={"message": "Login successful"})
+    resp.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        secure=config.IS_PRODUCTION,
+        samesite="lax",
+        max_age=60*60*24
+    )
+
+    return resp
 
 @router.get("/users/me", dependencies=[Depends(RateLimiter(requests_limit=10, time_window=5))])
 async def read_users_me(
@@ -169,3 +182,9 @@ def register_team(
     else:
         session.commit()
         return api_key
+
+@router.get("/logout")
+def logout():
+    response = RedirectResponse(url="/login")
+    response.delete_cookie("access_token")
+    return response
