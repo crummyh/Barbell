@@ -1,106 +1,321 @@
-{% extends "base-page.html" %} {% set content_padding = "" %} {% set page_numb =
-page_numb | default(0) %} {% block title %}Dashboard{% endblock %} {% block
-content %}
-
-<div class="container-fluid vh-100 bg-body-secondary">
-    {% block dashboard %}{% endblock %}
-</div>
-
-{% endblock %} {% block post_content %}
-
+{% extends "base-page.html" %} {% set navbar = True %} {% set content_padding =
+"" %} {% set page_numb = page_numb | default(0) %} {% block title %}Dashboard{%
+endblock %} {% block content %}
 <style>
-    .nav-pills {
-        --bs-nav-pills-link-active-bg: var(--bs-secondary-bg);
+    .sidebar {
+        width: 250px;
+        top: 56px;
+        height: calc(100vh - 56px);
     }
-    .nav-link.active {
-        border-top-left-radius: 0px;
-        border-top-right-radius: 0px;
+
+    .main-dashboard {
+        margin-left: 250px;
+    }
+
+    @media (max-width: 991.98px) {
+        /* Bootstrap lg breakpoint */
+        .sidebar {
+            position: relative;
+            width: 100%;
+            height: auto;
+            top: 0;
+        }
+
+        .sidebar-toggle {
+            top: calc(100vh - 38.85px);
+            left: 0px;
+            border-radius: 0px var(--bs-border-radius) 0px 0px;
+        }
+
+        .main-dashboard {
+            margin-left: 0.5em;
+        }
     }
 </style>
-<ul class="nav nav-pills nav-fill sticky-bottom pb-2 px-2 bg-body">
-    <li class="nav-item">
-        <a
-            class="nav-link {% if page_numb == 0 %}active{% endif %}"
-            aria-current="page"
-            href="/dashboard"
-            ><iconify-icon
-                class="me-2 mt-2"
-                icon="bi:house-door-fill"
-                width="16"
-                height="16"
-            ></iconify-icon
-            >Home</a
+<div class="d-flex">
+    <div
+        class="sidebar d-none d-lg-flex flex-column flex-shrink-0 p-3 bg-body-secondary position-fixed"
+    >
+        <ul class="nav nav-pills flex-column mb-auto">
+            <li class="nav-item">
+                <a
+                    class="nav-link {% if page_numb == 0 %}active text-white {% else %}text-body{% endif %}"
+                    aria-current="page"
+                    href="/dashboard"
+                    ><iconify-icon
+                        class="me-2 mt-2"
+                        icon="bi:house-door-fill"
+                        width="16"
+                        height="16"
+                    ></iconify-icon
+                    >Home</a
+                >
+            </li>
+            <li class="nav-item">
+                <a
+                    class="nav-link {% if page_numb == 1 %}active text-white {% else %}text-body{% endif %}"
+                    aria-current="page"
+                    href="/dashboard/users"
+                    ><iconify-icon
+                        class="me-2 mt-2"
+                        icon="bi:people-fill"
+                        width="16"
+                        height="16"
+                    ></iconify-icon
+                    >Users</a
+                >
+            </li>
+            <li class="nav-item">
+                <a
+                    class="nav-link {% if page_numb == 2 %}active text-white {% else %}text-body{% endif %}"
+                    aria-current="page"
+                    href="/dashboard/images"
+                    ><iconify-icon
+                        class="me-2 mt-2"
+                        icon="bi:images"
+                        width="16"
+                        height="16"
+                    ></iconify-icon
+                    >Images</a
+                >
+            </li>
+            <li class="nav-item">
+                <a
+                    class="nav-link {% if page_numb == 3 %}active text-white {% else %}text-body{% endif %}"
+                    aria-current="page"
+                    href="/dashboard/upload"
+                    ><iconify-icon
+                        class="me-2 mt-2"
+                        icon="bi:cloud-upload-fill"
+                        width="16"
+                        height="16"
+                    ></iconify-icon
+                    >Upload</a
+                >
+            </li>
+            <li class="nav-item">
+                <a
+                    class="nav-link {% if page_numb == 4 %}active text-white {% else %}text-body{% endif %}"
+                    aria-current="page"
+                    href="/dashboard/download"
+                    ><iconify-icon
+                        class="me-2 mt-2"
+                        icon="bi:cloud-download-fill"
+                        width="16"
+                        height="16"
+                    ></iconify-icon
+                    >Download</a
+                >
+            </li>
+            <li class="nav-item">
+                <a
+                    class="nav-link {% if page_numb == 5 %}active text-white {% else %}text-body{% endif %}"
+                    aria-current="page"
+                    href="/dashboard/settings"
+                    ><iconify-icon
+                        class="me-2 mt-2"
+                        icon="bi:gear-fill"
+                        width="16"
+                        height="16"
+                    ></iconify-icon
+                    >Settings</a
+                >
+            </li>
+        </ul>
+        <hr />
+        <div class="dropdown">
+            <a
+                href="#"
+                id="userDropdown"
+                class="d-flex align-items-center link-body-emphasis text-decoration-none dropdown-toggle"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+                ><iconify-icon
+                    icon="bi:person-circle"
+                    width="16"
+                    height="16"
+                    class="me-2"
+                ></iconify-icon
+                >{{ user.username }}</a
+            >
+            <ul
+                class="dropdown-menu text-small shadow"
+                aria-labelledby="userDropdown"
+            >
+                <li><a href="/account" class="dropdown-item">My Account</a></li>
+                <li>
+                    <a href="#" class="dropdown-item" id="logoutLink">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Offcanvas Sidebar for small screens -->
+    <div
+        class="offcanvas offcanvas-start bg-body-secondary"
+        tabindex="-1"
+        id="mobileSidebar"
+        style="width: 250px"
+    >
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title">App Name</h5>
+            <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="offcanvas"
+            ></button>
+        </div>
+        <div class="offcanvas-body p-3">
+            <!-- Same nav as above -->
+            <ul class="nav nav-pills flex-column mb-auto">
+                <li class="nav-item">
+                    <a
+                        class="nav-link {% if page_numb == 0 %}active text-white {% else %}text-body{% endif %}"
+                        aria-current="page"
+                        href="/dashboard"
+                        ><iconify-icon
+                            class="me-2 mt-2"
+                            icon="bi:house-door-fill"
+                            width="16"
+                            height="16"
+                        ></iconify-icon
+                        >Home</a
+                    >
+                </li>
+                <li class="nav-item">
+                    <a
+                        class="nav-link {% if page_numb == 1 %}active text-white {% else %}text-body{% endif %}"
+                        aria-current="page"
+                        href="/dashboard/users"
+                        ><iconify-icon
+                            class="me-2 mt-2"
+                            icon="bi:people-fill"
+                            width="16"
+                            height="16"
+                        ></iconify-icon
+                        >Users</a
+                    >
+                </li>
+                <li class="nav-item">
+                    <a
+                        class="nav-link {% if page_numb == 2 %}active text-white {% else %}text-body{% endif %}"
+                        aria-current="page"
+                        href="/dashboard/images"
+                        ><iconify-icon
+                            class="me-2 mt-2"
+                            icon="bi:images"
+                            width="16"
+                            height="16"
+                        ></iconify-icon
+                        >Images</a
+                    >
+                </li>
+                <li class="nav-item">
+                    <a
+                        class="nav-link {% if page_numb == 3 %}active text-white {% else %}text-body{% endif %}"
+                        aria-current="page"
+                        href="/dashboard/upload"
+                        ><iconify-icon
+                            class="me-2 mt-2"
+                            icon="bi:cloud-upload-fill"
+                            width="16"
+                            height="16"
+                        ></iconify-icon
+                        >Upload</a
+                    >
+                </li>
+                <li class="nav-item">
+                    <a
+                        class="nav-link {% if page_numb == 4 %}active text-white {% else %}text-body{% endif %}"
+                        aria-current="page"
+                        href="/dashboard/download"
+                        ><iconify-icon
+                            class="me-2 mt-2"
+                            icon="bi:cloud-download-fill"
+                            width="16"
+                            height="16"
+                        ></iconify-icon
+                        >Download</a
+                    >
+                </li>
+                <li class="nav-item">
+                    <a
+                        class="nav-link {% if page_numb == 5 %}active text-white {% else %}text-body{% endif %}"
+                        aria-current="page"
+                        href="/dashboard/settings"
+                        ><iconify-icon
+                            class="me-2 mt-2"
+                            icon="bi:gear-fill"
+                            width="16"
+                            height="16"
+                        ></iconify-icon
+                        >Settings</a
+                    >
+                </li>
+            </ul>
+            <hr />
+            <div class="dropdown">
+                <a
+                    href="#"
+                    id="userDropdown"
+                    class="d-flex align-items-center link-body-emphasis text-decoration-none dropdown-toggle"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                    ><iconify-icon
+                        icon="bi:person-circle"
+                        width="16"
+                        height="16"
+                        class="me-2"
+                    ></iconify-icon
+                    >{{ user.username }}</a
+                >
+                <ul
+                    class="dropdown-menu text-small shadow"
+                    aria-labelledby="userDropdown"
+                >
+                    <li>
+                        <a href="/account" class="dropdown-item">My Account</a>
+                    </li>
+                    <li>
+                        <a href="#" class="dropdown-item" id="logoutLink"
+                            >Logout</a
+                        >
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex-grow-1 main-dashboard">
+        <!-- Mobile toggle button -->
+
+        <button
+            class="btn position-fixed d-lg-none sidebar-toggle bg-primary"
+            type="button"
+            data-bs-toggle="offcanvas"
+            data-bs-target="#mobileSidebar"
         >
-    </li>
-    <li class="nav-item">
-        <a
-            class="nav-link {% if page_numb == 1 %}active{% endif %}"
-            aria-current="page"
-            href="/dashboard/users"
-            ><iconify-icon
-                class="me-2 mt-2"
-                icon="bi:people-fill"
-                width="16"
-                height="16"
-            ></iconify-icon
-            >Users</a
-        >
-    </li>
-    <li class="nav-item">
-        <a
-            class="nav-link {% if page_numb == 2 %}active{% endif %}"
-            aria-current="page"
-            href="/dashboard/images"
-            ><iconify-icon
-                class="me-2 mt-2"
-                icon="bi:images"
-                width="16"
-                height="16"
-            ></iconify-icon
-            >Images</a
-        >
-    </li>
-    <li class="nav-item">
-        <a
-            class="nav-link {% if page_numb == 3 %}active{% endif %}"
-            aria-current="page"
-            href="/dashboard/upload"
-            ><iconify-icon
-                class="me-2 mt-2"
-                icon="bi:cloud-upload-fill"
-                width="16"
-                height="16"
-            ></iconify-icon
-            >Upload</a
-        >
-    </li>
-    <li class="nav-item">
-        <a
-            class="nav-link {% if page_numb == 4 %}active{% endif %}"
-            aria-current="page"
-            href="/dashboard/download"
-            ><iconify-icon
-                class="me-2 mt-2"
-                icon="bi:cloud-download-fill"
-                width="16"
-                height="16"
-            ></iconify-icon
-            >Download</a
-        >
-    </li>
-    <li class="nav-item">
-        <a
-            class="nav-link {% if page_numb == 5 %}active{% endif %}"
-            aria-current="page"
-            href="/dashboard/settings"
-            ><iconify-icon
-                class="me-2 mt-2"
-                icon="bi:gear-fill"
-                width="16"
-                height="16"
-            ></iconify-icon
-            >Settings</a
-        >
-    </li>
-</ul>
-{% endblock %}
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        {% block dashboard %}{% endblock %}
+    </div>
+</div>
+
+<script>
+    document
+        .getElementById("logoutLink")
+        .addEventListener("click", async function (e) {
+            e.preventDefault();
+            try {
+                await fetch("/auth/v1/logout", {
+                    method: "GET",
+                    credentials: "include",
+                });
+                window.location.href = "/login";
+            } catch (err) {
+                console.error("Logout failed", err);
+            }
+        });
+</script>
+
+{% endblock %} {% block post_content %} {% endblock %}

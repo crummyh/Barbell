@@ -33,7 +33,7 @@ document
       const wrapper = document.createElement("div");
       wrapper.innerHTML = [
         '<div class="alert alert-primary alert-dismissible" role="alert">',
-        `   <div class="small">Registration Successful! Check you email.</div>`,
+        `   <div class="small">Registration Successful! Check your email.</div>`,
         '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
         "</div>",
       ].join("");
