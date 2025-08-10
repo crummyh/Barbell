@@ -9,7 +9,14 @@ endblock %} {% block content %}
     }
 
     .main-dashboard {
-        margin-left: 250px;
+        margin-left: calc(250px + 1em);
+        margin-right: 1em;
+        margin-top: 1em;
+        margin-bottom: 1em;
+    }
+
+    .full-dash-height {
+        height: calc(100vh - 56px - 3em);
     }
 
     @media (max-width: 991.98px) {
@@ -29,6 +36,12 @@ endblock %} {% block content %}
 
         .main-dashboard {
             margin-left: 0.5em;
+        }
+    }
+
+    @media (max-width: 1199.98px) {
+        .full-dash-height {
+            height: auto;
         }
     }
 </style>
@@ -122,32 +135,6 @@ endblock %} {% block content %}
                 >
             </li>
         </ul>
-        <hr />
-        <div class="dropdown">
-            <a
-                href="#"
-                id="userDropdown"
-                class="d-flex align-items-center link-body-emphasis text-decoration-none dropdown-toggle"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-                ><iconify-icon
-                    icon="bi:person-circle"
-                    width="16"
-                    height="16"
-                    class="me-2"
-                ></iconify-icon
-                >{{ user.username }}</a
-            >
-            <ul
-                class="dropdown-menu text-small shadow"
-                aria-labelledby="userDropdown"
-            >
-                <li><a href="/account" class="dropdown-item">My Account</a></li>
-                <li>
-                    <a href="#" class="dropdown-item" id="logoutLink">Logout</a>
-                </li>
-            </ul>
-        </div>
     </div>
 
     <!-- Offcanvas Sidebar for small screens -->
@@ -253,42 +240,11 @@ endblock %} {% block content %}
                     >
                 </li>
             </ul>
-            <hr />
-            <div class="dropdown">
-                <a
-                    href="#"
-                    id="userDropdown"
-                    class="d-flex align-items-center link-body-emphasis text-decoration-none dropdown-toggle"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                    ><iconify-icon
-                        icon="bi:person-circle"
-                        width="16"
-                        height="16"
-                        class="me-2"
-                    ></iconify-icon
-                    >{{ user.username }}</a
-                >
-                <ul
-                    class="dropdown-menu text-small shadow"
-                    aria-labelledby="userDropdown"
-                >
-                    <li>
-                        <a href="/account" class="dropdown-item">My Account</a>
-                    </li>
-                    <li>
-                        <a href="#" class="dropdown-item" id="logoutLink"
-                            >Logout</a
-                        >
-                    </li>
-                </ul>
-            </div>
         </div>
     </div>
 
     <div class="flex-grow-1 main-dashboard">
         <!-- Mobile toggle button -->
-
         <button
             class="btn position-fixed d-lg-none sidebar-toggle bg-primary"
             type="button"
