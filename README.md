@@ -22,7 +22,9 @@ If you are interested in helping, read this then take a look at [issues](https:/
 * FastAPI
 * SQLModel
 * Jinja
-* Bootstrap
+* Bootstrap 5
+* Quercus.js
+* MJML
 * AWS
   * S3
   * PostgreSQL

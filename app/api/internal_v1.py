@@ -8,7 +8,12 @@ from pydantic import UUID4
 from sqlmodel import Session, asc, select
 from starlette.status import HTTP_404_NOT_FOUND
 
-from app.core.dependencies import RateLimiter, minimum_role, require_role
+from app.core.dependencies import (
+    RateLimiter,
+    minimum_role,
+    require_login,
+    require_role,
+)
 from app.core.helpers import (
     get_id_from_team_number,
     get_team_number_from_id,
@@ -21,7 +26,13 @@ from app.models.models import (
     UserRole,
     image_response,
 )
-from app.models.schemas import Image, LabelCategory, LabelSuperCategory, User
+from app.models.schemas import (
+    DownloadBatch,
+    Image,
+    LabelCategory,
+    LabelSuperCategory,
+    User,
+)
 from app.services import buckets
 
 subapp = FastAPI()
@@ -134,3 +145,14 @@ def create_label_category(
 ):
     session.add(category)
     session.commit()
+
+@subapp.get("/download-batches/history/")
+def get_batch_history(
+    session: Annotated[Session, Depends(get_session)],
+    current_user: Annotated[User, Security(require_login)]
+):
+    batches = session.exec(select(DownloadBatch).where(DownloadBatch.team == current_user.team)).all()
+    if len(batches) == 0:
+        return None
+
+    return batches

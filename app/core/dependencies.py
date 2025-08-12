@@ -141,8 +141,26 @@ def get_current_active_user(
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
 
+def require_login(
+    current_user: Annotated[User, Depends(get_current_user)],
+):
+    if current_user is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return current_user
+
+
 def require_role(*roles: UserRole):
     def role_checker(user: User = Depends(get_current_active_user)):
+        if user is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate credentials",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
         if user.role not in roles:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -153,6 +171,12 @@ def require_role(*roles: UserRole):
 
 def minimum_role(role: UserRole):
     def role_checker(user: User = Depends(get_current_active_user)):
+        if user is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate credentials",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
         if user.role.value <= role.value:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
