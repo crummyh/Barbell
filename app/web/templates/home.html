@@ -1,41 +1,189 @@
-{% extends "base-page.html" %} {% set content_classes = "p-0" %} {% block title
+{% extends "base-page.html" %} {% set content_padding = "" %} {% block title
 %}App Name{% endblock %} {% block content %}
 <style>
     section {
         padding: 60px 0;
+        scroll-snap-align: start;
     }
     .vh-100-nonav {
         height: calc(100vh - 56px) !important;
     }
-    .bg-image {
-        background-image: url(https://placehold.co/2560x1440/212529/dee2e6);
-        background-position: center;
+    html {
+        scroll-snap-type: y mandatory;
+    }
+    .rotate90 {
+        -webkit-transform: rotate(90deg);
+        -moz-transform: rotate(90deg);
+        -o-transform: rotate(90deg);
+        -ms-transform: rotate(90deg);
+        transform: rotate(90deg);
+    }
+    .logo-img {
+        width: 480px;
+        height: auto;
+        display: none;
+        margin: 0 auto;
+    }
+    .text-col {
+        margin-left: 0px;
+    }
+
+    @media (min-width: 992px) {
+        .text-col {
+            margin-left: 150px;
+        }
+        .logo-img {
+            width: 540px;
+            display: block;
+        }
+    }
+
+    @media (min-width: 1200px) {
+        .text-col {
+            margin-left: 110px;
+        }
+        .logo-img {
+            width: 540px;
+            display: block;
+        }
+    }
+
+    @media (min-width: 1400px) {
+        .text-col {
+            margin-left: 60px;
+        }
+        .logo-img {
+            width: 480px;
+            display: block;
+        }
     }
 </style>
-<section id="intro" class="bg-image">
+<section id="hero" class="bg-body-secondary">
     <div class="container-lg">
-        <div class="row justify-content-center vh-100 align-items-center">
-            <div class="col-md-8 text-center">
+        <div class="row justify-content-center vh-100-nonav align-items-center">
+            <div class="col-md-2">
+                <img
+                    src="/static/images/logo.svg"
+                    alt="App logo"
+                    class="rotate90 logo-img"
+                />
+            </div>
+            <div class="col-md-8 text-col">
                 <h1>
-                    <div class="display-2">App name</div>
-                    <div class="display-5 text-muted">Lorem ipsum dolor.</div>
+                    <div class="display-2">Barbell</div>
+                    <div class="display-5 text-muted">
+                        Open datasets, stronger robots.
+                    </div>
                 </h1>
-                <p class="lead my-4 text-musted">
-                    Lorem ipsum dolor sit amet, consectetur adipisicing elit.
+                <p class="lead my-4 text-muted">
+                    Barbell is an open-source hub where FRC teams upload and
+                    share labeled match photos to build large, high-quality
+                    training datasets for object detection.
                 </p>
-                <a href="#section-2" class="btn btn-secondary btn-lg"
-                    >Quick Start</a
+                <a href="/docs/main" class="btn btn-primary btn-lg"
+                    >Get Started</a
                 >
+                <a
+                    href="https://github.com/crummyh/frcVisionDataset"
+                    class="btn btn-secondary btn-lg"
+                >
+                    View on Github
+                </a>
             </div>
         </div>
     </div>
-    <!-- </section>
-<section id="section-2">
-    <div
-        class="container d-flex align-items-center justify-content-center min-vh-100 bg-primary"
-    >
-        <h1 class="display-1">Section 2</h1>
-    </div>
-</section> -->
-    {% endblock %}
 </section>
+<section id="values" class="mt-5">
+    <div class="container-lg">
+        <div class="row justify-content-center vh-100-nonav align-items-center">
+            <div class="card-group">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Open & Free</h5>
+                        <p class="card-text">
+                            Open-source under MIT. Anyone can use, contribute,
+                            and innovate.
+                        </p>
+                        <a
+                            href="https://github.com/crummyh/frcVisionDataset"
+                            class="btn"
+                            >View on Github</a
+                        >
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">For Every Team</h5>
+                        <p class="card-text">
+                            Built to help both powerhouse and rookie FRC teams
+                            train AI models.
+                        </p>
+                        <a
+                            href="https://github.com/crummyh/frcVisionDataset"
+                            class="btn"
+                            >View on Github</a
+                        >
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Powerful Datasets</h5>
+                        <p class="card-text">
+                            Upload, label, and download curated match photo
+                            datasets for object detection.
+                        </p>
+                        <a
+                            href="https://github.com/crummyh/frcVisionDataset"
+                            class="btn"
+                            >View on Github</a
+                        >
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<section id="how" class="bg-body-tertiary">
+    <div class="container-lg">
+        <div
+            class="row row-cols-auto justify-content-center vh-100-nonav align-items-center"
+        >
+            <h2>How it Works</h2>
+            <div class="col">
+                <div class="bg-primary rounded-circle p-3">
+                    <iconify-icon
+                        icon="bi:cloud-upload-fill"
+                        width="32"
+                        height="32"
+                    ></iconify-icon>
+                </div>
+                <h4>Upload</h4>
+                <p>Teams share match photos.</p>
+            </div>
+            <div class="col">
+                <div class="bg-primary rounded-circle p-3">
+                    <iconify-icon
+                        icon="bi:clipboard-check-fill"
+                        width="32"
+                        height="32"
+                    ></iconify-icon>
+                </div>
+                <h4>Label & Moderate</h4>
+                <p>Photos get reviewed and tagged.</p>
+            </div>
+            <div class="col">
+                <div class="bg-primary rounded-circle p-3">
+                    <iconify-icon
+                        icon="bi:cloud-download-fill"
+                        width="32"
+                        height="32"
+                    ></iconify-icon>
+                </div>
+                <h4>Download</h4>
+                <p>Anyone can access structured datasets for ML training.</p>
+            </div>
+        </div>
+    </div>
+</section>
+<section id="community"></section>
+{% endblock %}

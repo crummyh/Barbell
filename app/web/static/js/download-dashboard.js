@@ -124,6 +124,11 @@ async function renderTable() {
 
     let condensedDate = `${dd}-${mm}-${yy} ${hh}:${min}:${sec}`;
 
+    const error_msg = batches[i].error_message;
+    if (error_msg === null) {
+      const error_msg = "None";
+    }
+
     tableBody.innerHTML += [
       `<tr data-bs-toggle="collapse" data-bs-target="#row${i}" class="clickable">`,
       '<td class="uuid-cell">',
@@ -140,7 +145,7 @@ async function renderTable() {
       `<td colspan="5" class="p-0"><div class="collapse" id="row${i}"><div class="p-3">`,
       `<strong>Hash:</strong> ${batches[i].hash}<br />`,
       `<strong>Annotations:</strong> ${batches[i].annotations}<br />`,
-      `<strong>Error:</strong> ${batches[i].error_message}`,
+      `<strong>Error:</strong> ${error_msg}`,
       '<a class="btn btn-primary" href="#" role="button>Download</a>',
       "</div></div></td></tr>",
     ].join("");

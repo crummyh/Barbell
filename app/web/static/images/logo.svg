@@ -2,9 +2,9 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="1080"
-   height="1080"
-   viewBox="0 0 285.74999 285.75001"
+   width="200"
+   height="80"
+   viewBox="0 0 52.916665 21.166667"
    version="1.1"
    id="svg5"
    inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
@@ -25,26 +25,62 @@
      showgrid="false"
      units="px"
      width="1080px"
-     inkscape:zoom="0.64052329"
-     inkscape:cx="396.55076"
-     inkscape:cy="560.47923"
-     inkscape:window-width="2544"
-     inkscape:window-height="995"
-     inkscape:window-x="8"
-     inkscape:window-y="40"
+     inkscape:zoom="3.6233469"
+     inkscape:cx="82.244402"
+     inkscape:cy="1.1039517"
+     inkscape:window-width="2202"
+     inkscape:window-height="1003"
+     inkscape:window-x="4"
+     inkscape:window-y="36"
      inkscape:window-maximized="0"
      inkscape:current-layer="layer1" />
   <defs
-     id="defs2" />
+     id="defs2">
+    <rect
+       x="3.7380159"
+       y="6.6521192"
+       width="345.68503"
+       height="116.38168"
+       id="rect86968" />
+    <rect
+       x="2.4798317"
+       y="4.4503055"
+       width="294.41418"
+       height="71.087189"
+       id="rect66072" />
+    <rect
+       x="3.7380159"
+       y="5.3107376"
+       width="293.7851"
+       height="70.772636"
+       id="rect28808" />
+    <rect
+       x="54.034397"
+       y="287.90799"
+       width="1717.059"
+       height="612.78027"
+       id="rect3764" />
+  </defs>
   <g
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1">
-    <circle
-       style="fill:#007a85;stroke:none;stroke-width:0.555088;stroke-linecap:round;stroke-linejoin:round;fill-opacity:1"
-       id="path846"
-       cx="142.875"
-       cy="142.875"
-       r="142.59746" />
+    <rect
+       style="fill:#6c757d;fill-opacity:1;stroke:none;stroke-width:0.566474;stroke-linecap:round;stroke-linejoin:round"
+       id="rect101320"
+       width="39.158333"
+       height="1.5875"
+       x="6.8791666"
+       y="9.7895832" />
+    <path
+       style="fill:#157a83;fill-opacity:1;stroke:none;stroke-width:0.286932;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 3.175,3.175 H 6.8791667 V 1.5875 H 1.5875 v 17.991667 h 5.2916667 v -1.50997 H 3.175 Z"
+       id="path101683"
+       sodipodi:nodetypes="ccccccccc" />
+    <path
+       style="fill:#157a83;fill-opacity:1;stroke:none;stroke-width:0.286932;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 49.741667,17.991668 H 46.0375 v 1.5875 h 5.291667 V 1.5875 H 46.0375 v 1.50997 h 3.704167 z"
+       id="path101683-3"
+       sodipodi:nodetypes="ccccccccc" />
   </g>
 </svg>

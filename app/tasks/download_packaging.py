@@ -5,6 +5,7 @@ metadata and labels. We then can point the user to another
 URL where they can download the entire file.
 """
 
+import hashlib
 import json
 import random
 import tarfile
@@ -158,6 +159,9 @@ def create_download_batch(batch_id: UUID):
             archive.close()
             archive_obj.seek(0)
             update_download_batch(batch_id, archive_obj)
+
+            archive_obj.seek(0)
+            batch.hash = hashlib.md5(archive_obj.read()).hexdigest()
 
             batch.status = DownloadStatus.READY
             session.add(batch)
