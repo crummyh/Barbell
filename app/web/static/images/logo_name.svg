@@ -1,0 +1,26 @@
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="200"
+    height="80"
+    viewBox="0 0 52.917 21.167"
+>
+    <path
+        d="M6.879 9.79h39.158v1.587H6.879z"
+        style="fill: #6c757d; stroke: none; stroke-width: 0.566"
+    />
+    <path
+        d="M3.175 3.175h3.704V1.588H1.587v17.991H6.88v-1.51H3.175ZM49.742 17.992h-3.704v1.587h5.291V1.587h-5.291v1.51h3.704z"
+        style="fill: #157a83; stroke: none; stroke-width: 0.287"
+    />
+    <text
+        x="15"
+        y="18"
+        style="
+            font-family: Armata, sans-serif;
+            font-size: 6px;
+            fill: currentColor;
+        "
+    >
+        Barbell
+    </text>
+</svg>
