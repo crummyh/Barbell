@@ -1,8 +1,9 @@
 from contextlib import asynccontextmanager
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.api import auth_v1, internal_v1, public_v1, web
@@ -19,7 +20,7 @@ async def lifespan(app: FastAPI):
     yield
 
 description = """
-Docs and stuff goes here!!!
+I need to put docs and stuff here
 """
 
 tags_metadata = [
@@ -61,7 +62,7 @@ app.mount("/static", StaticFiles(directory="app/web/static"), name="static")
 app.mount("/internal", internal_v1.subapp) # TODO: Disable docs
 app.include_router(public_v1.router, prefix="/api/v1")
 app.include_router(web.router, include_in_schema=False)
-app.include_router(auth_v1.router)
+app.include_router(auth_v1.router, prefix="/auth/v1")
 
 @app.get("/docs/api", include_in_schema=False)
 def overridden_swagger():
@@ -78,6 +79,23 @@ def overridden_redoc():
         title=app.title + " - Swagger UI",
         redoc_favicon_url="/static/images/favicon.ico",
     )
+
+def not_found_error(request: Request, exc: HTTPException):
+    return JSONResponse(
+        status_code=404,
+        content={"detail": "Not found"},
+    )
+
+@app.exception_handler(404)
+def not_found_exception_handler(
+    request: Request,
+    exc: HTTPException,
+):
+    path = str(request.url).replace(str(request.base_url),"")
+    if "api" in path or "auth" in path or "internal" in path:
+        return not_found_error(request, exc)
+    else:
+        return web.not_found_page(request=request)
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

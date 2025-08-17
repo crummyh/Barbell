@@ -1,0 +1,47 @@
+{% set content_padding = content_padding | default("p-5") %} {% set
+custom_content_styles = custom_content_styles | default("") %} {% set navbar =
+navbar | default(true) %}
+
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>{% block title %}{% endblock %} - App Name</title>
+        <link
+            rel="icon"
+            type="image/x-icon"
+            href="/static/images/favicon.ico"
+        />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Armata&display=swap"
+            rel="stylesheet"
+        />
+        <link href="/static/css/custom.css" rel="stylesheet" />
+        <link rel="stylesheet" href="/static/css/theme-toggle.css" />
+    </head>
+    <body>
+        {% if navbar %} {% include "navbar.html" %} {% else %}
+        <script src="/static/js/theme-toggle.js"></script>
+        {% endif %}
+
+        <main
+            id="content"
+            class="my-auto {{ content_padding }}{{ custom_content_styles }}"
+        >
+            {% block content %}{% endblock %}
+        </main>
+
+        {% block post_content %}{% endblock %}
+
+        <script
+            src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q"
+            crossorigin="anonymous"
+        ></script>
+        <script src="https://code.iconify.design/iconify-icon/3.0.0/iconify-icon.min.js"></script>
+        {% block fileEnd %}{% endblock %} {{ fileEnd }}
+    </body>
+</html>

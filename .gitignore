@@ -200,3 +200,9 @@ data/
 
 # Random file I use for testing stuff (duh)
 test_stuff.py
+
+# Build Artifacts
+frontend/node_modules
+app/static/css/custom.css
+frontend/scss/*.css
+app/services/email/templates/*.html

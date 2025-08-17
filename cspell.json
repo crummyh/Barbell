@@ -12,7 +12,8 @@
     "creds",
     "Annotatable",
     "supercategory",
-    "iscrowd"
+    "iscrowd",
+    "iconify"
   ],
   "flagWords": []
 }

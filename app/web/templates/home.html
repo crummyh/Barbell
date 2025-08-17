@@ -1,47 +1,318 @@
-<!doctype html>
-<html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Bootstrap demo</title>
-        <link rel="icon" type="image/x-icon" href="static/images/favicon.ico" />
-        <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css"
-            rel="stylesheet"
-            integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT"
-            crossorigin="anonymous"
-        />
-    </head>
-    <body>
-        {% include 'navbar.html' %}
+{% extends "base-page.html" %} {% set content_padding = "" %} {% block title
+%}App Name{% endblock %} {% block content %}
+<style>
+    section {
+        padding: 60px 0;
+        scroll-snap-align: start;
+    }
+    .vh-100-nonav {
+        height: calc(100vh - 56px) !important;
+    }
+    html {
+        scroll-snap-type: y mandatory;
+    }
+    .logo-img {
+        color: var(--bs-heading-color);
+        height: auto;
+    }
+    .icon-circle {
+        height: 64px;
+        width: 64px;
+    }
+    .logo-scroll-barbell {
+        display: flex;
+        align-items: center;
+        max-width: 700px;
+        width: 100%;
+    }
 
-        <!-- Section 1 -->
-        <div class="container-fluid h-100">
-            <div class="position-absolute top-50 start-50 translate-middle">
-                <div class="row gx-5">
-                    <div class="col container-md text-end">
-                        <h1>Project Name</h1>
-                        <p>text describing the project goes here!!</p>
-                        <a role="button" class="btn btn-primary" href="#"
-                            >Get Started</a
-                        >
+    .logo-scroll-barbell svg {
+        height: 160px;
+    }
+
+    .logo-scroll-barbell .bar {
+        flex: 1;
+        height: 140px;
+    }
+    .bar-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        position: relative;
+        height: 160px;
+    }
+
+    .bar {
+        height: 2px;
+        flex: none;
+    }
+
+    .logo-scroller {
+        flex: 1;
+        background: url("/static/images/logo_scroll.png") repeat-x;
+        background-size: auto 100%;
+        animation: scroll 20s linear infinite;
+        overflow: hidden;
+    }
+
+    .logo-scroller.top {
+        margin-bottom: -12px; /* gap from bar */
+    }
+
+    .logo-scroller.bottom {
+        margin-top: -12px; /* gap from bar */
+        animation-direction: reverse; /* so they move opposite ways */
+    }
+
+    @keyframes scroll {
+        from {
+            background-position-x: 0;
+        }
+        to {
+            background-position-x: -1000px; /* adjust to logo strip width */
+        }
+    }
+</style>
+<section id="hero" class="bg-body-secondary">
+    <div class="container-lg">
+        <div class="row justify-content-center vh-100-nonav align-items-center">
+            <div class="col-lg-6 text-center text-lg-end">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 52.917 21.167"
+                    class="logo-img"
+                >
+                    <path
+                        d="M6.879 9.79h39.158v1.587H6.879z"
+                        style="fill: #6c757d; stroke: none; stroke-width: 0.566"
+                    />
+                    <path
+                        d="M3.175 3.175h3.704V1.588H1.587v17.991H6.88v-1.51H3.175ZM49.742 17.992h-3.704v1.587h5.291V1.587h-5.291v1.51h3.704z"
+                        style="fill: #157a83; stroke: none; stroke-width: 0.287"
+                    />
+                    <text
+                        x="15"
+                        y="18"
+                        style="
+                            font-family: Armata, sans-serif;
+                            font-size: 6px;
+                            fill: currentColor;
+                        "
+                    >
+                        Barbell
+                    </text>
+                </svg>
+                <h1>
+                    <div class="display-5 text-muted">
+                        Open datasets, stronger robots.
                     </div>
-                    <div class="col comtainer-md">
-                        <img
-                            src="/static/images/logo.svg"
-                            alt="Main Logo"
-                            class="img-fluid"
-                        />
-                    </div>
+                </h1>
+                <p class="lead my-4 text-muted">
+                    Barbell is an open-source hub where FRC teams upload and
+                    share labeled match photos to build large, high-quality
+                    training datasets for object detection.
+                </p>
+                <a href="/docs/main" class="btn btn-primary btn-lg"
+                    >Get Started</a
+                >
+                <a
+                    href="https://github.com/crummyh/frcVisionDataset"
+                    class="btn btn-secondary btn-lg"
+                >
+                    View on Github
+                </a>
+            </div>
+            <div class="col-lg-6 mt-lg-0 mt-3 text-center text-lg-start">
+                <img
+                    src="https://placehold.co/1080x1080"
+                    height="560"
+                    alt="Dashboard Mockup"
+                    class="hero-img"
+                />
+            </div>
+        </div>
+    </div>
+</section>
+<section id="values" class="mt-5 bg-body-tertiary">
+    <div class="container-lg">
+        <div
+            class="row justify-content-center vh-100-nonav align-items-center column-gap-3"
+        >
+            <div class="card col-md border-primary">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <iconify-icon
+                            icon="bi:unlock-fill"
+                            width="16"
+                            height="16"
+                            class="me-2"
+                        ></iconify-icon
+                        >Open & Free
+                    </h5>
+                    <p class="card-text">
+                        Open-source under MIT. Anyone can use, contribute, and
+                        innovate.
+                    </p>
+                    <a
+                        href="https://github.com/crummyh/frcVisionDataset"
+                        class="btn btn-primary"
+                        >View on Github</a
+                    >
+                </div>
+            </div>
+            <div class="card col-md border-primary">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <iconify-icon
+                            icon="bi:people-fill"
+                            width="16"
+                            height="16"
+                            class="me-2"
+                        ></iconify-icon
+                        >For Every Team
+                    </h5>
+                    <p class="card-text">
+                        Built to help both powerhouse and rookie FRC teams train
+                        AI models.
+                    </p>
+                    <a href="#community" class="btn btn-primary">See Teams</a>
+                </div>
+            </div>
+            <div class="card col-md border-primary">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <iconify-icon
+                            icon="bi:images"
+                            width="16"
+                            height="16"
+                            class="me-2"
+                        ></iconify-icon
+                        >Powerful Datasets
+                    </h5>
+                    <p class="card-text">
+                        Upload, label, and download curated match photo datasets
+                        for object detection.
+                    </p>
+                    <a href="/register" class="btn btn-primary"
+                        >View the Data</a
+                    >
                 </div>
             </div>
         </div>
+    </div>
+</section>
+<section id="how">
+    <div class="container-lg">
+        <div class="row justify-content-center vh-100-nonav align-items-center">
+            <div class="row text-center">
+                <h1 class="display-3 mb-5">How it Works</h1>
+                <div class="col">
+                    <div
+                        class="bg-primary rounded-circle p-3 icon-circle mx-auto text-start mb-2"
+                    >
+                        <iconify-icon
+                            icon="bi:cloud-upload-fill"
+                            class="no-padding"
+                            width="32"
+                            height="32"
+                        ></iconify-icon>
+                    </div>
+                    <h4>Upload</h4>
+                    <p>Teams share match photos.</p>
+                </div>
+                <div class="col">
+                    <div
+                        class="bg-primary rounded-circle p-3 icon-circle mx-auto text-start mb-2"
+                    >
+                        <iconify-icon
+                            icon="bi:clipboard-check-fill"
+                            class="no-padding"
+                            width="32"
+                            height="32"
+                        ></iconify-icon>
+                    </div>
+                    <h4>Label & Moderate</h4>
+                    <p>Photos get reviewed and tagged.</p>
+                    <a href="/register" class="btn btn-primary btn-lg mt-3"
+                        >Explore the Database</a
+                    >
+                </div>
+                <div class="col">
+                    <div
+                        class="bg-primary rounded-circle p-3 icon-circle mx-auto text-start mb-2"
+                    >
+                        <iconify-icon
+                            icon="bi:cloud-download-fill"
+                            class="no-padding"
+                            width="32"
+                            height="32"
+                        ></iconify-icon>
+                    </div>
+                    <h4>Download</h4>
+                    <p>
+                        Anyone can access structured datasets for ML training.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<section id="community" class="bg-primary">
+    <div class="container-lg">
+        <div class="row justify-content-center vh-100-nonav align-items-center">
+            <div class="row text-center">
+                <h1 class="display-4">
+                    Barbell is built by the community, for the community.
+                </h1>
+                <div class="logo-scroll-barbell mx-auto">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 6 20"
+                        preserveAspectRatio="xMinYMid meet"
+                    >
+                        <path
+                            d="M3.175 3.175h3.704V1.588H1.587v17.991H6.88v-1.51H3.175Z"
+                            fill="currentColor"
+                        />
+                    </svg>
 
-        <!-- JS -->
-        <script
-            src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO"
-            crossorigin="anonymous"
-        ></script>
-    </body>
-</html>
+                    <div class="bar-container">
+                        <!-- Top scroller -->
+                        <div class="logo-scroller top"></div>
+                        <!-- Static middle bar -->
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 40 20"
+                            preserveAspectRatio="none"
+                            class="bar"
+                        >
+                            <rect
+                                x="0"
+                                y="9"
+                                width="40"
+                                height="2"
+                                fill="currentColor"
+                            />
+                        </svg>
+                        <!-- Bottom scroller -->
+                        <div class="logo-scroller bottom"></div>
+                    </div>
+
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 6 20"
+                        preserveAspectRatio="xMaxYMid meet"
+                    >
+                        <path
+                            d="M3.175 3.175h3.704V1.588H1.587v17.991H6.88v-1.51H3.175Z"
+                            transform="translate(6,0) scale(-1,1)"
+                            fill="currentColor"
+                        />
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

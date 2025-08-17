@@ -22,7 +22,9 @@ If you are interested in helping, read this then take a look at [issues](https:/
 * FastAPI
 * SQLModel
 * Jinja
-* Bootstrap
+* Bootstrap 5
+* Quercus.js
+* MJML
 * AWS
   * S3
   * PostgreSQL
@@ -59,9 +61,14 @@ If you are interested in helping, read this then take a look at [issues](https:/
 │  ├── 📁 static/                # Static files
 │  │  ├── 📁 css/                # CSS files
 │  │  ├── 📁 images/             # Images
-│  │  └── 📁 js/                 # JS files
 │  └─── 📁 templates/            # Jinja HTML templates
 └── 🐍 main.py                   # The main app entrypoint
+📁 frontend/                     # Frontend stuff that needs to be compiled
+├── 📁 email_templates/          # MJML emails, and Jinja templates
+├── 📁 js/                       # JS to compile
+├── 📁 scss/                     # SCSS to override Bootstrap
+├── 📦 package.json              # Its a node project
+└── 📦 package-lock.py           # Its a node project
 ```
 
 ### Running Locally
@@ -86,9 +93,6 @@ chmod +x setup.sh
 
 # To run the app use:
 docker compose up --build
-
-# And if you need to send emails run this in a separate window.
-sudo python3 -m smtpd -c DebuggingServer -n localhost:1025
 
 # To connect to the database use:
 psql -h localhost -p 5432 -U myuser -d myappdb

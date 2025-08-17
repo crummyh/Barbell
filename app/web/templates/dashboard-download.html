@@ -1,0 +1,173 @@
+{% extends "dashboard.html" %}{% set page_numb = 4 %} {% block dashboard %}
+<style>
+    .tertiary-table {
+        --bs-table-bg: var(--bs-tertiary-bg);
+    }
+    .table-container {
+        overflow-y: auto;
+    }
+    .table thead th {
+        background-color: inherit; /* needed for sticky to overlay rows */
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        border-bottom: calc(var(--bs-border-width) * 2) solid currentcolor;
+        box-shadow: 0 calc(var(--bs-border-color) * 2) 0 0 currentcolor;
+    }
+    .max-size-table {
+        height: calc(100vh - 56px - 6em - 38.4px);
+    }
+    .annotation-tree > ul {
+        overflow-y: auto;
+        max-height: calc(
+            100vh - 56px - 9em - 38.4px - 95px - 24px - 28.8px - 38px - 15px
+        );
+    }
+    #downloadBatchTableList > th.capitalize::first-letter {
+        text-transform: capitalize;
+    }
+    .uuid-cell {
+        line-height: 1.5rem;
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
+    td,
+    th {
+        vertical-align: middle; /* aligns text and buttons in middle */
+    }
+</style>
+<link rel="stylesheet" href="/static/css/custom-treeview.css" />
+
+<div class="container-fluid">
+    <div class="row gx-4 mt-2">
+        <div class="col-xl-6 mb-xl-4">
+            <div class="bg-body-tertiary rounded full-dash-height mb-4 mb-xl-0">
+                <div class="p-4">
+                    <h2>Download Request</h2>
+                    <form>
+                        <div class="mb-3">
+                            <label for="countInput" class="form-label"
+                                >Image Count</label
+                            >
+                            <input
+                                type="number"
+                                class="form-control"
+                                id="countInput"
+                                aria-describedby="countHelp"
+                                max="10000"
+                                min="1"
+                            />
+                            <div class="form-text" id="countHelp">
+                                Max of 10,000 images
+                            </div>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input
+                                type="checkbox"
+                                class="form-check-input"
+                                id="nonMatchCheck"
+                                checked
+                            />
+                            <label for="nonMatchCheck" class="form-check-label"
+                                >Allow non-match images<a
+                                    href="#"
+                                    class="ms-1 text-decoration-none"
+                                    data-bs-toggle="tooltip"
+                                    data-bs-title="Allow download of images not from official matches. Very useful early in the season."
+                                >
+                                    <iconify-icon
+                                        icon="bi:info-circle-fill"
+                                        width="16"
+                                        height="16"
+                                    ></iconify-icon></a
+                            ></label>
+                        </div>
+                        <div class="mb-3">
+                            <h4>Annotations</h4>
+                            <div
+                                id="annotationTreeView"
+                                class="annotation-tree"
+                            ></div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-6">
+            <div class="bg-body-tertiary rounded full-dash-height">
+                <div class="p-4">
+                    <h2>Download History</h2>
+                    <div
+                        class="table-container table-responsive max-size-table"
+                    >
+                        <table
+                            class="table table-hover tertiary-table"
+                            class="batchTable"
+                        >
+                            <thead class="sticky-top bg-body-tertiary">
+                                <th scope="col">UUID</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Image Count</th>
+                                <th scope="col">Start Time</th>
+                            </thead>
+                            <tbody id="downloadBatchTableBody">
+                                <tr
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#row0"
+                                    class="clickable"
+                                >
+                                    <td class="uuid-cell">
+                                        <a
+                                            href="#"
+                                            data-bs-toggle="tooltip"
+                                            data-bs-title="opinaf983wna98"
+                                            class="text-decoration-none"
+                                            id="id0"
+                                            >as89het</a
+                                        ><button
+                                            class="btn btn-sm btn-link p-0 ms-2 border-0"
+                                            onclick="copyID(0)"
+                                            type="button"
+                                        >
+                                            <iconify-icon
+                                                id="copyIcon0"
+                                                icon="bi:clipboard-fill"
+                                                width="16"
+                                                height="16"
+                                            ></iconify-icon>
+                                        </button>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-success"
+                                            >Ready</span
+                                        >
+                                    </td>
+                                    <td class="">12,345</td>
+                                    <td>2025-08-11 14:32</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="5" class="p-0">
+                                        <div class="collapse" id="row0">
+                                            <div class="p-3">
+                                                <strong>Hash:</strong> 89f...ab1
+                                                <br />
+                                                <strong>Annotations:</strong>
+                                                [...long list...] <br />
+                                                <strong>Error:</strong> None
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} {% block fileEnd %}
+<script src="/static/js/tooltips.js"></script>
+<script src="/static/js/treeview.js"></script>
+<script src="/static/js/download-dashboard.js"></script>
+{% endblock %}

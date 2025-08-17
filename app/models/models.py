@@ -74,6 +74,14 @@ class DownloadStatusOut(BaseModel):
     hash: str | None
     error_message: str | None
 
+class UserOut(BaseModel):
+    username: str
+    email: EmailStr | None
+    disabled: bool
+    created_at: datetime
+    team_number: int
+    role: UserRole
+
 # ==========={ Requests }=========== #
 
 class DownloadRequest(BaseModel):

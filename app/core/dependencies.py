@@ -57,6 +57,18 @@ def generate_api_key() -> str:
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
 
+async def get_token_from_cookie(request: Request) -> str:
+    token = request.cookies.get("access_token")
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    return token
+
+async def optional_auth(request: Request) -> Optional[str]:
+    try:
+        return await get_token_from_cookie(request)
+    except HTTPException:
+        return None
+
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
@@ -70,7 +82,9 @@ def authenticate_user(
 ) -> Optional[User]:
     user = session.exec(select(User).where(User.username == username)).one_or_none()
     if not user:
-        return None
+        user = session.exec(select(User).where(User.email == username)).one_or_none()
+        if not user:
+            return None
     assert user.password
     if not verify_password(password, user.password):
         return None
@@ -91,14 +105,14 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     return encoded_jwt
 
 def get_current_user(
-    token: Annotated[str, Depends(oauth2_scheme)],
+    token: Annotated[Optional[str], Depends(optional_auth)],
     session: Annotated[Session, Depends(get_session)]
-):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
+) -> Optional[User]:
+    # credentials_exception = HTTPException(
+    #     status_code=status.HTTP_401_UNAUTHORIZED,
+    #     detail="Could not validate credentials",
+    #     headers={"WWW-Authenticate": "Bearer"},
+    # )
     try:
         payload = jwt.decode(
             token,
@@ -107,16 +121,16 @@ def get_current_user(
         )
         username = payload.get("sub")
         if username is None:
-            raise credentials_exception
+            return None
 
         token_data = TokenData(username=username)
 
     except InvalidTokenError:
-        raise credentials_exception
+        return None
 
     user = session.exec(select(User).where(User.username == token_data.username)).one_or_none()
     if user is None:
-        raise credentials_exception
+        return None
 
     return user
 
@@ -127,8 +141,26 @@ def get_current_active_user(
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
 
+def require_login(
+    current_user: Annotated[User, Depends(get_current_user)],
+):
+    if current_user is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return current_user
+
+
 def require_role(*roles: UserRole):
     def role_checker(user: User = Depends(get_current_active_user)):
+        if user is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate credentials",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
         if user.role not in roles:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -139,6 +171,12 @@ def require_role(*roles: UserRole):
 
 def minimum_role(role: UserRole):
     def role_checker(user: User = Depends(get_current_active_user)):
+        if user is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate credentials",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
         if user.role.value <= role.value:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,

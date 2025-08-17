@@ -1,0 +1,30 @@
+$primary: #157a83;
+$teal: #157a83;
+$font-family-sans-serif:
+    Armata,
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    "Noto Sans",
+    "Liberation Sans",
+    Arial,
+    sans-serif,
+    "Apple Color Emoji",
+    "Segoe UI Emoji",
+    "Segoe UI Symbol",
+    "Noto Color Emoji";
+
+@import "../node_modules/bootstrap/scss/bootstrap.scss";
+
+iconify-icon {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    padding-top: 5px;
+}
+
+iconify-icon.no-padding {
+    padding-top: 0px;
+}
