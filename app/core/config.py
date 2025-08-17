@@ -4,7 +4,7 @@ import os
 from dotenv import load_dotenv
 from PIL import Image
 
-PROJECT_NAME = "Temp Name"
+PROJECT_NAME = "Barbell"
 PROJECT_URL = "example.com"
 PROJECT_VERSION = "0.0.1"
 MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024  # 2GB

@@ -39,7 +39,7 @@ tags_metadata = [
 ]
 
 app = FastAPI(
-    title="Open FRC Vision",
+    title="Barbell",
     description=description,
     summary="Upload and download training data for FRC object detection.",
     version="0.0.1",

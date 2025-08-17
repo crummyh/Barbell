@@ -1,7 +1,7 @@
 services:
   web:
     build: .
-    container_name: frcVisionDataset
+    container_name: Barbell
     ports:
       - "8000:8000"
     depends_on:

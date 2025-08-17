@@ -1,4 +1,4 @@
-# frcVisionDataset
+# Barbell
 
 An *open* dataset allowing <abbr title="FIRST Robotics Competition">FRC</abbr> teams to upload match images, and download object detection datasets.
 
@@ -10,11 +10,11 @@ An *open* dataset allowing <abbr title="FIRST Robotics Competition">FRC</abbr> t
 
 ## Todo:
 
-See [issues](https://github.com/crummyh/frcVisionDataset/issues)
+See [issues](https://github.com/crummyh/Barbell/issues)
 
 ## Developing
 
-If you are interested in helping, read this then take a look at [issues](https://github.com/crummyh/frcVisionDataset/issues) to see what I am working on.
+If you are interested in helping, read this then take a look at [issues](https://github.com/crummyh/Barbell/issues) to see what I am working on.
 
 ### Libraries Used
 
@@ -79,15 +79,15 @@ Linux:
 # * Have Docker Compose installed
 
 # Setup
-git clone "https://github.com/crummyh/frcVisionDataset.git" # (Or use ssh)
-cd frcVisionDataset
+git clone "https://github.com/crummyh/Barbell.git" # (Or use ssh)
+cd Barbell
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 chmod +x setup.sh
 ./setup.sh
 
-# Rename .env.db.example to .env.db!!!
+Rename .env.db.example to .env.db!!!
 
 # Now start working!
 
