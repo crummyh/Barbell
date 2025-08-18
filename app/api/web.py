@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends
 from fastapi.requests import Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
+from jinja2 import TemplateNotFound
 from sqlmodel import Session
 
 from app.core import config
@@ -267,54 +268,57 @@ async def labeling(request: Request):
 
 # ========== { Docs } ========== #
 
+docs_structure = [
+    {
+        "title": "Getting Started",
+        "pages": [
+            {"title": "Introduction", "slug": "introduction"},
+            {"title": "Installation", "slug": "installation"},
+        ],
+    },
+    {
+        "title": "Guides",
+        "pages": [
+            {"title": "Authentication", "slug": "authentication"},
+            {"title": "Teams", "slug": "teams"},
+        ],
+    },
+    {
+        "title": "API Reference",
+        "pages": [
+            {"title": "Users API", "slug": "users"},
+            {"title": "Matches API", "slug": "matches"},
+        ],
+    },
+]
+
+@router.get("/docs/{page}", response_class=HTMLResponse)
 @router.get("/docs", response_class=HTMLResponse)
 async def docs(
     request: Request,
     session: Annotated[Session, Depends(get_session)],
+    page: str = "introduction",
     user: User | None = Depends(get_current_user)
 ):
-    if user is None:
-        return templates.TemplateResponse(
-            request=request, name="docs.html", context={"user": None}
+    user_out = None
+    if user is not None:
+        user_out = UserOut(
+            username=user.username,
+            email=user.email,
+            disabled=user.disabled,
+            created_at=user.created_at,
+            team_number=get_team_number_from_id(user.team, session),
+            role=user.role
         )
 
-    user_out = UserOut(
-        username=user.username,
-        email=user.email,
-        disabled=user.disabled,
-        created_at=user.created_at,
-        team_number=get_team_number_from_id(user.team, session),
-        role=user.role
-    )
-
-    return templates.TemplateResponse(
-        request=request, name="docs.html", context={"user": user_out}
-    )
-
-
-@router.get("/docs/tools", response_class=HTMLResponse)
-async def tool_docs(
-    request: Request,
-    session: Annotated[Session, Depends(get_session)],
-    user: User | None = Depends(get_current_user)
-):
-    if user is None:
+    template_name = f"docs/{page}.html"
+    try:
         return templates.TemplateResponse(
-            request=request, name="tool-docs.html", context={"user": None}
+            request=request, name=template_name, context={"user": user_out, "docs_structure": docs_structure, "current_page": page}
         )
+    except TemplateNotFound:
+        return not_found_page(request)
 
-    user_out = UserOut(
-        username=user.username,
-        email=user.email,
-        disabled=user.disabled,
-        created_at=user.created_at,
-        team_number=get_team_number_from_id(user.team, session),
-        role=user.role
-    )
-
-    return templates.TemplateResponse(
-        request=request, name="tool-docs.html", context={"user": user_out}
-    )
 
 # ========== { Other } ========== #
 
