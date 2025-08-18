@@ -321,5 +321,5 @@ async def tool_docs(
 def not_found_page(request: Request):
 
     return templates.TemplateResponse(
-        request=request, name="404.html", context={"user": None}
+        request=request, name="404.html", context={"user": None}, status_code=404
     )

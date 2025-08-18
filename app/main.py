@@ -92,7 +92,7 @@ def not_found_exception_handler(
     exc: HTTPException,
 ):
     path = str(request.url).replace(str(request.base_url),"")
-    if "api" in path or "auth" in path or "internal" in path:
+    if "api" in path or "auth" in path or "internal" in path or "static" in path:
         return not_found_error(request, exc)
     else:
         return web.not_found_page(request=request)
