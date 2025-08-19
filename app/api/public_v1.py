@@ -7,7 +7,7 @@ from fastapi.exceptions import HTTPException
 from pydantic.types import UUID4
 from sqlalchemy import func
 from sqlmodel import Session, select
-from starlette.status import HTTP_404_NOT_FOUND, HTTP_500_INTERNAL_SERVER_ERROR
+from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 
 from app.core import config
 from app.core.dependencies import (
@@ -98,7 +98,7 @@ def get_label_info(
 
     if not categories:
         raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND,
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
             detail="No categories found"
         )
 

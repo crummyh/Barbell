@@ -1,6 +1,6 @@
 {% extends "base-page.html" %} {% set navbar = True %} {% set content_padding =
-"" %} {% set page_numb = page_numb | default(0) %} {% block title %}Dashboard{%
-endblock %} {% block content %}
+"" %} {% set page_numb = page_numb | default(0) %} {% set footer = false %} {%
+block title %}Dashboard{% endblock %} {% block content %}
 <style>
     .sidebar {
         width: 250px;
@@ -56,7 +56,7 @@ endblock %} {% block content %}
                     aria-current="page"
                     href="/dashboard"
                     ><iconify-icon
-                        class="me-2 mt-2"
+                        class="me-2"
                         icon="bi:house-door-fill"
                         width="16"
                         height="16"
@@ -70,7 +70,7 @@ endblock %} {% block content %}
                     aria-current="page"
                     href="/dashboard/users"
                     ><iconify-icon
-                        class="me-2 mt-2"
+                        class="me-2"
                         icon="bi:people-fill"
                         width="16"
                         height="16"
@@ -84,7 +84,7 @@ endblock %} {% block content %}
                     aria-current="page"
                     href="/dashboard/images"
                     ><iconify-icon
-                        class="me-2 mt-2"
+                        class="me-2"
                         icon="bi:images"
                         width="16"
                         height="16"
@@ -98,7 +98,7 @@ endblock %} {% block content %}
                     aria-current="page"
                     href="/dashboard/upload"
                     ><iconify-icon
-                        class="me-2 mt-2"
+                        class="me-2"
                         icon="bi:cloud-upload-fill"
                         width="16"
                         height="16"
@@ -112,7 +112,7 @@ endblock %} {% block content %}
                     aria-current="page"
                     href="/dashboard/download"
                     ><iconify-icon
-                        class="me-2 mt-2"
+                        class="me-2"
                         icon="bi:cloud-download-fill"
                         width="16"
                         height="16"
@@ -126,7 +126,7 @@ endblock %} {% block content %}
                     aria-current="page"
                     href="/dashboard/settings"
                     ><iconify-icon
-                        class="me-2 mt-2"
+                        class="me-2"
                         icon="bi:gear-fill"
                         width="16"
                         height="16"
@@ -161,7 +161,7 @@ endblock %} {% block content %}
                         aria-current="page"
                         href="/dashboard"
                         ><iconify-icon
-                            class="me-2 mt-2"
+                            class="me-2"
                             icon="bi:house-door-fill"
                             width="16"
                             height="16"
@@ -175,7 +175,7 @@ endblock %} {% block content %}
                         aria-current="page"
                         href="/dashboard/users"
                         ><iconify-icon
-                            class="me-2 mt-2"
+                            class="me-2"
                             icon="bi:people-fill"
                             width="16"
                             height="16"
@@ -189,7 +189,7 @@ endblock %} {% block content %}
                         aria-current="page"
                         href="/dashboard/images"
                         ><iconify-icon
-                            class="me-2 mt-2"
+                            class="me-2"
                             icon="bi:images"
                             width="16"
                             height="16"
@@ -203,7 +203,7 @@ endblock %} {% block content %}
                         aria-current="page"
                         href="/dashboard/upload"
                         ><iconify-icon
-                            class="me-2 mt-2"
+                            class="me-2"
                             icon="bi:cloud-upload-fill"
                             width="16"
                             height="16"
@@ -217,7 +217,7 @@ endblock %} {% block content %}
                         aria-current="page"
                         href="/dashboard/download"
                         ><iconify-icon
-                            class="me-2 mt-2"
+                            class="me-2"
                             icon="bi:cloud-download-fill"
                             width="16"
                             height="16"
@@ -231,7 +231,7 @@ endblock %} {% block content %}
                         aria-current="page"
                         href="/dashboard/settings"
                         ><iconify-icon
-                            class="me-2 mt-2"
+                            class="me-2"
                             icon="bi:gear-fill"
                             width="16"
                             height="16"

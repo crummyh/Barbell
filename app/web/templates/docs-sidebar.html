@@ -1,0 +1,16 @@
+<div class="position-sticky" style="top: 70px">
+    <nav class="nav nav-pills flex-column small" id="docsNav">
+        {% for section in docs_structure %}
+        <h6 class="text-muted text-uppercase fw-bold small mt-3 mb-2">
+            {{ section.title }}
+        </h6>
+        {% for p in section.pages %}
+        <a
+            href="{{ url_for('docs', page=p.slug) }}"
+            class="nav-link {% if p.slug == current_page %}active{% endif %}"
+        >
+            {{ p.title }}
+        </a>
+        {% endfor %} {% endfor %}
+    </nav>
+</div>

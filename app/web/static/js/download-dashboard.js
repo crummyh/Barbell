@@ -1,3 +1,15 @@
+async function getLabels() {
+  const response = await fetch("/api/v1/stats/labels", {
+    method: "GET",
+  });
+
+  const data = await response.json();
+  console.log(data);
+  return data;
+}
+
+getLabels();
+
 const tempTreeData = [
   {
     id: "1",
@@ -150,16 +162,6 @@ async function renderTable() {
       "</div></div></td></tr>",
     ].join("");
   }
-}
-
-async function getLabels() {
-  const response = await fetch("/stats/labels", {
-    method: "GET",
-  });
-
-  const data = await response.json();
-  console.log(data);
-  return data;
 }
 
 renderTable();

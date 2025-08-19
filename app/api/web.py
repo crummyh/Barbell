@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
+from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html
 from fastapi.requests import Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
@@ -273,21 +274,37 @@ docs_structure = [
         "title": "Getting Started",
         "pages": [
             {"title": "Introduction", "slug": "introduction"},
-            {"title": "Installation", "slug": "installation"},
+            {"title": "Quickstart", "slug": "quickstart"},
+            {"title": "Capture Setup", "slug": "capture"},
+            {"title": "FAQ / Troubleshooting", "slug": "faq"}
         ],
     },
     {
-        "title": "Guides",
+        "title": "Using Data",
         "pages": [
-            {"title": "Authentication", "slug": "authentication"},
-            {"title": "Teams", "slug": "teams"},
+            {"title": "Uploading", "slug": "upload"},
+            {"title": "Downloading", "slug": "download"},
         ],
     },
     {
-        "title": "API Reference",
+        "title": "API Guild",
         "pages": [
-            {"title": "Users API", "slug": "users"},
-            {"title": "Matches API", "slug": "matches"},
+            {"title": "Authentication", "slug": "auth"},
+            {"title": "Public API", "slug": "public"},
+        ],
+    },
+    {
+        "title": "Contributing",
+        "pages": [
+            {"title": "Moderating", "slug": "moderating"},
+            {"title": "Developing", "slug": "developing"},
+        ],
+    },
+    {
+        "title": "Community",
+        "pages": [
+            {"title": "Roadmap", "slug": "roadmap"},
+            {"title": "Discussions", "slug": "discussions"},
         ],
     },
 ]
@@ -311,10 +328,30 @@ async def docs(
             role=user.role
         )
 
+    if page == "api":
+        return get_swagger_ui_html(
+            openapi_url="/openapi.json",
+            title="Barbell - Swagger UI",
+            swagger_favicon_url="/static/images/favicon.ico",
+        )
+
+    if page == "/api/redoc":
+        return get_redoc_html(
+            openapi_url="/openapi.json",
+            title="Barbell - Redoc",
+            redoc_favicon_url="/static/images/favicon.ico",
+        )
+
+    page_title = None
+    for section in docs_structure:
+        for _page in section["pages"]:
+            if _page["slug"] == page:
+                page_title = _page["title"]
+
     template_name = f"docs/{page}.html"
     try:
         return templates.TemplateResponse(
-            request=request, name=template_name, context={"user": user_out, "docs_structure": docs_structure, "current_page": page}
+            request=request, name=template_name, context={"user": user_out, "docs_structure": docs_structure, "current_page": page, "current_title": page_title}
         )
     except TemplateNotFound:
         return not_found_page(request)

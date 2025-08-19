@@ -2,7 +2,6 @@ from contextlib import asynccontextmanager
 
 import uvicorn
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -63,22 +62,6 @@ app.mount("/internal", internal_v1.subapp) # TODO: Disable docs
 app.include_router(public_v1.router, prefix="/api/v1")
 app.include_router(web.router, include_in_schema=False)
 app.include_router(auth_v1.router, prefix="/auth/v1")
-
-@app.get("/docs/api", include_in_schema=False)
-def overridden_swagger():
-    return get_swagger_ui_html(
-        openapi_url="/openapi.json",
-        title=app.title + " - Swagger UI",
-        swagger_favicon_url="/static/images/favicon.ico",
-    )
-
-@app.get("/docs/api/redoc", include_in_schema=False)
-def overridden_redoc():
-    return get_redoc_html(
-        openapi_url="/openapi.json",
-        title=app.title + " - Swagger UI",
-        redoc_favicon_url="/static/images/favicon.ico",
-    )
 
 def not_found_error(request: Request, exc: HTTPException):
     return JSONResponse(

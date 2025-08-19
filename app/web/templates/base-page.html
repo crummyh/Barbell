@@ -11,9 +11,23 @@ custom_footer_styles = custom_footer_styles | default("") %}
         <title>{% block title %}{% endblock %} - Barbell</title>
         <link
             rel="icon"
-            type="image/x-icon"
-            href="/static/images/favicon.ico"
+            type="image/png"
+            href="/static/images/favicon-96x96.png"
+            sizes="96x96"
         />
+        <link
+            rel="icon"
+            type="image/svg+xml"
+            href="/static/images/favicon.svg"
+        />
+        <link rel="shortcut icon" href="/static/images/favicon.ico" />
+        <link
+            rel="apple-touch-icon"
+            sizes="180x180"
+            href="/static/images/apple-touch-icon.png"
+        />
+        <meta name="apple-mobile-web-app-title" content="Barbell" />
+        <link rel="manifest" href="/static/images/site.webmanifest" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
