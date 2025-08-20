@@ -1,6 +1,6 @@
 import tarfile
 from datetime import datetime, timezone
-from typing import Annotated, Sequence
+from typing import Annotated, Any, Dict, List
 
 from fastapi import APIRouter, BackgroundTasks, Depends, UploadFile
 from fastapi.exceptions import HTTPException
@@ -93,7 +93,7 @@ def get_team_stats(team_number: int, session: Annotated[Session, Depends(get_ses
 @router.get("/stats/labels")
 def get_label_info(
     session: Annotated[Session, Depends(get_session)]
-) -> Sequence[LabelSuperCategory]:
+) -> List[Dict[str, Any]]:
     categories = session.exec(select(LabelSuperCategory)).all()
 
     if not categories:
@@ -102,7 +102,15 @@ def get_label_info(
             detail="No categories found"
         )
 
-    return categories
+    output = []
+    for catagory in categories:
+        output.append({
+            "id": catagory.id,
+            "name": catagory.name,
+            "categories": catagory.sub_categories
+        })
+
+    return output
 
 # ========== { Auth API } ========== #
 

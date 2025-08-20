@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from pydantic import UUID4
 from sqlmodel import Session, asc, select
-from starlette.status import HTTP_404_NOT_FOUND
+from starlette.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
 from app.core.dependencies import (
     RateLimiter,
@@ -128,7 +128,7 @@ def change_user_role(
     session.add(user)
     session.commit()
 
-@subapp.put("/categories/super/create")
+@subapp.post("/categories/super/create")
 def create_label_super_category(
     category: LabelSuperCategory,
     session: Annotated[Session, Depends(get_session)],
@@ -137,7 +137,15 @@ def create_label_super_category(
     session.add(category)
     session.commit()
 
-@subapp.put("/categories/create")
+@subapp.get("/categories/super")
+def get_label_super_categories(
+    session: Annotated[Session, Depends(get_session)],
+    current_user: Annotated[User, Security(require_login)]
+):
+    return session.exec(select(LabelSuperCategory)).all()
+
+
+@subapp.post("/categories/create")
 def create_label_category(
     category: LabelCategory,
     session: Annotated[Session, Depends(get_session)],
@@ -145,6 +153,45 @@ def create_label_category(
 ):
     session.add(category)
     session.commit()
+
+@subapp.delete("/categories/remove")
+def remove_label_category(
+    id: int,
+    session: Annotated[Session, Depends(get_session)],
+    current_user: Annotated[User, Security(minimum_role(UserRole.MODERATOR))]
+):
+    try:
+        session.delete(session.get(LabelCategory, id))
+    except Exception:
+        session.rollback()
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="Catagory does not exist"
+        )
+    else:
+        session.commit()
+
+@subapp.delete("/categories/super/remove")
+def remove_label_super_category(
+    id: int,
+    session: Annotated[Session, Depends(get_session)],
+    current_user: Annotated[User, Security(minimum_role(UserRole.MODERATOR))]
+):
+    try:
+        super_catagory = session.get(LabelSuperCategory, id)
+        assert super_catagory
+        if super_catagory.sub_categories:
+            for catagory in super_catagory.sub_categories:
+                session.delete(catagory)
+        session.delete(super_catagory)
+    except Exception:
+        session.rollback()
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="Catagory does not exist"
+        )
+    else:
+        session.commit()
 
 @subapp.get("/download-batches/history/")
 def get_batch_history(

@@ -23,147 +23,25 @@
                         >
 []</pre
                         >
-                    </div>
-                    <div>
-                        <button
-                            type="button"
-                            class="btn btn-primary me-2"
-                            data-bs-toggle="modal"
-                            data-bs-target="#createLabel"
-                        >
-                            Create Label Catagory
-                        </button>
-                        <button
-                            type="button"
-                            class="btn btn-primary"
-                            data-bs-toggle="modal"
-                            data-bs-target="#createSuperLabel"
-                        >
-                            Create Label Super Catagory
-                        </button>
-                    </div>
-                    <div
-                        class="modal fade"
-                        id="createLabel"
-                        tabindex="-1"
-                        aria-labelledby="createLabelLabel"
-                        aria-hidden="true"
-                    >
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h1
-                                        class="modal-title fs-5"
-                                        id="createLabel"
-                                    >
-                                        Create Label Catagory
-                                    </h1>
-                                    <button
-                                        type="button"
-                                        class="btn-close"
-                                        data-bs-dismiss="modal"
-                                        aria-label="Close"
-                                    ></button>
-                                </div>
-                                <div class="modal-body">
-                                    <div class="mb-3">
-                                        <label
-                                            for="catagoryName"
-                                            class="form-label"
-                                            >Catagory Name</label
-                                        >
-                                        <input
-                                            type="text"
-                                            class="form-control mb-3"
-                                            id="catagoryName"
-                                        />
-                                        <label for="superCatagorySelect"
-                                            >Super Catagory</label
-                                        >
-                                        <select
-                                            class="form-select"
-                                            id="superCatagorySelect"
-                                        >
-                                            <option selected>
-                                                Pick a Super Catagory
-                                            </option>
-                                            <option value="1">one</option>
-                                            <option value="2">two</option>
-                                            <option value="3">three</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button
-                                        type="button"
-                                        class="btn btn-secondary"
-                                        data-bs-dismiss="modal"
-                                    >
-                                        Close
-                                    </button>
-                                    <button
-                                        type="button"
-                                        class="btn btn-primary"
-                                    >
-                                        Save changes
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div
-                        class="modal fade"
-                        id="createSuperLabel"
-                        tabindex="-1"
-                        aria-labelledby="createSuperLabelLabel"
-                        aria-hidden="true"
-                    >
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h1
-                                        class="modal-title fs-5"
-                                        id="createSuperLabelLabel"
-                                    >
-                                        Create Label Catagory
-                                    </h1>
-                                    <button
-                                        type="button"
-                                        class="btn-close"
-                                        data-bs-dismiss="modal"
-                                        aria-label="Close"
-                                    ></button>
-                                </div>
-                                <div class="modal-body">
-                                    <div class="mb-3">
-                                        <label
-                                            for="superCatagoryName"
-                                            class="form-label"
-                                            >Super Catagory Name</label
-                                        >
-                                        <input
-                                            type="text"
-                                            class="form-control"
-                                            id="superCatagoryName"
-                                        />
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button
-                                        type="button"
-                                        class="btn btn-secondary"
-                                        data-bs-dismiss="modal"
-                                    >
-                                        Close
-                                    </button>
-                                    <button
-                                        type="button"
-                                        class="btn btn-primary"
-                                    >
-                                        Save changes
-                                    </button>
-                                </div>
-                            </div>
+                        <div>
+                            <button class="btn btn-danger" id="deleteBtn">
+                                <iconify-icon
+                                    icon="bi:trash-fill"
+                                    width="16"
+                                    height="16"
+                                    class="me-2"
+                                ></iconify-icon
+                                >Delete
+                            </button>
+                            <button class="btn btn-secondary" id="modifyBtn">
+                                <iconify-icon
+                                    icon="bi:arrow-clockwise"
+                                    width="16"
+                                    height="16"
+                                    class="me-2"
+                                ></iconify-icon
+                                >Modify
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -171,14 +49,65 @@
         </div>
         <div class="col-xl-6">
             <div class="bg-body-tertiary rounded full-dash-height">
-                <div class="p-4"></div>
+                <div class="p-4">
+                    <div>
+                        <h4>Create Label Catagory</h4>
+                        <form id="labelCatagoryForm">
+                            <div class="mb-3">
+                                <label for="catagoryName" class="form-label"
+                                    >Catagory Name</label
+                                >
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    id="catagoryName"
+                                />
+                            </div>
+                            <div class="mb-3">
+                                <label for="superCatagorySelect"
+                                    >Super Catagory</label
+                                >
+                                <select
+                                    class="form-select"
+                                    id="superCatagorySelect"
+                                >
+                                    <option selected>None</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary mb-4">
+                                Create
+                            </button>
+                            <span id="catagoryOutput"></span>
+                        </form>
+
+                        <h4>Create Label Super Catagory</h4>
+                        <form id="labelSuperCatagoryForm">
+                            <div class="mb-3">
+                                <label
+                                    for="superCatagoryName"
+                                    class="form-label"
+                                    >Super Catagory Name</label
+                                >
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    id="superCatagoryName"
+                                />
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                Create
+                            </button>
+                            <span id="superCatagoryOutput"></span>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-{% endblock %} {% block fileEnd %}
-<script src="/static/js/tooltips.js"></script>
-<script src="/static/js/treeview.js"></script>
-<script src="/static/js/label-dashboard.js"></script>
-{% endblock %}
+    {% endblock %} {% block fileEnd %}
+    <script src="/static/js/tooltips.js"></script>
+    <script src="/static/js/treeview.js"></script>
+    <script src="/static/js/label-dashboard.js"></script>
+    {% endblock %}
+</div>
