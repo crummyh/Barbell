@@ -13,7 +13,8 @@
     "Annotatable",
     "supercategory",
     "iscrowd",
-    "iconify"
+    "iconify",
+    "Treeview"
   ],
   "flagWords": []
 }

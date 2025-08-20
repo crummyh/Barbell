@@ -1,0 +1,60 @@
+<div
+    class="sidebar d-none d-lg-flex flex-column flex-shrink-0 p-3 bg-body-secondary position-fixed"
+>
+    <ul class="nav nav-pills flex-column mb-auto">
+        {% for page in dashboard_structure %}
+        <li class="nav-item">
+            <a
+                class="nav-link {% if page.slug == current_page %}active text-white{% else %}text-body{% endif %}"
+                aria-current="page"
+                href="{{ url_for('dashboard', page=page.slug) }}"
+                ><iconify-icon
+                    class="me-2"
+                    icon="{{ page.icon }}"
+                    width="16"
+                    height="16"
+                ></iconify-icon
+                >{{ page.title }}</a
+            >
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+
+<!-- Offcanvas Sidebar for small screens -->
+<div
+    class="offcanvas offcanvas-start bg-body-secondary"
+    tabindex="-1"
+    id="mobileSidebar"
+    style="width: 250px"
+>
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title">[Barbell]</h5>
+        <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="offcanvas"
+        ></button>
+    </div>
+    <div class="offcanvas-body p-3">
+        <!-- Same nav as above -->
+        <ul class="nav nav-pills flex-column mb-auto">
+            {% for page in dashboard_structure %}
+            <li class="nav-item">
+                <a
+                    class="nav-link {% if page.slug == current_page %}active text-white{% else %}text-body{% endif %}"
+                    aria-current="page"
+                    href="{{ url_for('dashboard', page=page.slug) }}"
+                    ><iconify-icon
+                        class="me-2"
+                        icon="{{ page.icon }}"
+                        width="16"
+                        height="16"
+                    ></iconify-icon
+                    >{{ page.title }}</a
+                >
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>

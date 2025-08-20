@@ -13,7 +13,7 @@ from app.core import config
 from app.core.dependencies import get_current_user
 from app.core.helpers import get_team_number_from_id
 from app.db.database import get_session
-from app.models.models import UserOut
+from app.models.models import UserOut, UserRole
 from app.models.schemas import User
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -99,10 +99,30 @@ async def about(
 
 # ========== { Private Pages } ========== #
 
+dashboard_structure = {
+    UserRole.ADMIN: [
+        {"title": "Home", "icon": "bi:house-fill", "slug": "home"},
+        {"title": "Labels", "icon": "bi:list-ul", "slug": "labels"},
+    ],
+    UserRole.MODERATOR: [
+        {"title": "Page 1", "icon": "bi:house-fill", "slug": "page-1"},
+        {"title": "Page 1", "icon": "bi:house-fill", "slug": "page-1"},
+    ],
+    UserRole.DEFAULT: [
+        {"title": "Home", "icon": "bi:house-fill", "slug": "home"},
+        {"title": "Images", "icon": "bi:images", "slug": "images"},
+        {"title": "Upload", "icon": "bi:cloud-upload-fill", "slug": "upload"},
+        {"title": "Download", "icon": "bi:cloud-download-fill", "slug": "download"},
+        {"title": "Settings", "icon": "bi:gear-fill", "slug": "settings"},
+    ],
+}
+
+@router.get("/dashboard/{page}")
 @router.get("/dashboard", response_class=HTMLResponse)
 async def dashboard(
     request: Request,
     session: Annotated[Session, Depends(get_session)],
+    page: str = "home",
     user: User | None = Depends(get_current_user)
 ):
     if user is None:
@@ -117,119 +137,30 @@ async def dashboard(
         role=user.role
     )
 
-    return templates.TemplateResponse(
-        request=request, name="dashboard-home.html", context={"user": user_out}
-    )
+    page_title = None
+    for section in dashboard_structure:
+        if section == user.role:
+            for _page in dashboard_structure[user.role]:
+                if _page["slug"] == page:
+                    page_title = _page["title"]
 
-@router.get("/dashboard/images", response_class=HTMLResponse)
-async def dashboard_images(
-    request: Request,
-    session: Annotated[Session, Depends(get_session)],
-    user: User | None = Depends(get_current_user)
-):
-    if user is None:
-        return RedirectResponse("/login")
+    if page_title is None:
+        print("Matching page not found!")
+        return not_found_page(request)
 
-    user_out = UserOut(
-        username=user.username,
-        email=user.email,
-        disabled=user.disabled,
-        created_at=user.created_at,
-        team_number=get_team_number_from_id(user.team, session),
-        role=user.role
-    )
-
-    return templates.TemplateResponse(
-        request=request, name="dashboard-images.html", context={"user": user_out}
-    )
-
-@router.get("/dashboard/upload", response_class=HTMLResponse)
-async def dashboard_upload(
-    request: Request,
-    session: Annotated[Session, Depends(get_session)],
-    user: User | None = Depends(get_current_user)
-):
-    if user is None:
-        return RedirectResponse("/login")
-
-    user_out = UserOut(
-        username=user.username,
-        email=user.email,
-        disabled=user.disabled,
-        created_at=user.created_at,
-        team_number=get_team_number_from_id(user.team, session),
-        role=user.role
-    )
-
-    return templates.TemplateResponse(
-        request=request, name="dashboard-upload.html", context={"user": user_out}
-    )
-
-@router.get("/dashboard/download", response_class=HTMLResponse)
-async def dashboard_download(
-    request: Request,
-    session: Annotated[Session, Depends(get_session)],
-    user: User | None = Depends(get_current_user)
-):
-    if user is None:
-        return RedirectResponse("/login")
-
-    user_out = UserOut(
-        username=user.username,
-        email=user.email,
-        disabled=user.disabled,
-        created_at=user.created_at,
-        team_number=get_team_number_from_id(user.team, session),
-        role=user.role
-    )
-
-    return templates.TemplateResponse(
-        request=request, name="dashboard-download.html", context={"user": user_out}
-    )
-
-@router.get("/dashboard/settings", response_class=HTMLResponse)
-async def dashboard_settings(
-    request: Request,
-    session: Annotated[Session, Depends(get_session)],
-    user: User | None = Depends(get_current_user)
-):
-    if user is None:
-        return RedirectResponse("/login")
-
-    user_out = UserOut(
-        username=user.username,
-        email=user.email,
-        disabled=user.disabled,
-        created_at=user.created_at,
-        team_number=get_team_number_from_id(user.team, session),
-        role=user.role
-    )
-
-    return templates.TemplateResponse(
-        request=request, name="dashboard-settings.html", context={"user": user_out}
-    )
-
-@router.get("/dashboard/users", response_class=HTMLResponse)
-async def dashboard_users(
-    request: Request,
-    session: Annotated[Session, Depends(get_session)],
-    user: User | None = Depends(get_current_user)
-):
-    if user is None:
-        return RedirectResponse("/login")
-
-    user_out = UserOut(
-        username=user.username,
-        email=user.email,
-        disabled=user.disabled,
-        created_at=user.created_at,
-        team_number=get_team_number_from_id(user.team, session),
-        role=user.role
-    )
-
-    return templates.TemplateResponse(
-        request=request, name="dashboard-users.html", context={"user": user_out}
-    )
+    template_name = f"dashboard/{user.role.name.lower()}/{page}.html"
+    try:
+        return templates.TemplateResponse(
+            request=request, name=template_name, context={
+                "user": user_out,
+                "dashboard_structure": dashboard_structure[user.role],
+                "current_page": page,
+                "current_title": page_title
+            }
+        )
+    except TemplateNotFound:
+        print("Template not found: " + template_name)
+        return not_found_page(request)
 
 @router.get("/account", response_class=HTMLResponse)
 async def account(
