@@ -73,15 +73,20 @@ document
     }
   });
 
-async function updateSuperCategoriesList() {
-  const optionInput = document.getElementById("superCatagorySelect");
-  optionInput.innerHTML = '<option value="0" selected>none</option>';
-
+async function getSuperCategoriesList() {
   const response = await fetch("/internal/categories/super", {
     method: "GET",
     credentials: "include",
   });
   let data = await response.json();
+  return data;
+}
+
+async function updateSuperCategoriesList() {
+  const optionInput = document.getElementById("superCatagorySelect");
+  optionInput.innerHTML = '<option value="0" selected>none</option>';
+
+  let data = await getSuperCategoriesList();
 
   for (var i = 0; i < data.length; i++) {
     optionInput.innerHTML += `<option value="${data[i].id}">${data[i].name}</option>`;
@@ -140,7 +145,6 @@ document.getElementById("deleteBtn").onclick = async function () {
       );
     } else {
       try {
-        let data = { id: currentSelection[i].id };
         const response = await fetch(
           `/internal/categories/remove?id=${currentSelection[i].id}`,
           {
@@ -154,6 +158,73 @@ document.getElementById("deleteBtn").onclick = async function () {
   tree.setData(await getLabelData());
 };
 
-document.getElementById("modifyBtn").onclick = function () {
-  alert("hello!");
+document.getElementById("modifyBtn").onclick = async function () {
+  let currentSelection = tree.getSelectedNodes();
+
+  if (
+    currentSelection.length > 1 &&
+    !Object.hasOwn(currentSelection[0], "children")
+  ) {
+    const modifyOutput = document.getElementById("modifyOutput");
+    modifyOutput.innerHTML = "Only select 1 catagory or super catagory";
+  } else {
+    const modalForm = document.getElementById("modifyModalBody");
+
+    if (Object.hasOwn(currentSelection[0], "children")) {
+      modalForm.innerHTML = [
+        '<div class="mb-3">',
+        '<label for="newNameInput" class="form-label">New Name</label>',
+        `<input type="text" class="form-control" id="newNameInput" placeholder="${currentSelection[0].name}">`,
+        "</div>",
+      ].join("");
+    } else {
+      modalData = [
+        '<div class="mb-3">',
+        '<label for="newNameInput" class="form-label">New Name</label>',
+        `<input type="text" class="form-control" id="newNameInput" placeholder="${currentSelection[0].name}">`,
+        "</div>",
+        '<div class="mb-3">',
+        '<label for="superCatOption" class="form-label">Super Catagory</label>',
+        '<select class="form-select" id="superCatOption">',
+        '<option value="0" selected>...</option>',
+      ];
+
+      let superCategories = await getSuperCategoriesList();
+      for (var i = 0; i < superCategories.length; i++) {
+        modalData.push(
+          `<option value="${superCategories[i].id}">${superCategories[i].name}</option>`,
+        );
+      }
+      modalData.push("</select");
+      modalForm.innerHTML = modalData.join("");
+    }
+
+    new bootstrap.Modal("#modifyModal").show();
+  }
+};
+
+document.getElementById("modifySaveBtn").onclick = async function () {
+  let currentSelection = tree.getSelectedNodes();
+  const newName = document.getElementById("newNameInput").value;
+
+  if (Object.hasOwn(currentSelection[0], "children")) {
+    const response = await fetch(
+      `/internal/categories/super/modify?id=${currentSelection[0].id}&new_name=${newName}`,
+      {
+        method: "PUT",
+        credentials: "include",
+      },
+    );
+  } else {
+    const newSuperCat = document.getElementById("superCatOption").value;
+    const response = await fetch(
+      `/internal/categories/modify?id=${currentSelection[0].id}&new_name=${newName}&new_super_cat=${newSuperCat}`,
+      {
+        method: "PUT",
+        credentials: "include",
+      },
+    );
+  }
+  new bootstrap.Modal("#modifyModal").hide();
+  tree.setData(await getLabelData());
 };

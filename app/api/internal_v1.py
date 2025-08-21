@@ -193,6 +193,51 @@ def remove_label_super_category(
     else:
         session.commit()
 
+@subapp.put("/categories/super/modify")
+def modify_label_super_category(
+    id: int,
+    new_name: str,
+    session: Annotated[Session, Depends(get_session)],
+    current_user: Annotated[User, Security(minimum_role(UserRole.MODERATOR))]
+):
+    try:
+        catagory = session.get(LabelSuperCategory, id)
+        assert catagory
+        catagory.name = new_name
+        session.add(catagory)
+    except Exception:
+        session.rollback()
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="Catagory does not exist"
+        )
+    else:
+        session.commit()
+
+@subapp.put("/categories/modify")
+def modify_label_category(
+    id: int,
+    new_name: str,
+    new_super_cat: int,
+    session: Annotated[Session, Depends(get_session)],
+    current_user: Annotated[User, Security(minimum_role(UserRole.MODERATOR))]
+):
+    try:
+        catagory = session.get(LabelCategory, id)
+        assert catagory
+        if (new_super_cat != 0):
+            catagory.super_catagory_id = new_super_cat
+        catagory.name = new_name
+        session.add(catagory)
+    except Exception:
+        session.rollback()
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="Catagory does not exist"
+        )
+    else:
+        session.commit()
+
 @subapp.get("/download-batches/history/")
 def get_batch_history(
     session: Annotated[Session, Depends(get_session)],
