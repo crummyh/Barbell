@@ -70,7 +70,7 @@ async def process_batch_async(batch_id: UUID):
                         if _validate_image(image):
                             image_entry = Image(
                                 created_at=batch.capture_time,
-                                created_by=batch.team,
+                                created_by=batch.user,
                                 batch=batch_id
                             )
                             session.add(image_entry)

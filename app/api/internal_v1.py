@@ -10,6 +10,7 @@ from starlette.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
 from app.core.dependencies import (
     RateLimiter,
+    generate_api_key,
     minimum_role,
     require_login,
     require_role,
@@ -238,13 +239,35 @@ def modify_label_category(
     else:
         session.commit()
 
-@subapp.get("/download-batches/history/")
+@subapp.get("/download-batches/history")
 def get_batch_history(
     session: Annotated[Session, Depends(get_session)],
     current_user: Annotated[User, Security(require_login)]
 ):
-    batches = session.exec(select(DownloadBatch).where(DownloadBatch.team == current_user.team)).all()
+    batches = session.exec(select(DownloadBatch).where(DownloadBatch.user == current_user.id)).all()
     if len(batches) == 0:
         return None
 
     return batches
+
+@subapp.put("/api-key")
+def create_or_rotate_api_key(
+    session: Annotated[Session, Depends(get_session)],
+    current_user: Annotated[User, Security(require_login)]
+):
+    try:
+        current_user.api_key = generate_api_key()
+        return current_user.api_key
+    except Exception:
+        session.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to change API key"
+        )
+
+@subapp.get("/api-key")
+def get_api_key(
+    session: Annotated[Session, Depends(get_session)],
+    current_user: Annotated[User, Security(require_login)]
+):
+    return current_user.api_key

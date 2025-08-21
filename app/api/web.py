@@ -105,8 +105,8 @@ dashboard_structure = {
         {"title": "Labels", "icon": "bi:list-ul", "slug": "labels"},
     ],
     UserRole.MODERATOR: [
-        {"title": "Page 1", "icon": "bi:house-fill", "slug": "page-1"},
-        {"title": "Page 1", "icon": "bi:house-fill", "slug": "page-1"},
+        {"title": "Home", "icon": "bi:house-fill", "slug": "home"},
+        {"title": "Image Review", "icon": "bi:images", "slug": "image-review"},
     ],
     UserRole.DEFAULT: [
         {"title": "Home", "icon": "bi:house-fill", "slug": "home"},

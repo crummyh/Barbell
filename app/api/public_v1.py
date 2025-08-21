@@ -18,9 +18,7 @@ from app.core.dependencies import (
 )
 from app.core.helpers import (
     get_hash_with_streaming,
-    get_id_from_team_number,
-    get_team_from_id,
-    get_team_number_from_id,
+    get_username_from_id,
 )
 from app.db.database import get_session
 from app.models.models import (
@@ -29,7 +27,6 @@ from app.models.models import (
     DownloadStatusOut,
     ImageReviewStatus,
     StatsOut,
-    TeamStatsOut,
     UploadStatus,
     UploadStatusOut,
 )
@@ -39,6 +36,7 @@ from app.models.schemas import (
     LabelSuperCategory,
     Team,
     UploadBatch,
+    User,
 )
 from app.services.buckets import create_upload_batch
 from app.services.monitoring import get_uptime
@@ -62,31 +60,6 @@ def get_stats(session: Annotated[Session, Depends(get_session)]) -> StatsOut:
         un_reviewed_image_count=session.exec(select(func.count()).select_from(Image).where(Image.review_status != ImageReviewStatus.APPROVED)).one(),
         team_count=session.exec(select(func.count()).select_from(Team)).one(),
         uptime=get_uptime()
-    )
-    return out
-
-@router.get("/stats/team/{team_number}", tags=["Public", "Stats"], dependencies=[Depends(RateLimiter(requests_limit=10, time_window=10))])
-def get_team_stats(team_number: int, session: Annotated[Session, Depends(get_session)]) -> TeamStatsOut:
-    """
-    Get stats about individual teams
-
-    - **team_number**: The team to look at
-    """
-
-    try:
-        team = get_id_from_team_number(team_number, session)
-    except LookupError:
-        raise HTTPException(status_code=404, detail="Team not found")
-
-    images = session.exec(select(Image).where(Image.created_by == team).where(Image.review_status == ImageReviewStatus.APPROVED)).all()
-    pre_images = session.exec(select(Image).where(Image.created_by == team).where(Image.review_status != ImageReviewStatus.APPROVED)).all()
-    batches = session.exec(select(UploadBatch).where(UploadBatch.team == team)).all()
-
-    out = TeamStatsOut(
-        image_count=len(images),
-        un_reviewed_image_count=len(pre_images),
-        years_available=set([i.created_at.year for i in images]),
-        upload_batches=len(batches)
     )
     return out
 
@@ -117,7 +90,7 @@ def get_label_info(
 @router.get("/status/upload/{batch_id}", tags=["Auth Required",  "Stats"], dependencies=[Depends(RateLimiter(requests_limit=30, time_window=10))])
 def get_upload_batch_status(
     batch_id: UUID4,
-    team: Annotated[Team, Depends(handle_api_key)],
+    user: Annotated[User, Depends(handle_api_key)],
     session: Annotated[Session, Depends(get_session)]
 ) -> UploadStatusOut:
 
@@ -130,7 +103,7 @@ def get_upload_batch_status(
 
     out = UploadStatusOut(
         batch_id=batch_id,
-        team=get_team_number_from_id(batch.team, session),
+        user=get_username_from_id(batch.user, session),
         status=batch.status,
         file_size=batch.file_size,
         images_valid=batch.images_valid,
@@ -146,7 +119,7 @@ def upload(
     archive:          UploadFile,
     hash:             str,
     background_tasks: BackgroundTasks,
-    team: Annotated[Team, Depends(handle_api_key)],
+    user: Annotated[User, Depends(handle_api_key)],
     session: Annotated[Session, Depends(get_session)],
     capture_time:     datetime = datetime.now(timezone.utc)
 ) -> UploadStatusOut:
@@ -179,9 +152,9 @@ def upload(
         )
 
     try:
-        assert team.id
+        assert user.id
         batch = UploadBatch(
-            team=team.id,
+            user=user.id,
             status=UploadStatus.UPLOADING,
             file_size=archive.size,
             capture_time=capture_time
@@ -211,7 +184,7 @@ def upload(
 
     return UploadStatusOut(
         batch_id=batch.id,
-        team=get_team_from_id(team.id, session).team_number,
+        user=get_username_from_id(batch.user, session),
         status=UploadStatus.PROCESSING,
         file_size=archive.size,
         images_valid=None,
@@ -224,7 +197,7 @@ def upload(
 @router.get("/status/download/{batch_id}", tags=["Auth Required",  "Stats"], dependencies=[Depends(RateLimiter(requests_limit=30, time_window=10))])
 def get_download_batch_status(
     batch_id: UUID4,
-    team: Annotated[Team, Depends(handle_api_key)],
+    user: Annotated[User, Depends(handle_api_key)],
     session: Annotated[Session, Depends(get_session)]
 ) -> DownloadStatusOut:
 
@@ -237,7 +210,7 @@ def get_download_batch_status(
 
     out = DownloadStatusOut(
         id=batch_id,
-        team=get_team_number_from_id(batch.team, session),
+        user=get_username_from_id(batch.user, session),
         status=batch.status,
         non_match_images=batch.non_match_images,
         image_count=batch.image_count,
@@ -252,13 +225,13 @@ def get_download_batch_status(
 def download_batch(
     request: DownloadRequest,
     background_tasks: BackgroundTasks,
-    team: Annotated[Team, Depends(handle_api_key)],
+    user: Annotated[User, Depends(handle_api_key)],
     session: Annotated[Session, Depends(get_session)]
 ):
     try:
-        assert team.id
+        assert user.id
         batch = DownloadBatch(
-            team=team.id,
+            user=user.id,
             status=DownloadStatus.STARTING,
             non_match_images=request.non_match_images,
             image_count=request.count,
@@ -280,7 +253,7 @@ def download_batch(
         background_tasks.add_task(create_download_batch, batch_id=batch.id)
         return DownloadStatusOut(
             id=batch.id,
-            team=batch.team,
+            user=get_username_from_id(batch.user, session),
             status=batch.status,
             non_match_images=batch.non_match_images,
             image_count=batch.image_count,
@@ -294,16 +267,16 @@ def download_batch(
 
 @router.put("/rotate-key", dependencies=[Depends(RateLimiter(requests_limit=1, time_window=60))])
 def rotate_api_key(
-    team: Annotated[Team, Depends(handle_api_key)],
+    user: Annotated[User, Depends(handle_api_key)],
     session: Annotated[Session, Depends(get_session)]
 ):
     try:
-        team.api_key = get_password_hash(generate_api_key())
-        session.add(team)
+        user.api_key = get_password_hash(generate_api_key())
+        session.add(user)
     except Exception:
         session.rollback()
     else:
         session.commit()
 
-    session.refresh(team)
-    return team.api_key
+    session.refresh(user)
+    return user.api_key

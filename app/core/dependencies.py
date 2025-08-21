@@ -13,7 +13,7 @@ from sqlmodel import Session, select
 from app.core import config
 from app.db.database import get_session
 from app.models.models import TokenData, UserRole
-from app.models.schemas import Team, User
+from app.models.schemas import User
 
 # ==========={ Database }=========== #
 
@@ -25,24 +25,24 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # ==========={ API Keys }=========== #
 
-# Combines a key and team number:
-# {KEY}:{TEAM NUMBER}
+# Combines a key and username:
+# {USERNAME}:{TEAM NUMBER}
 api_auth_scheme = APIKeyHeader(name="x-api-auth", auto_error=False)
 
 async def handle_api_key(
     db: SessionDep,
     token: str = Security(api_auth_scheme)
-) -> AsyncGenerator[Team, None]:
+) -> AsyncGenerator[User, None]:
     try:
-        key_id, key = token.split(":", 1)
+        username, key = token.split(":", 1)
 
-        res = db.exec(select(Team).where(Team.team_number == int(key_id)).where(Team.disabled == False))  # noqa: E712
-        team = res.one()
+        res = db.exec(select(User).where(User.username == username).where(User.disabled == False))  # noqa: E712
+        user = res.one()
 
-        if not pwd_context.verify(key, team.api_key):
+        if not pwd_context.verify(key, user.api_key):
             raise Exception("Invalid API key")
 
-        yield team
+        yield user
 
     except Exception:
         raise HTTPException(
@@ -108,11 +108,7 @@ def get_current_user(
     token: Annotated[Optional[str], Depends(optional_auth)],
     session: Annotated[Session, Depends(get_session)]
 ) -> Optional[User]:
-    # credentials_exception = HTTPException(
-    #     status_code=status.HTTP_401_UNAUTHORIZED,
-    #     detail="Could not validate credentials",
-    #     headers={"WWW-Authenticate": "Bearer"},
-    # )
+
     try:
         payload = jwt.decode(
             token,

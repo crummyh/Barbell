@@ -49,6 +49,13 @@ def get_team_from_number(team_number: int, session: Session) -> Team:
         raise LookupError()
     return team
 
+def get_username_from_id(user_id: int, session: Session) -> str:
+    try:
+        username = session.get(User, user_id).username
+        return username
+    except Exception:
+        raise LookupError()
+
 def get_hash_with_streaming(file: BinaryIO, algorithm: str) -> str:
     h = hashlib.new(algorithm)
     file.seek(0)

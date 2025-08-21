@@ -16,7 +16,6 @@ from app.core.dependencies import (
     RateLimiter,
     authenticate_user,
     create_access_token,
-    generate_api_key,
     generate_verification_code,
     get_current_active_user,
     get_password_hash,
@@ -165,11 +164,9 @@ def register_team(
         )
 
     try:
-        api_key = generate_api_key()
         team = Team(
             team_number=new_team.team_number,
             team_name=new_team.team_name,
-            api_key=get_password_hash(api_key),
             leader_user=new_team_leader.id
         )
         session.add(team)
@@ -181,7 +178,6 @@ def register_team(
         )
     else:
         session.commit()
-        return api_key
 
 @router.get("/logout")
 def logout():

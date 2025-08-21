@@ -54,7 +54,7 @@ class TeamStatsOut(BaseModel):
 
 class UploadStatusOut(BaseModel):
     batch_id: UUID
-    team: int
+    user: str
     status: UploadStatus
     file_size: Optional[int]
     images_valid: Optional[int]
@@ -65,7 +65,7 @@ class UploadStatusOut(BaseModel):
 
 class DownloadStatusOut(BaseModel):
     id: UUID | None
-    team: int
+    user: str
     status: DownloadStatus
     non_match_images: bool
     image_count: int | None

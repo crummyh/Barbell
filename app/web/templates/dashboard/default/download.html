@@ -105,7 +105,18 @@
                             class="batchTable"
                         >
                             <thead class="sticky-top bg-body-tertiary">
-                                <th scope="col">UUID</th>
+                                <th scope="col">
+                                    UUID<span
+                                        data-bs-toggle="tooltip"
+                                        data-bs-title="UUID is shortened here. Make sure to click the copy button!"
+                                        ><iconify-icon
+                                            icon="bi:info-circle-fill"
+                                            width="16"
+                                            height="16"
+                                            class="ms-2"
+                                        ></iconify-icon
+                                    ></span>
+                                </th>
                                 <th scope="col">Status</th>
                                 <th scope="col">Image Count</th>
                                 <th scope="col">Start Time</th>
@@ -126,7 +137,7 @@
                                             >as89het</a
                                         ><button
                                             class="btn btn-sm btn-link p-0 ms-2 border-0"
-                                            onclick="copyID(0)"
+                                            onclick="copyID(0, event)"
                                             type="button"
                                         >
                                             <iconify-icon

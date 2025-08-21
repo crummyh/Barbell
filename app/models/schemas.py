@@ -16,6 +16,7 @@ class User(SQLModel, table=True):
     username: str = Field(index=True, max_length=config.MAX_USERNAME_LEN, min_length=config.MIN_USERNAME_LEN)
     email: EmailStr | None = Field(default=None, unique=True, nullable=True)
     password: str | None = Field(default=None, max_length=config.MAX_PASSWORD_LENGTH, min_length=config.MIN_PASSWORD_LENGTH)
+    api_key: str | None = Field(default=None, index=True, unique=True)
     disabled: bool = Field(default=True)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     team: int | None = Field(default=None, foreign_key="teams.id", index=True)
@@ -29,7 +30,6 @@ class Team(SQLModel, table=True):
     team_number: int = Field(index=True, unique=True, ge=0, le=config.MAX_TEAM_NUMB)
     team_name: str | None = Field(default=None, max_length=config.MAX_TEAM_NAME_LEN)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    api_key: str | None = Field(default=None, index=True, unique=True)
     disabled: bool = Field(default=False)
     leader_user: int | None = Field(default=None, foreign_key="users.id", index=True)
 
@@ -37,7 +37,7 @@ class UploadBatch(SQLModel, table=True):
     __tablename__ = "upload_batches" # type: ignore
 
     id: UUID | None = Field(default_factory=uuid4, primary_key=True)
-    team: int = Field(foreign_key="teams.id", index=True)
+    user: int = Field(foreign_key="user.id", index=True)
     status: models.UploadStatus = Field()
     file_size: int | None = Field(default=None, ge=0, le=config.MAX_FILE_SIZE)
     images_valid: int = Field(default=0, ge=0)
@@ -51,7 +51,7 @@ class DownloadBatch(SQLModel, table=True):
     __tablename__ = "download_batches" # type: ignore
 
     id: UUID | None = Field(default_factory=uuid4, primary_key=True)
-    team: int = Field(foreign_key="teams.id")
+    user: int = Field(foreign_key="user.id")
     status: models.DownloadStatus = Field()
     non_match_images: bool = Field(default=True)
     image_count: int = Field(ge=1, le=config.MAX_DOWNLOAD_COUNT)
@@ -65,7 +65,7 @@ class Image(SQLModel, table=True):
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     created_at: datetime = Field(index=True)
-    created_by: int = Field(foreign_key="teams.id", index=True)
+    created_by: int = Field(foreign_key="user.id", index=True)
     batch: UUID = Field(foreign_key="upload_batches.id")
     review_status: models.ImageReviewStatus = Field(default=models.ImageReviewStatus.NOT_REVIEWED, index=True)
 
