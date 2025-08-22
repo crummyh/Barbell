@@ -5,7 +5,7 @@ from app.core.config import DATABASE_URL
 
 connect_args = {}
 
-engine = create_engine(DATABASE_URL, echo=True)
+engine = create_engine(DATABASE_URL)
 
 def get_session():
     with Session(engine) as session:

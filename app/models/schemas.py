@@ -37,7 +37,7 @@ class UploadBatch(SQLModel, table=True):
     __tablename__ = "upload_batches" # type: ignore
 
     id: UUID | None = Field(default_factory=uuid4, primary_key=True)
-    user: int = Field(foreign_key="user.id", index=True)
+    user: int = Field(foreign_key="users.id", index=True)
     status: models.UploadStatus = Field()
     file_size: int | None = Field(default=None, ge=0, le=config.MAX_FILE_SIZE)
     images_valid: int = Field(default=0, ge=0)
@@ -51,7 +51,7 @@ class DownloadBatch(SQLModel, table=True):
     __tablename__ = "download_batches" # type: ignore
 
     id: UUID | None = Field(default_factory=uuid4, primary_key=True)
-    user: int = Field(foreign_key="user.id")
+    user: int = Field(foreign_key="users.id")
     status: models.DownloadStatus = Field()
     non_match_images: bool = Field(default=True)
     image_count: int = Field(ge=1, le=config.MAX_DOWNLOAD_COUNT)
@@ -65,7 +65,7 @@ class Image(SQLModel, table=True):
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     created_at: datetime = Field(index=True)
-    created_by: int = Field(foreign_key="user.id", index=True)
+    created_by: int = Field(foreign_key="users.id", index=True)
     batch: UUID = Field(foreign_key="upload_batches.id")
     review_status: models.ImageReviewStatus = Field(default=models.ImageReviewStatus.NOT_REVIEWED, index=True)
 
