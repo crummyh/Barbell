@@ -1,13 +1,14 @@
 
 from typing import Annotated
 
-from fastapi import Depends, FastAPI, HTTPException, Security
+from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Security
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from pydantic import UUID4
 from sqlmodel import Session, asc, select
 from starlette.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
+from app.api.public_v1 import download_batch
 from app.core.dependencies import (
     RateLimiter,
     generate_api_key,
@@ -22,6 +23,7 @@ from app.core.helpers import (
 )
 from app.db.database import get_session
 from app.models.models import (
+    DownloadRequest,
     ImageReviewStatus,
     ReviewMetadata,
     UserRole,
@@ -271,3 +273,12 @@ def get_api_key(
     current_user: Annotated[User, Security(require_login)]
 ):
     return current_user.api_key
+
+@subapp.put("/download")
+def download_redirect(
+    request: DownloadRequest,
+    background_tasks: BackgroundTasks,
+    user: Annotated[User, Depends(require_login)],
+    session: Annotated[Session, Depends(get_session)],
+):
+    download_batch(request, background_tasks, user, session)

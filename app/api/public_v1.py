@@ -221,7 +221,7 @@ def get_download_batch_status(
     )
     return out
 
-@router.post("/download", tags=["Auth Required"], dependencies=[Depends(RateLimiter(requests_limit=2, time_window=60))])
+@router.put("/download", tags=["Auth Required"], dependencies=[Depends(RateLimiter(requests_limit=2, time_window=60))])
 def download_batch(
     request: DownloadRequest,
     background_tasks: BackgroundTasks,

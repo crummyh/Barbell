@@ -145,7 +145,6 @@ async def dashboard(
                     page_title = _page["title"]
 
     if page_title is None:
-        print("Matching page not found!")
         return not_found_page(request)
 
     template_name = f"dashboard/{user.role.name.lower()}/{page}.html"

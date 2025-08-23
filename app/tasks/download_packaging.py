@@ -28,12 +28,12 @@ from app.services.buckets import (
 # Define a base template for manifests
 BASE_COCO_MANIFEST = {
     "info": {
-        "description": "",
+        "description": "Barbell Open Dataset",
         "url": config.PROJECT_URL,
         "version": config.PROJECT_VERSION,
-        "year": "",
+        "year": str(datetime.now(timezone.utc).year),
         "contributor": "",
-        "date_created": ""
+        "date_created": str(datetime.now(timezone.utc).date)
     },
     "licenses": [
         {"url": "https://creativecommons.org/licenses/by-nc/4.0/","id": 0,"name": "Creative Commons Attribution-NonCommercial 4.0 International"}
@@ -58,38 +58,39 @@ def create_download_batch(batch_id: UUID):
             manifest = BASE_COCO_MANIFEST.copy() # Make a copy of the manifest
             annotation_category_id_list = [] # Store the selected ids so I don't have to loop later
 
-            for super_catagory, categories in batch.annotations.items():
-                if not categories:
-                    pass
-                else:
-                    if categories is not True:
-                        for category in categories:
-                            catagory_id = session.exec(
-                                select(LabelCategory)
-                                .where(LabelCategory.name == category)
-                                .where(LabelCategory.super_category.name == super_catagory)
-                            ).one().id
+            for selection in batch.annotations:
+                try:
+                    is_super = selection["super"]
 
+                    if is_super:
+                        # If the selection is super, include all children
+                        super_cat = session.get(LabelSuperCategory, selection["id"])
+                        for category in super_cat.sub_categories:
                             manifest["categories"].append({
-                                "supercategory": super_catagory,
-                                "id": catagory_id,
-                                "name": category
-                            })
-                            annotation_category_id_list.append(catagory_id)
-                    else:
-                        # The entire catagory should be used
-                        derived_categories = session.exec(
-                            select(LabelSuperCategory)
-                            .where(LabelSuperCategory.name == super_catagory)
-                        ).one().sub_categories
-
-                        for category in derived_categories:
-                            manifest["categories"].append({
-                                "supercategory": super_catagory,
+                                "supercategory": super_cat.name,
                                 "id": category.id,
                                 "name": category.name
                             })
                             annotation_category_id_list.append(category.id)
+                    else:
+                        # The selection is not super, add it alone
+                        category = session.get(LabelCategory, selection["id"])
+
+                        if category.super_category:
+                            manifest["categories"].append({
+                                "supercategory": category.super_category.name,
+                                "id": category.id,
+                                "name": category.name
+                            })
+                        else:
+                            manifest["categories"].append({
+                                "id": category.id,
+                                "name": category.name
+                            })
+                        annotation_category_id_list.append(category.id)
+
+                except Exception:
+                    pass
 
             batch.status = DownloadStatus.ASSEMBLING_IMAGES
             session.add(batch)

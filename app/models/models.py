@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import BinaryIO, Dict, List, Optional
+from typing import BinaryIO, List, Optional
 from uuid import UUID
 
 from fastapi import Response
@@ -35,6 +35,12 @@ class ImageReviewStatus(Enum):
     APPROVED = "approved"
     AWAITING_LABELS = "awaiting_labels"
     NOT_REVIEWED = "not_reviewed"
+
+# ==========={ Random }=========== #
+
+class AnnotationSelection(BaseModel):
+    id: int
+    super: bool
 
 # ==========={ Responses }=========== #
 
@@ -69,7 +75,7 @@ class DownloadStatusOut(BaseModel):
     status: DownloadStatus
     non_match_images: bool
     image_count: int | None
-    annotations: Dict[str, bool | Dict[str, bool]]
+    annotations: List[AnnotationSelection]
     start_time: datetime
     hash: str | None
     error_message: str | None
@@ -85,7 +91,7 @@ class UserOut(BaseModel):
 # ==========={ Requests }=========== #
 
 class DownloadRequest(BaseModel):
-    annotations: Dict[str, Dict[str, bool] | bool]
+    annotations: List[AnnotationSelection]
     count: int
     non_match_images: bool = True
 

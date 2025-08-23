@@ -1,69 +1,49 @@
-async function getLabels() {
+async function getLabelData() {
   const response = await fetch("/api/v1/stats/labels", {
     method: "GET",
   });
 
-  const data = await response.json();
-  console.log(data);
-  return data;
+  let jsonData = await response.json();
+  let treeData = [];
+
+  for (var i = 0; i < jsonData.length; i++) {
+    let children = [];
+    for (var j = 0; j < jsonData[i].categories.length; j++) {
+      children.push({
+        id: jsonData[i].categories[j].id,
+        name: jsonData[i].categories[j].name,
+      });
+    }
+
+    treeData.push({
+      id: jsonData[i].id,
+      name: jsonData[i].name,
+      children: children,
+    });
+  }
+
+  return treeData;
 }
 
-getLabels();
-
-const tempTreeData = [
-  {
-    id: "1",
-    name: "2025",
-    children: [
-      {
-        id: "1.1",
-        name: "coral",
-      },
-      {
-        id: "1.2",
-        name: "algae",
-      },
-    ],
-  },
-  {
-    id: "2",
-    name: "2024",
-    children: [
-      {
-        id: "2.1",
-        name: "note",
-      },
-    ],
-  },
-  {
-    id: "3",
-    name: "2023",
-    children: [
-      {
-        id: "3.1",
-        name: "cube",
-      },
-      {
-        id: "3.2",
-        name: "cone",
-      },
-    ],
-  },
-];
-
-const treeViewContainer = document.getElementById("annotationTreeView");
-
-const tree = new Treeview({
-  containerId: "annotationTreeView",
-  data: tempTreeData,
-  searchEnabled: true,
-  searchPlaceholder: "Search...",
-  initiallyExpanded: false,
-  multiSelectEnabled: true,
-  cascadeSelectChildren: true,
-  onSelectionChange: (selectedNodesData) => {
-    console.log("Selected Nodes:", selectedNodesData);
-  },
+document.addEventListener("DOMContentLoaded", async () => {
+  tree = new Treeview({
+    containerId: "annotationTreeView",
+    data: await getLabelData(),
+    searchEnabled: true,
+    searchPlaceholder: "Search...",
+    initiallyExpanded: false,
+    multiSelectEnabled: true,
+    cascadeSelectChildren: true,
+    onSelectionChange: (selectedNodes) => {
+      const names = selectedNodes.map((n) => `"${n.name}"`);
+      const label = document.getElementById("selectedLabelsTitle");
+      const output = document.getElementById("selectedLabels");
+      const count = names.length;
+      const nodeWord = count === 1 ? "Label" : "Labels";
+      label.textContent = `${count} ${nodeWord} selected:`;
+      output.textContent = `[${names.join(", ")}]`;
+    },
+  });
 });
 
 function copyID(numb, event) {
@@ -116,7 +96,7 @@ const statusTable = {
   failed: "bg-danger",
 };
 
-async function renderTable() {
+async function renderTable(clear) {
   const tableBody = document.getElementById("downloadBatchTableBody");
   const batches = await getBatches();
 
@@ -139,6 +119,10 @@ async function renderTable() {
     const error_msg = batches[i].error_message;
     if (error_msg === null) {
       const error_msg = "None";
+    }
+
+    if (clear) {
+      tableBody.innerHTML = "";
     }
 
     tableBody.innerHTML += [
@@ -165,4 +149,63 @@ async function renderTable() {
 }
 
 renderTable();
-// getLabels();
+
+// Force only numbers in input
+function isNumber(evt) {
+  evt = evt ? evt : window.event;
+  var charCode = evt.which ? evt.which : evt.keyCode;
+  if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+    return false;
+  }
+  return true;
+}
+
+function treeToSelectionMap(tree) {
+  const result = [];
+
+  for (const node of tree) {
+    if (!node.children) {
+      // It's not a super-category
+      result.push({ id: node.id, super: false });
+    }
+  }
+
+  return result;
+}
+
+document.getElementById("openDownloadModal").onclick = async function () {
+  const imageCount = document.getElementById("countInput").value;
+  const helpText = document.getElementById("countHelp");
+
+  if (imageCount > 10000 || imageCount < 1) {
+    helpText.classList.add("text-danger-emphasis");
+  } else {
+    helpText.classList.remove("text-danger-emphasis");
+    new bootstrap.Modal("#confirmDownloadModal").show();
+  }
+};
+
+document.getElementById("confirmDownloadBtn").onclick = async function () {
+  const treeData = tree.getSelectedNodes();
+  const imageCount = Number(document.getElementById("countInput").value);
+  const nonMatchImg = document.getElementById("nonMatchCheck").checked;
+
+  const selections = treeToSelectionMap(treeData);
+
+  const body = {
+    annotations: selections,
+    count: imageCount,
+    non_match_images: nonMatchImg,
+  };
+
+  const response = await fetch("/internal/download", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+    credentials: "include",
+  });
+
+  new bootstrap.Modal("#confirmDownloadModal").hide();
+
+  renderTable(true);
+};

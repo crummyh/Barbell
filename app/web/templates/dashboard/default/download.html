@@ -54,8 +54,7 @@
                                 class="form-control"
                                 id="countInput"
                                 aria-describedby="countHelp"
-                                max="10000"
-                                min="1"
+                                onkeypress="return isNumber(event)"
                             />
                             <div class="form-text" id="countHelp">
                                 Max of 10,000 images
@@ -88,6 +87,24 @@
                                 id="annotationTreeView"
                                 class="annotation-tree"
                             ></div>
+                            <div id="selectedLabelsTitle">
+                                0 Labels selected:
+                            </div>
+                            <pre
+                                id="selectedLabels"
+                                class="border rounded p-2 bg-body"
+                            >
+[]</pre
+                            >
+                        </div>
+                        <div class="d-grid">
+                            <button
+                                class="btn btn-primary"
+                                type="button"
+                                id="openDownloadModal"
+                            >
+                                Start Download
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -173,6 +190,49 @@
                         </table>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div
+    class="modal fade"
+    id="confirmDownloadModal"
+    tabindex="-1"
+    aria-labelledby="confirmDownloadModalLabel"
+    aria-hidden="true"
+>
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="confirmDownloadModalLabel">
+                    Confirm Download
+                </h1>
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                    aria-label="Close"
+                ></button>
+            </div>
+            <div class="modal-body">
+                Are you <strong>sure</strong> you want to start this download?
+                There is <strong>no</strong> way to stop it.
+            </div>
+            <div class="modal-footer">
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal"
+                >
+                    No
+                </button>
+                <button
+                    type="button"
+                    class="btn btn-primary"
+                    id="confirmDownloadBtn"
+                >
+                    Yes
+                </button>
             </div>
         </div>
     </div>
