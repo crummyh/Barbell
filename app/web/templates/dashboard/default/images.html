@@ -1,3 +1,129 @@
 {% extends "dashboard.html" %} {% block dashboard %}
-<div>Stuff here</div>
+
+<style>
+    /* Base gallery image */
+    .img-selectable {
+        cursor: pointer;
+        transition:
+            transform 0.2s ease,
+            box-shadow 0.2s ease,
+            filter 0.2s ease;
+
+        &:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+    }
+
+    .img-selectable.selected {
+        border: 0.5em solid var(--bs-primary);
+        filter: brightness(0.9);
+        border-radius: 0.5rem;
+        position: relative;
+    }
+
+    .auto-y-overflow {
+        overflow-y: auto;
+    }
+
+    .blur-background {
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="row gx-4 mt-2">
+        <div class="col-xl-12">
+            <div
+                class="bg-body-tertiary rounded full-dash-height position-relative"
+            >
+                <div class="p-4 auto-y-overflow">
+                    <div
+                        class="row row-cols-3 row-cols-md-5 row-cols-lg-6 row-cols-xl-7 row-cols-xxl-8 g-3"
+                    >
+                        <div class="col">
+                            <img
+                                src="https://placehold.co/640x640"
+                                class="img-fluid w-100 rounded img-selectable"
+                                id="uuid-1"
+                                alt=""
+                            />
+                        </div>
+                        <div class="col">
+                            <img
+                                src="https://placehold.co/640x640"
+                                class="img-fluid w-100 rounded img-selectable"
+                                id="uuid-2"
+                                alt=""
+                            />
+                        </div>
+                        <div class="col">
+                            <img
+                                src="https://placehold.co/640x640"
+                                class="img-fluid w-100 rounded img-selectable"
+                                id="uuid-3"
+                                alt=""
+                            />
+                        </div>
+                        <div class="col">
+                            <img
+                                src="https://placehold.co/640x640"
+                                class="img-fluid w-100 rounded img-selectable"
+                                id="uuid-4"
+                                alt=""
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    class="position-absolute bottom-0 start-0 end-0 bg-dark bg-opacity-75 p-3 blur-background"
+                >
+                    <div
+                        class="d-flex justify-content-between align-items-center"
+                    >
+                        <div class="d-flex gap-2 me-auto">
+                            <button
+                                class="btn btn-secondary"
+                                type="button"
+                                disabled
+                            >
+                                <iconify-icon
+                                    icon="bi:info-circle-fill"
+                                    width="16"
+                                    height="16"
+                                    class="me-2"
+                                ></iconify-icon>
+                                More Info
+                            </button>
+                            <button class="btn btn-secondary" type="button">
+                                <iconify-icon
+                                    icon="bi:cloud-download-fill"
+                                    width="16"
+                                    height="16"
+                                    class="me-2"
+                                ></iconify-icon>
+                                Download
+                            </button>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-danger ms-2" type="button">
+                                <iconify-icon
+                                    icon="bi:trash-fill"
+                                    width="16"
+                                    height="16"
+                                    class="me-2"
+                                ></iconify-icon>
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} {% block fileEnd %}
+<script src="/static/js/image-dashboard.js"></script>
 {% endblock %}
