@@ -1,3 +1,26 @@
 {% extends "dashboard.html" %} {% block dashboard %}
-<div>Stuff here</div>
+<style>
+    :root {
+        --sidebar-offset: calc(250px + 1em);
+    }
+
+    @media (min-width: 1200px) {
+        .center-with-sidebar {
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+
+            transform: translateX(calc(-1 * var(--sidebar-offset) / 2));
+            max-width: min(1140px, calc(100vw - 2 * var(--sidebar-offset)));
+        }
+    }
+
+    @media (max-width: 1199.98px) {
+        .center-with-sidebar {
+            transform: none;
+            max-width: 100%;
+        }
+    }
+</style>
+<div class="container-xl center-with-sidebar bg-info">settings here</div>
 {% endblock %}

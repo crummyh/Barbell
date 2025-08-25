@@ -116,6 +116,11 @@ def image_response(file: BinaryIO) -> Response:
         }
     )
 
+class RateLimitUpdate(BaseModel):
+    route: str
+    requests_limit: int
+    time_window: int
+
 # ==========={ Responses and Requests }=========== #
 
 class ReviewMetadata(BaseModel):

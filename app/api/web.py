@@ -103,6 +103,7 @@ dashboard_structure = {
     UserRole.ADMIN: [
         {"title": "Home", "icon": "bi:house-fill", "slug": "home"},
         {"title": "Labels", "icon": "bi:list-ul", "slug": "labels"},
+        {"title": "Rate-Limiting", "icon": "bi:speedometer", "slug": "ratelimit"},
     ],
     UserRole.MODERATOR: [
         {"title": "Home", "icon": "bi:house-fill", "slug": "home"},

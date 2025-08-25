@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import Dict, List, Optional, Union
+from typing import List, Optional
 from uuid import UUID, uuid4
 
 from pydantic import EmailStr
@@ -55,7 +55,7 @@ class DownloadBatch(SQLModel, table=True):
     status: models.DownloadStatus = Field()
     non_match_images: bool = Field(default=True)
     image_count: int = Field(ge=1, le=config.MAX_DOWNLOAD_COUNT)
-    annotations: List[Dict[str, Union[bool, int]]] = Field(sa_column=Column(JSON))
+    annotations: List[models.AnnotationSelection] = Field(sa_column=Column(JSON))
     start_time: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     hash: str | None = Field(default=None)
     error_message: str | None = Field(default=None, max_length=500)

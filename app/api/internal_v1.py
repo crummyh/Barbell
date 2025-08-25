@@ -13,6 +13,7 @@ from app.core.dependencies import (
     RateLimiter,
     generate_api_key,
     minimum_role,
+    rate_limit_config,
     require_login,
     require_role,
 )
@@ -25,6 +26,7 @@ from app.db.database import get_session
 from app.models.models import (
     DownloadRequest,
     ImageReviewStatus,
+    RateLimitUpdate,
     ReviewMetadata,
     UserRole,
     image_response,
@@ -282,3 +284,18 @@ def download_redirect(
     session: Annotated[Session, Depends(get_session)],
 ):
     download_batch(request, background_tasks, user, session)
+
+@subapp.post("/admin/rate-limit")
+def update_rate_limit(
+    cfg: RateLimitUpdate,
+    user: Annotated[User, Depends(minimum_role(UserRole.ADMIN))]
+):
+    rate_limit_config[cfg.route]["requests_limit"] = cfg.requests_limit
+    rate_limit_config[cfg.route]["time_window"] = cfg.time_window
+    return {"message": "Rate limit updated", "config": rate_limit_config}
+
+@subapp.get("/admin/rate-limit")
+def get_rate_limit(
+    user: Annotated[User, Depends(minimum_role(UserRole.ADMIN))]
+):
+    return rate_limit_config
