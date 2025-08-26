@@ -32,45 +32,6 @@ If you are interested in helping, read this then take a look at [issues](https:/
 ### Project Structure
 
 ```bash
-📁 app/                          # Holds the main app
-├── 📁 api/                      # The actual endpoints
-│  ├─── 🐍 auth.py               # Manages accounts and signin
-│  ├─── 🐍 public_v1.py          # Publicly accessible API
-│  ├─── 🐍 internal_v1.py        # Management and account API
-│  └─── 🐍 web.py                # The website
-├── 📁 core/                     # App-level core logic/config
-│  ├─── 🐍 config.py             # Constants and configurable values
-│  ├─── 🐍 dependencies.py       # Security dependencies
-│  └─── 🐍 helpers.py            # Random common helper functions
-├── 📁 db/                       # Database managers
-│  └─── 🐍 database.py           # Manages the DB connection
-├── 📁 models/                   # Data models
-│  ├─── 🐍 models.py             # pydantic models for responses and requests
-│  └─── 🐍 schemas.py            # SQLModel schemas representing tables
-├── 📁 services/                 # Various services and abstractions
-│  ├── 📁 email/                 # Email stuff
-│  │  ├── 📁 templates/          # Email templates
-│  │  └─── 🐍 email.py           # Email server connection and tasks
-│  ├─── 🐍 buckets.py            # AWS S3 bucket manager
-│  └─── 🐍 monitoring.py         # App status tracking
-├── 📁 tasks/                    # Asynchronous background tasks
-│  ├─── 🐍 download_packaging.py # Packages images for batch downloading
-│  └─── 🐍 image_processing.py   # Processes images for uploading
-├── 📁 tests/                    # Tests
-├── 📁 web/                      # Files that are for the website
-│  ├── 📁 static/                # Static files
-│  │  ├── 📁 css/                # CSS files
-│  │  ├── 📁 images/             # Images
-│  └─── 📁 templates/            # Jinja HTML templates
-└── 🐍 main.py                   # The main app entrypoint
-📁 frontend/                     # Frontend stuff that needs to be compiled
-├── 📁 email_templates/          # MJML emails, and Jinja templates
-├── 📁 js/                       # JS to compile
-├── 📁 scss/                     # SCSS to override Bootstrap and compile
-├── 📦 package.json              # Its a node project
-├── 📦 package-lock.py           # Its a node project
-└── 📦 vite.config.js            # Vite config
-
 Barbell/
 ├── app/                 # The backend python project
 │   ├── api/             # The API endpoints
