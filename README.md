@@ -66,9 +66,10 @@ If you are interested in helping, read this then take a look at [issues](https:/
 📁 frontend/                     # Frontend stuff that needs to be compiled
 ├── 📁 email_templates/          # MJML emails, and Jinja templates
 ├── 📁 js/                       # JS to compile
-├── 📁 scss/                     # SCSS to override Bootstrap
+├── 📁 scss/                     # SCSS to override Bootstrap and compile
 ├── 📦 package.json              # Its a node project
-└── 📦 package-lock.py           # Its a node project
+├── 📦 package-lock.py           # Its a node project
+└── 📦 vite.config.js            # Vite config
 ```
 
 ### Running Locally

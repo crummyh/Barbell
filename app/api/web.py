@@ -31,7 +31,7 @@ async def home(
 ):
     if user is None:
         return templates.TemplateResponse(
-            request=request, name="home.html", context={"user": None}
+            request=request, name="home.html", context={"user": None, "debug": config.DEBUG, "page": "index"}
         )
 
     user_out = UserOut(
@@ -44,7 +44,7 @@ async def home(
     )
 
     return templates.TemplateResponse(
-        request=request, name="home.html", context={"user": user_out}
+        request=request, name="home.html", context={"user": user_out, "debug": config.DEBUG, "page": "index"}
     )
 
 @router.get("/login", response_class=HTMLResponse)
@@ -55,7 +55,7 @@ async def login(
 ):
     if user is None:
         return templates.TemplateResponse(
-            request=request, name="login.html", context={"user": None}
+            request=request, name="login.html", context={"user": None, "debug": config.DEBUG, "page": "login"}
         )
 
     return RedirectResponse("/dashboard")
@@ -68,7 +68,7 @@ async def register(
 ):
     if user is None:
         return templates.TemplateResponse(
-            request=request, name="register.html", context={"user": None}
+            request=request, name="register.html", context={"user": None, "debug": config.DEBUG, "page": "register"}
         )
 
     return RedirectResponse("/dashboard")
@@ -81,7 +81,7 @@ async def about(
 ):
     if user is None:
         return templates.TemplateResponse(
-            request=request, name="about.html", context={"user": None}
+            request=request, name="about.html", context={"user": None, "debug": config.DEBUG, "page": "about"}
         )
 
     user_out = UserOut(
@@ -94,7 +94,7 @@ async def about(
     )
 
     return templates.TemplateResponse(
-        request=request, name="about.html", context={"user": user_out}
+        request=request, name="about.html", context={"user": user_out, "debug": config.DEBUG, "page": "about"}
     )
 
 # ========== { Private Pages } ========== #
@@ -155,7 +155,9 @@ async def dashboard(
                 "user": user_out,
                 "dashboard_structure": dashboard_structure[user.role],
                 "current_page": page,
-                "current_title": page_title
+                "current_title": page_title,
+                "debug": config.DEBUG,
+                "page": "dashboard"
             }
         )
     except TemplateNotFound:
@@ -181,21 +183,7 @@ async def account(
     )
 
     return templates.TemplateResponse(
-        request=request, name="account.html", context={"user": user_out}
-    )
-
-# ========== { Internal Pages } ========== #
-
-@router.get("/moderation", response_class=HTMLResponse)
-async def moderation(request: Request):
-    return templates.TemplateResponse(
-        request=request, name="moderation.html", context={}
-    )
-
-@router.get("/labeling", response_class=HTMLResponse)
-async def labeling(request: Request):
-    return templates.TemplateResponse(
-        request=request, name="labeling.html", context={}
+        request=request, name="account.html", context={"user": user_out, "debug": config.DEBUG, "page": "account"}
     )
 
 # ========== { Docs } ========== #
@@ -282,7 +270,14 @@ async def docs(
     template_name = f"docs/{page}.html"
     try:
         return templates.TemplateResponse(
-            request=request, name=template_name, context={"user": user_out, "docs_structure": docs_structure, "current_page": page, "current_title": page_title}
+            request=request, name=template_name, context={
+                "user": user_out,
+                "docs_structure": docs_structure,
+                "current_page": page,
+                "current_title": page_title,
+                "debug": config.DEBUG,
+                "page": "docs"
+            }
         )
     except TemplateNotFound:
         return not_found_page(request)
@@ -293,5 +288,5 @@ async def docs(
 def not_found_page(request: Request):
 
     return templates.TemplateResponse(
-        request=request, name="404.html", context={"user": None}, status_code=404
+        request=request, name="404.html", context={"user": None, "debug": config.DEBUG, "page": "404"}, status_code=404
     )

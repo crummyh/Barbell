@@ -1,0 +1,8 @@
+{% if debug %}
+<script type="module" src="http://localhost:5173/js/index.js"></script>
+{% else %}
+<script
+    type="module"
+    src="{{ url_for('static', path='/js/index.js') }}"
+></script>
+{% endif %}

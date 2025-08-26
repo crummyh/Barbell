@@ -1,0 +1,20 @@
+@import "../components/highlight";
+
+body[data-page="docs"] {
+    .sidebar-fixed {
+        width: 260px;
+        top: 56px;
+        left: 0;
+    }
+
+    .sidebar-toggle {
+        position: fixed;
+        left: 0;
+        bottom: 0;
+    }
+
+    main h2,
+    main h3 {
+        scroll-margin-top: 56px;
+    }
+}

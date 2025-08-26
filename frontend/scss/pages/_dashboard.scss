@@ -1,0 +1,171 @@
+@import "../components/treeview";
+
+body[data-page="dashboard"] {
+    .sidebar {
+        width: 250px;
+        top: 56px;
+        height: calc(100vh - 56px);
+    }
+
+    .main-dashboard {
+        margin-left: calc(250px + 1em);
+        margin-right: 1em;
+        margin-top: 1em;
+        margin-bottom: 1em;
+    }
+
+    .full-dash-height {
+        height: calc(100vh - 56px - 3em);
+    }
+
+    @media (max-width: 991.98px) {
+        /* Bootstrap lg breakpoint */
+        .sidebar {
+            position: relative;
+            width: 100%;
+            height: auto;
+            top: 0;
+        }
+
+        .sidebar-toggle {
+            top: calc(100vh - 38.85px);
+            left: 0px;
+            border-radius: 0px var(--bs-border-radius) 0px 0px;
+        }
+
+        .main-dashboard {
+            margin-left: 0.5em;
+        }
+    }
+
+    @media (max-width: 1199.98px) {
+        .full-dash-height {
+            height: auto;
+        }
+    }
+}
+
+body[data-page="dashboard"][data-role="UserRole.DEFAULT"][data-section="download"] {
+    .tertiary-table {
+        --bs-table-bg: var(--bs-tertiary-bg);
+    }
+    .table-container {
+        overflow-y: auto;
+    }
+    .table thead th {
+        background-color: inherit; /* needed for sticky to overlay rows */
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        border-bottom: calc(var(--bs-border-width) * 2) solid currentcolor;
+        box-shadow: 0 calc(var(--bs-border-color) * 2) 0 0 currentcolor;
+    }
+    .max-size-table {
+        height: calc(100vh - 56px - 6em - 38.4px);
+    }
+    .annotation-tree > ul {
+        overflow-y: auto;
+        max-height: calc(
+            100vh - 56px - 9em - 38.4px - 95px - 24px - 28.8px - 38px - 15px
+        );
+    }
+    td,
+    th {
+        vertical-align: middle;
+    }
+}
+
+body[data-page="dashboard"][data-role="UserRole.DEFAULT"][data-section="images"] {
+    /* Base gallery image */
+    .img-selectable {
+        cursor: pointer;
+        transition:
+            transform 0.2s ease,
+            box-shadow 0.2s ease,
+            filter 0.2s ease;
+
+        &:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+    }
+
+    .img-selectable.selected {
+        border: 0.5em solid var(--bs-primary);
+        filter: brightness(0.9);
+        border-radius: 0.5rem;
+        position: relative;
+    }
+
+    .auto-y-overflow {
+        overflow-y: auto;
+    }
+
+    .blur-background {
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+}
+
+body[data-page="dashboard"][data-role="UserRole.DEFAULT"][data-section="settings"] {
+    :root {
+        --sidebar-offset: calc(250px + 1em);
+    }
+
+    @media (min-width: 1200px) {
+        .center-with-sidebar {
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+
+            transform: translateX(calc(-1 * var(--sidebar-offset) / 2));
+            max-width: min(1140px, calc(100vw - 2 * var(--sidebar-offset)));
+        }
+    }
+
+    @media (max-width: 1199.98px) {
+        .center-with-sidebar {
+            transform: none;
+            max-width: 100%;
+        }
+    }
+}
+
+body[data-page="dashboard"][data-role="UserRole.DEFAULT"][data-section="upload"] {
+    .tertiary-table {
+        --bs-table-bg: var(--bs-tertiary-bg);
+    }
+    .table-container {
+        overflow-y: auto;
+    }
+    .table thead th {
+        background-color: inherit; /* needed for sticky to overlay rows */
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        border-bottom: calc(var(--bs-border-width) * 2) solid currentcolor;
+        box-shadow: 0 calc(var(--bs-border-color) * 2) 0 0 currentcolor;
+    }
+    .max-size-table {
+        height: calc(100vh - 56px - 6em - 38.4px);
+    }
+    .annotation-tree > ul {
+        overflow-y: auto;
+        max-height: calc(
+            100vh - 56px - 9em - 38.4px - 95px - 24px - 28.8px - 38px - 15px
+        );
+    }
+    td,
+    th {
+        vertical-align: middle;
+    }
+}
+
+body[data-page="dashboard"][data-role="UserRole.ADMIN"][data-section="labels"] {
+    .label-tree > ul {
+        overflow-y: auto;
+        max-height: calc(
+            100vh - 56px - 9em - 38.4px - 95px - 24px - 28.8px - 38px - 15px
+        );
+    }
+}

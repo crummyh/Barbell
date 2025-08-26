@@ -1,6 +1,6 @@
-document
-  .getElementById("registerForm")
-  .addEventListener("submit", async function (e) {
+const loginForm = document.getElementById("registerForm");
+if (loginForm) {
+  loginForm.addEventListener("submit", async function (e) {
     e.preventDefault();
 
     const email = document.getElementById("emailInput").value;
@@ -45,16 +45,17 @@ document
     }
   });
 
-function showError(message) {
-  const alertPlaceholder = document.getElementById("errorPlaceholder");
+  function showError(message) {
+    const alertPlaceholder = document.getElementById("errorPlaceholder");
 
-  const wrapper = document.createElement("div");
-  wrapper.innerHTML = [
-    '<div class="alert alert-danger alert-dismissible" role="alert">',
-    `   <div class="small">${message}</div>`,
-    '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
-    "</div>",
-  ].join("");
+    const wrapper = document.createElement("div");
+    wrapper.innerHTML = [
+      '<div class="alert alert-danger alert-dismissible" role="alert">',
+      `   <div class="small">${message}</div>`,
+      '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
+      "</div>",
+    ].join("");
 
-  alertPlaceholder.append(wrapper);
+    alertPlaceholder.append(wrapper);
+  }
 }

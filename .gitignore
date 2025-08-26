@@ -206,3 +206,6 @@ frontend/node_modules
 app/static/css/custom.css
 frontend/scss/*.css
 app/services/email/templates/*.html
+app/web/static/js/
+app/web/static/css/
+app/web/static/assets/

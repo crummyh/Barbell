@@ -39,3 +39,4 @@ IS_PRODUCTION = False
 load_dotenv()
 JWT_SECRET_TOKEN = os.getenv("JWT_SECRET_KEY")
 DATABASE_URL = os.getenv("DATABASE_URL")
+DEBUG = os.getenv("DEBUG", "false").lower() == "true"

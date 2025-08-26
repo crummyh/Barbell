@@ -1,9 +1,3 @@
-<style>
-    .navbar-nav .nav-link {
-        padding-top: 8px !important;
-        padding-bottom: 8px !important;
-    }
-</style>
 <nav
     class="navbar navbar-expand-lg navbar-primary navbar-dark bg-primary sticky-top"
 >
@@ -209,25 +203,8 @@
                         </li>
                     </ul>
                 </div>
-                <script>
-                    document
-                        .getElementById("logoutLink")
-                        .addEventListener("click", async function (e) {
-                            e.preventDefault();
-                            try {
-                                await fetch("/auth/v1/logout", {
-                                    method: "GET",
-                                    credentials: "include",
-                                });
-                                window.location.href = "/login";
-                            } catch (err) {
-                                console.error("Logout failed", err);
-                            }
-                        });
-                </script>
                 {% endif %}
             </ul>
         </div>
     </div>
 </nav>
-<script src="/static/js/theme-toggle.js"></script>

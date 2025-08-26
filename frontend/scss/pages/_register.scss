@@ -1,0 +1,12 @@
+body[data-page="login"] {
+    .size-till-small {
+        width: 100%;
+    }
+    @media screen and (width >= 576px) {
+        .size-till-small {
+            width: 24rem;
+            margin: 0 auto;
+            box-sizing: border-box;
+        }
+    }
+}

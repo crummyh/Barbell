@@ -1,3 +1,6 @@
+import hljs from "highlight.js";
+hljs.highlightAll();
+
 document.addEventListener("DOMContentLoaded", function () {
   const tocContainer = document.getElementById("toc");
   if (!tocContainer) return;

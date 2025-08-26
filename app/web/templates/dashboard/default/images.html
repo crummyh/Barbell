@@ -1,37 +1,4 @@
 {% extends "dashboard.html" %} {% block dashboard %}
-
-<style>
-    /* Base gallery image */
-    .img-selectable {
-        cursor: pointer;
-        transition:
-            transform 0.2s ease,
-            box-shadow 0.2s ease,
-            filter 0.2s ease;
-
-        &:hover {
-            transform: scale(1.02);
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-        }
-    }
-
-    .img-selectable.selected {
-        border: 0.5em solid var(--bs-primary);
-        filter: brightness(0.9);
-        border-radius: 0.5rem;
-        position: relative;
-    }
-
-    .auto-y-overflow {
-        overflow-y: auto;
-    }
-
-    .blur-background {
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-    }
-</style>
-
 <div class="container-fluid">
     <div class="row gx-4 mt-2">
         <div class="col-xl-12">
@@ -124,6 +91,4 @@
         </div>
     </div>
 </div>
-{% endblock %} {% block fileEnd %}
-<script src="/static/js/image-dashboard.js"></script>
 {% endblock %}

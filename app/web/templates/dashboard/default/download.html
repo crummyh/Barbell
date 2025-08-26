@@ -1,35 +1,4 @@
 {% extends "dashboard.html" %} {% block dashboard %}
-<style>
-    .tertiary-table {
-        --bs-table-bg: var(--bs-tertiary-bg);
-    }
-    .table-container {
-        overflow-y: auto;
-    }
-    .table thead th {
-        background-color: inherit; /* needed for sticky to overlay rows */
-        position: sticky;
-        top: 0;
-        z-index: 2;
-        border-bottom: calc(var(--bs-border-width) * 2) solid currentcolor;
-        box-shadow: 0 calc(var(--bs-border-color) * 2) 0 0 currentcolor;
-    }
-    .max-size-table {
-        height: calc(100vh - 56px - 6em - 38.4px);
-    }
-    .annotation-tree > ul {
-        overflow-y: auto;
-        max-height: calc(
-            100vh - 56px - 9em - 38.4px - 95px - 24px - 28.8px - 38px - 15px
-        );
-    }
-    td,
-    th {
-        vertical-align: middle;
-    }
-</style>
-<link rel="stylesheet" href="/static/css/custom-treeview.css" />
-
 <div class="container-fluid">
     <div class="row gx-4 mt-2">
         <div class="col-xl-6 mb-xl-4">
@@ -229,8 +198,4 @@
         </div>
     </div>
 </div>
-{% endblock %} {% block fileEnd %}
-<script src="/static/js/tooltips.js"></script>
-<script src="/static/js/treeview.js"></script>
-<script src="/static/js/download-dashboard.js"></script>
 {% endblock %}

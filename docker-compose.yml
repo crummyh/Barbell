@@ -1,7 +1,9 @@
 services:
   web:
-    build: .
-    container_name: Barbell
+    build:
+      context: .
+      dockerfile: backend.Dockerfile
+    container_name: barbell-backend
     ports:
       - "8000:8000"
     depends_on:
@@ -11,21 +13,24 @@ services:
       - .env.db
     environment:
       - DATABASE_URL=postgresql+psycopg2://myuser:mypassword@db:5432/myappdb
+      - DEBUG=true
     volumes:
-      - .:/app
+      - ./app:/app
     restart: always
 
   frontend:
-    image: node:18
+    build:
+      context: ./frontend
+      dockerfile: frontend.Dockerfile
+    container_name: barbell-frontend
     working_dir: /frontend
     volumes:
       - ./frontend:/frontend
+      - ./app/web/static:/app/web/static
       - ./app/services/email/templates:/frontend/compiled_emails
-    command: >
-      sh -c "
-        npx sass scss/custom.scss ../app/web/static/css/custom.css --no-source-map &&
-        npx mjml email_templates/*.mjml -o ../app/services/email/templates
-      "
+    ports:
+      - "5173:5173"
+    command: ["npm", "run", "dev"]
 
   db:
     image: postgres:16
@@ -42,8 +47,8 @@ services:
     image: axllent/mailpit:latest
     container_name: mailpit
     ports:
-      - "1025:1025" # SMTP
-      - "8025:8025" # Web UI
+      - "1025:1025"
+      - "8025:8025"
     restart: unless-stopped
 
 volumes:

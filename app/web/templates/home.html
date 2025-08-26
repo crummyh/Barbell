@@ -1,83 +1,8 @@
 {% extends "base-page.html" %} {% set content_padding = "" %} {% block title
 %}Barbell{% endblock %} {% block content %}
 <style>
-    section {
-        padding: 60px 0;
-        scroll-snap-align: start;
-    }
-    div > footer {
-        scroll-snap-align: start;
-    }
-    .vh-100-nonav {
-        min-height: calc(100vh - 120px) !important;
-    }
     html {
         scroll-snap-type: y mandatory;
-    }
-    .logo-img {
-        color: var(--bs-heading-color);
-        height: auto;
-    }
-    .icon-circle {
-        height: 64px;
-        width: 64px;
-    }
-    .logo-scroll-barbell {
-        display: flex;
-        align-items: center;
-        max-width: 1320px;
-        width: 100%;
-    }
-
-    .logo-scroll-barbell svg:not(.bar) {
-        height: 160px;
-    }
-
-    .bar-container {
-        flex: 1;
-        position: relative;
-        height: 160px;
-        display: flex;
-        justify-content: center;
-    }
-
-    .logo-scroll-barbell .bar {
-        height: 12px;
-        align-self: center;
-        z-index: 2;
-        flex: 1;
-    }
-
-    .logo-scroller {
-        position: absolute;
-        left: 0;
-        right: 0;
-        height: 40px;
-        background: url("/static/images/logo_scroll.png") repeat-x;
-        background-size: auto 100%;
-        animation: scroll 20s linear infinite;
-        overflow: hidden;
-        z-index: 1;
-    }
-
-    .logo-scroller.top {
-        bottom: 100%;
-        margin-bottom: -70px;
-    }
-
-    .logo-scroller.bottom {
-        top: 100%;
-        margin-top: -70px;
-        animation-direction: reverse;
-    }
-
-    @keyframes scroll {
-        from {
-            background-position-x: 0;
-        }
-        to {
-            background-position-x: -1000px;
-        }
     }
 </style>
 <section id="hero" class="bg-body-secondary">
