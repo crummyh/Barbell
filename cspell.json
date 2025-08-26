@@ -14,7 +14,8 @@
     "supercategory",
     "iscrowd",
     "iconify",
-    "Treeview"
+    "Treeview",
+    "uvicorn"
   ],
   "flagWords": []
 }

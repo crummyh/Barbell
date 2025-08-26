@@ -70,6 +70,34 @@ If you are interested in helping, read this then take a look at [issues](https:/
 ├── 📦 package.json              # Its a node project
 ├── 📦 package-lock.py           # Its a node project
 └── 📦 vite.config.js            # Vite config
+
+Barbell/
+├── app/                 # The backend python project
+│   ├── api/             # The API endpoints
+│   ├── core/            # App-level core logic/config
+│   ├── db/              # Database managers
+│   ├── models/          # Data models
+│   ├── services/        # Various services and abstractions
+│   ├── tasks/           # Asynchronous background tasks
+│   ├── tests/           # Tests
+│   ├── web/             # Files for the website
+│   │   ├── static/      # Static files
+│   │   └── templates/   # HTML Jinja templates
+│   └── main.py          # Main entrypoint
+├── frontend/            # The frontend Node project
+│   ├── email_templates/ # MJML email templates
+│   ├── js/              # JS
+│   │   ├── components/  # General components
+│   │   ├── pages/       # Specific pages
+│   │   ├── utils/       # Utilities
+│   │   ├── index.js     # Dynamically load js depending on page
+│   │   └── main.js      # Import libraries
+│   └── scss/            # SCSS
+│       ├── base/        # Global variables, mixins and more
+│       ├── components/  # Styles for common components
+│       ├── pages/       # Styles for specific pages
+│       └── main.scss    # Main style entrypoint
+└── README.md <----------- You are here!
 ```
 
 ### Running Locally
