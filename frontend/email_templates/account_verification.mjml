@@ -9,12 +9,10 @@
         <mj-section>
             <mj-column>
                 <mj-divider border-color="#157a83"></mj-divider>
-
-                <mj-text
-                    font-size="20px"
-                    color="#157a83"
+                <mj-button
                     font-family="Armata, Arial"
-                    >{{ code }}</mj-text
+                    href="http://127.0.0.1:8000/auth/v1/verify?code={{ code }}"
+                    >Verify Account</mj-button
                 >
             </mj-column>
         </mj-section>
