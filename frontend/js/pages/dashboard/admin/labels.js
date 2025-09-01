@@ -1,7 +1,18 @@
+import { callBackend } from "../base";
+
 async function getLabelData() {
-  const response = await fetch("/api/v1/stats/labels", {
-    method: "GET",
-  });
+  const response = await callBackend(
+    "/api/v1/stats/labels",
+    {
+      method: "GET",
+    },
+    {
+      500: {
+        title: "Error getting catagory data",
+        body: 'Try again later, or <a href="https://github.com/crummyh/Barbell/issues">submit and issue</a>',
+      },
+    },
+  );
 
   let jsonData = await response.json();
   let treeData = [];
@@ -54,11 +65,10 @@ document
     const name = document.getElementById("superCatagoryName").value;
     const data = { name: name };
 
-    const response = await fetch("/internal/categories/super/create", {
+    const response = await callBackend("/internal/categories/super/create", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
-      credentials: "include",
     });
 
     const output = document.getElementById("superCatagoryOutput");
@@ -74,9 +84,8 @@ document
   });
 
 async function getSuperCategoriesList() {
-  const response = await fetch("/internal/categories/super", {
+  const response = await callBackend("/internal/categories/super", {
     method: "GET",
-    credentials: "include",
   });
   let data = await response.json();
   return data;
@@ -113,7 +122,7 @@ document
       };
     }
 
-    const response = await fetch("/internal/categories/create", {
+    const response = await callBackend("/internal/categories/create", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
@@ -136,20 +145,18 @@ document.getElementById("deleteBtn").onclick = async function () {
 
   for (var i = 0; i < currentSelection.length; i++) {
     if (Object.hasOwn(currentSelection[i], "children")) {
-      const response = await fetch(
+      const response = await callBackend(
         `/internal/categories/super/remove?id=${currentSelection[i].id}`,
         {
           method: "DELETE",
-          credentials: "include",
         },
       );
     } else {
       try {
-        const response = await fetch(
+        const response = await callBackend(
           `/internal/categories/remove?id=${currentSelection[i].id}`,
           {
             method: "DELETE",
-            credentials: "include",
           },
         );
       } catch {}
@@ -208,20 +215,18 @@ document.getElementById("modifySaveBtn").onclick = async function () {
   const newName = document.getElementById("newNameInput").value;
 
   if (Object.hasOwn(currentSelection[0], "children")) {
-    const response = await fetch(
+    const response = await callBackend(
       `/internal/categories/super/modify?id=${currentSelection[0].id}&new_name=${newName}`,
       {
         method: "PUT",
-        credentials: "include",
       },
     );
   } else {
     const newSuperCat = document.getElementById("superCatOption").value;
-    const response = await fetch(
+    const response = await callBackend(
       `/internal/categories/modify?id=${currentSelection[0].id}&new_name=${newName}&new_super_cat=${newSuperCat}`,
       {
         method: "PUT",
-        credentials: "include",
       },
     );
   }

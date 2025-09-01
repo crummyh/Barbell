@@ -36,6 +36,7 @@ from app.models.schemas import (
     Image,
     LabelCategory,
     LabelSuperCategory,
+    UploadBatch,
     User,
 )
 from app.services import buckets
@@ -244,11 +245,22 @@ def modify_label_category(
         session.commit()
 
 @subapp.get("/download-batches/history")
-def get_batch_history(
+def get_download_batch_history(
     session: Annotated[Session, Depends(get_session)],
     current_user: Annotated[User, Security(require_login)]
 ):
     batches = session.exec(select(DownloadBatch).where(DownloadBatch.user == current_user.id)).all()
+    if len(batches) == 0:
+        return None
+
+    return batches
+
+@subapp.get("/upload-batches/history")
+def get_upload_batch_history(
+    session: Annotated[Session, Depends(get_session)],
+    current_user: Annotated[User, Security(require_login)]
+):
+    batches = session.exec(select(UploadBatch).where(UploadBatch.user == current_user.id)).all()
     if len(batches) == 0:
         return None
 

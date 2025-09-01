@@ -1,5 +1,11 @@
+import { capitalizeFirstLetter } from "../../../utils/text";
+import { humanDateTime } from "../../../utils/numbers";
+import "../../../utils/tooltips";
+import * as bootstrap from "bootstrap";
+import { callBackend } from "../base";
+
 async function getLabelData() {
-  const response = await fetch("/api/v1/stats/labels", {
+  const response = await callBackend("/api/v1/stats/labels", {
     method: "GET",
   });
 
@@ -68,8 +74,10 @@ function copyID(numb, event) {
   }, 1200);
 }
 
+window.copyID = copyID;
+
 async function getBatches() {
-  const response = await fetch("/internal/download-batches/history/", {
+  const response = await callBackend("/internal/download-batches/history/", {
     method: "GET",
     credentials: "include",
   });
@@ -79,12 +87,7 @@ async function getBatches() {
   }
 
   const data = await response.json();
-  console.log(data);
   return data;
-}
-
-function capitalizeFirstLetter(val) {
-  return String(val).charAt(0).toUpperCase() + String(val).slice(1);
 }
 
 const statusTable = {
@@ -107,14 +110,7 @@ async function renderTable(clear) {
   for (let i = 0; i < batches.length; i++) {
     const date = new Date(batches[i].start_time.replace(/\.\d+/, ""));
 
-    let dd = String(date.getDate()).padStart(2, "0");
-    let mm = String(date.getMonth() + 1).padStart(2, "0");
-    let yy = String(date.getFullYear()).slice(-2);
-    let hh = String(date.getHours()).padStart(2, "0");
-    let min = String(date.getMinutes()).padStart(2, "0");
-    let sec = String(date.getSeconds()).padStart(2, "0");
-
-    let condensedDate = `${dd}-${mm}-${yy} ${hh}:${min}:${sec}`;
+    let condensedDate = humanDateTime(date);
 
     const error_msg = batches[i].error_message;
     if (error_msg === null) {
@@ -198,11 +194,10 @@ document.getElementById("confirmDownloadBtn").onclick = async function () {
     non_match_images: nonMatchImg,
   };
 
-  const response = await fetch("/internal/download", {
+  const response = await callBackend("/internal/download", {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
-    credentials: "include",
   });
 
   new bootstrap.Modal("#confirmDownloadModal").hide();

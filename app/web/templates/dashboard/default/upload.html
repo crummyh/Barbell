@@ -5,7 +5,7 @@
             <div class="bg-body-tertiary rounded full-dash-height mb-4 mb-xl-0">
                 <div class="p-4">
                     <h2>Upload Data</h2>
-                    <form class="row">
+                    <form class="row" id="uploadForm">
                         <div class="mb-3">
                             <label for="hashInput" class="form-label"
                                 >md5 Hash</label
@@ -30,7 +30,10 @@
                             />
                         </div>
                         <div class="mb-3">
-                            <label for="archiveInput" class="form-label"
+                            <label
+                                for="archiveInput"
+                                class="form-label"
+                                accept=".gz,.tgz,.tar.gz,application/gzip,"
                                 >Archive</label
                             >
                             <input
@@ -83,7 +86,7 @@
                                 <th scope="col">Rejected Images</th>
                                 <th scope="col">Start Time</th>
                             </thead>
-                            <tbody id="downloadBatchTableBody">
+                            <tbody id="uploadBatchTableBody">
                                 <tr
                                     data-bs-toggle="collapse"
                                     data-bs-target="#row0"
@@ -115,8 +118,8 @@
                                             >Ready</span
                                         >
                                     </td>
-                                    <td class="">100</td>
-                                    <td class="">12</td>
+                                    <td class="text-success-emphasis">100</td>
+                                    <td class="text-danger-emphasis">12</td>
                                     <td>2025-08-11 14:32</td>
                                 </tr>
                                 <tr>
