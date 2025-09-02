@@ -36,12 +36,22 @@
                                 accept=".gz,.tgz,.tar.gz,application/gzip,"
                                 >Archive</label
                             >
-                            <input
-                                type="file"
-                                class="form-control"
-                                id="archiveInput"
-                                aria-describedby="archiveHelpBlock"
-                            />
+                            <div class="input-group">
+                                <input
+                                    type="file"
+                                    class="form-control"
+                                    id="archiveInput"
+                                    aria-describedby="archiveHelpBlock"
+                                />
+                                <button
+                                    class="btn btn-outline-secondary"
+                                    type="button"
+                                    id="testArchiveBtn"
+                                    disabled
+                                >
+                                    Check Archive
+                                </button>
+                            </div>
                             <a
                                 id="archiveHelpBlock"
                                 class="form-text"

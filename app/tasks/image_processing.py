@@ -59,7 +59,7 @@ async def process_batch_async(batch_id: UUID):
                 # Loop through every image
                 for i, member in enumerate(image_files):
                     try:
-                        if not _validate_image_pre(member):
+                        if not validate_image_pre(member):
                             _update_batch_property("images_rejected", batch.images_rejected + 1)
                             continue # Stop the loop here and start the next image
 
@@ -67,7 +67,7 @@ async def process_batch_async(batch_id: UUID):
                         assert image # The image has to exist
 
                         # Validate the image and add it to the database
-                        if _validate_image(image):
+                        if validate_image(image):
                             image_entry = Image(
                                 created_at=batch.capture_time,
                                 created_by=batch.user,
@@ -117,7 +117,7 @@ def _force_image_format(image: BinaryIO) -> BytesIO:
         output.seek(0)
         return output
 
-def _validate_image(image_path: BinaryIO) -> bool:
+def validate_image(image_path: BinaryIO) -> bool:
     """Validate image meets requirements (640x640, etc.)"""
     try:
         with PIL_Image.open(image_path) as img:
@@ -125,7 +125,7 @@ def _validate_image(image_path: BinaryIO) -> bool:
     except Exception:
         return False
 
-def _validate_image_pre(image_member: tarfile.TarInfo) -> bool:
+def validate_image_pre(image_member: tarfile.TarInfo) -> bool:
     """Validate image *before* extracting"""
     return Path(image_member.name).suffix.lower() in config.ALLOWED_IMAGE_EXTENSIONS
 

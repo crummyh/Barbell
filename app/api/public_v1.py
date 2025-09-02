@@ -44,6 +44,7 @@ from app.tasks.download_packaging import create_download_batch
 from app.tasks.image_processing import (
     estimate_upload_processing_time,
     process_batch_async,
+    validate_image_pre,
 )
 
 router = APIRouter()
@@ -114,25 +115,12 @@ def get_upload_batch_status(
     )
     return out
 
-@router.post("/upload", tags=["Auth Required"], dependencies=[Depends(RateLimiter(requests_limit=2, time_window=60))])
-def upload(
+@router.post("/upload/test")
+async def test_upload_archive(
     archive:          UploadFile,
     hash:             str,
-    background_tasks: BackgroundTasks,
-    user: Annotated[User, Depends(handle_api_key)],
-    session: Annotated[Session, Depends(get_session)],
-    capture_time:     datetime = datetime.now(timezone.utc)
-) -> UploadStatusOut:
-    """
-    Upload images to the dataset. Requires and API key
-
-    `archive`: The images in a .tar.gz archive
-
-    `hash`: A ***md5*** hash of the archive
-
-    `capture_time`: The rough time that the data was gathered
-    """
-
+    user: Annotated[User, Depends(handle_api_key)]
+):
     if not tarfile.is_tarfile(archive.file):
         raise HTTPException(
             status_code=415,
@@ -150,6 +138,48 @@ def upload(
             status_code=400,
             detail="Uploaded file is corrupted (hash mismatch) (Are you using md5?)"
         )
+
+    with tarfile.open(fileobj=archive.file, mode="r:gz") as tar:
+        image_files = [
+            m for m in tar.getmembers()
+            if m.isfile()
+        ]
+
+        if len(image_files) == 0:
+            raise HTTPException(
+                status_code=400,
+                detail="Archive is empty. Are the images in root?"
+            )
+
+        for i in image_files:
+            if not validate_image_pre(i):
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Image \"{i.name}\" is not a supported file type. See `PIL.Image.registered_extensions().items()`"
+                )
+
+    return "Success"
+
+@router.post("/upload", tags=["Auth Required"], dependencies=[Depends(RateLimiter(requests_limit=2, time_window=60))])
+async def upload(
+    archive:          UploadFile,
+    hash:             str,
+    background_tasks: BackgroundTasks,
+    user: Annotated[User, Depends(handle_api_key)],
+    session: Annotated[Session, Depends(get_session)],
+    capture_time:     datetime = datetime.now(timezone.utc)
+) -> UploadStatusOut:
+    """
+    Upload images to the dataset. Requires and API key
+
+    `archive`: The images in a .tar.gz archive
+
+    `hash`: A ***md5*** hash of the archive
+
+    `capture_time`: The rough time that the data was gathered
+    """
+
+    await test_upload_archive(archive, hash, user)
 
     try:
         assert user.id

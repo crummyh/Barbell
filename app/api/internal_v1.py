@@ -1,14 +1,21 @@
 
 from typing import Annotated
 
-from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Security
+from fastapi import (
+    BackgroundTasks,
+    Depends,
+    FastAPI,
+    HTTPException,
+    Security,
+    UploadFile,
+)
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from pydantic import UUID4
 from sqlmodel import Session, asc, select
 from starlette.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
-from app.api.public_v1 import download_batch
+from app.api.public_v1 import download_batch, test_upload_archive
 from app.core.dependencies import (
     RateLimiter,
     generate_api_key,
@@ -311,3 +318,11 @@ def get_rate_limit(
     user: Annotated[User, Depends(minimum_role(UserRole.ADMIN))]
 ):
     return rate_limit_config
+
+@subapp.post("/upload/test")
+async def test_upload(
+    archive:          UploadFile,
+    hash:             str,
+    user: Annotated[User, Depends(require_login)],
+):
+    await test_upload_archive(archive,hash,user)
