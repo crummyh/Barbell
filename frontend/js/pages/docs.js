@@ -1,4 +1,6 @@
 import hljs from "highlight.js";
+import * as bootstrap from "bootstrap";
+
 hljs.highlightAll();
 
 document.addEventListener("DOMContentLoaded", function () {
