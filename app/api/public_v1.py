@@ -133,10 +133,10 @@ async def test_upload_archive(
             detail=f"File is too large. Max size: {config.MAX_FILE_SIZE / (1024**3):.1f}GB"
         )
 
-    if get_hash_with_streaming(archive.file, config.UPLOAD_INTEGRITY_HASH_ALGORITHM) != hash:
+    if get_hash_with_streaming(archive.file, config.BUCKET_NAME_HASH_ALGORITHM) != hash:
         raise HTTPException(
             status_code=400,
-            detail="Uploaded file is corrupted (hash mismatch) (Are you using md5?)"
+            detail="Uploaded file is corrupted (hash mismatch) (Are you using sha256?)"
         )
 
     with tarfile.open(fileobj=archive.file, mode="r:gz") as tar:
@@ -174,7 +174,7 @@ async def upload(
 
     `archive`: The images in a .tar.gz archive
 
-    `hash`: A ***md5*** hash of the archive
+    `hash`: A ***sha256*** hash of the archive
 
     `capture_time`: The rough time that the data was gathered
     """
