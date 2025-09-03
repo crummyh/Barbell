@@ -1,4 +1,5 @@
-{% macro code_switch(name, options) %}
+{% macro code_switch(name) %}
+{% set options = snippets[name] %}
 <div class="code-switch">
     <ul class="nav nav-tabs" id="{{ name }}-tablist" role="tablist">
         {% for opt in options %}
