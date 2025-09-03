@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Annotated
 
+import yaml
 from fastapi import APIRouter, Depends
 from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html
 from fastapi.requests import Request
@@ -282,6 +283,9 @@ async def docs(
     except TemplateNotFound:
         return not_found_page(request)
 
+def load_snippets():
+    robot_tabs = yaml.safe_load(Path("/app/web/templates/docs/snippets/robotCode.yml").read_text())["tabs"]
+    templates.env.globals["robot_tabs"] = robot_tabs
 
 # ========== { Other } ========== #
 

@@ -16,6 +16,7 @@ async def lifespan(app: FastAPI):
     init_db()
     buckets.init()
     start_monitor()
+    web.load_snippets()
     yield
 
 description = """
@@ -56,6 +57,8 @@ app = FastAPI(
     docs_url=None,
     redoc_url=None
 )
+
+app.debug = True
 
 app.mount("/static", StaticFiles(directory="app/web/static"), name="static")
 app.mount("/internal", internal_v1.subapp) # TODO: Disable docs
