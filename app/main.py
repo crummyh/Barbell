@@ -9,6 +9,7 @@ from app.api import auth_v1, internal_v1, public_v1, web
 from app.db.database import init_db
 from app.services import buckets
 from app.services.monitoring import start_monitor
+from app.core import config
 
 
 @asynccontextmanager
@@ -58,7 +59,7 @@ app = FastAPI(
     redoc_url=None
 )
 
-app.debug = True
+app.debug = config.DEBUG
 
 app.mount("/static", StaticFiles(directory="app/web/static"), name="static")
 app.mount("/internal", internal_v1.subapp) # TODO: Disable docs

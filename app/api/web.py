@@ -281,8 +281,10 @@ async def docs(
                 "page": "docs"
             }
         )
-    except TemplateNotFound:
+    except TemplateNotFound as e:
         return not_found_page(request)
+        if config.DEBUG:
+            raise e
 
 def load_snippets():
 
