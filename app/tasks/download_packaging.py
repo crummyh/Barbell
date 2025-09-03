@@ -162,7 +162,7 @@ def create_download_batch(batch_id: UUID):
             update_download_batch(batch_id, archive_obj)
 
             archive_obj.seek(0)
-            batch.hash = hashlib.md5(archive_obj.read()).hexdigest()
+            batch.hash = hashlib.sha256(archive_obj.read()).hexdigest()
 
             batch.status = DownloadStatus.READY
             session.add(batch)
