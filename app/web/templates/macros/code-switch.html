@@ -1,0 +1,37 @@
+{% macro code_switch(name) %}
+{% set options = snippets[name] %}
+<div class="code-switch">
+    <ul class="nav nav-tabs" id="{{ name }}-tablist" role="tablist">
+        {% for opt in options %}
+        <li class="nav-item" role="presentation">
+            <button
+                class="nav-link {% if loop.first %}active{% endif %}"
+                id="{{ opt.id }}-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#{{ opt.id }}-pane"
+                type="button"
+                role="tab"
+                aria-controls="{{ opt.id }}-pane"
+                aria-selected="{{ 'true' if loop.first else 'false' }}"
+            >
+                {{ opt.label }}
+            </button>
+        </li>
+        {% endfor %}
+    </ul>
+
+    <div class="code-switch-content tab-content">
+        {% for opt in options %}
+        <div
+            class="tab-pane {% if loop.first %}show active{% endif %}"
+            id="{{ opt.id }}-pane"
+            role="tabpanel"
+            aria-labelledby="{{ opt.id }}-tab"
+            tabindex="0"
+        >
+            <pre><code class="language-{{ opt.language|default('md') }}">{{ opt.code | e }}</code></pre>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endmacro %}

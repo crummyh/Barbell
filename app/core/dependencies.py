@@ -26,7 +26,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 # ==========={ API Keys }=========== #
 
 # Combines a key and username:
-# {USERNAME}:{TEAM NUMBER}
+# {USERNAME}:{KEY}
 api_auth_scheme = APIKeyHeader(name="x-api-auth", auto_error=False)
 
 async def handle_api_key(

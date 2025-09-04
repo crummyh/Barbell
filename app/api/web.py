@@ -1,6 +1,8 @@
 from pathlib import Path
 from typing import Annotated
+import os
 
+import yaml
 from fastapi import APIRouter, Depends
 from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html
 from fastapi.requests import Request
@@ -279,9 +281,18 @@ async def docs(
                 "page": "docs"
             }
         )
-    except TemplateNotFound:
+    except TemplateNotFound as e:
         return not_found_page(request)
+        if config.DEBUG:
+            raise e
 
+def load_snippets():
+
+    for filename in os.listdir(Path("/app/web/templates/docs/snippets/")):
+        full_path = os.path.join(directory_path, filename)
+        if os.path.isfile(full_path):
+            data = yaml.safe_load(Path(full_path).read_text())
+            templates.env.globals["snippets"][data["name"]] = tabs["tabs"]
 
 # ========== { Other } ========== #
 

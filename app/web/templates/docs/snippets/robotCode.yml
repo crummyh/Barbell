@@ -1,0 +1,41 @@
+name: robotCode
+tabs:
+  - id: java-limelight
+    label: Java Limelight
+    language: java
+    code: |
+      public class Example {
+          public static void main(String[] args) {
+              System.out.println("Hello Limelight");
+          }
+      }
+
+  - id: java-photonvision
+    label: Java PhotonVision
+    language: java
+    code: |
+      public class Photon {
+          public void run() {
+              System.out.println("Hello PhotonVision");
+          }
+      }
+
+  - id: cpp-limelight
+    label: C++ Limelight
+    language: cpp
+    code: |
+      #include <iostream>
+      int main() {
+          std::cout << "Hello Limelight" << std::endl;
+          return 0;
+      }
+
+  - id: cpp-photonvision
+    label: C++ PhotonVision
+    language: cpp
+    code: |
+      #include <iostream>
+      int main() {
+          std::cout << "Hello PhotonVision" << std::endl;
+          return 0;
+      }

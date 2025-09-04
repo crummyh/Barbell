@@ -1,5 +1,6 @@
 import hljs from "highlight.js";
 import * as bootstrap from "bootstrap";
+import initTabSwitches from "../components/code-switch";
 
 hljs.highlightAll();
 
@@ -41,3 +42,5 @@ function createToc() {
   bootstrap.ScrollSpy.getInstance(document.body)?.refresh() ||
     new bootstrap.ScrollSpy(document.body, { target: "#tocNav", offset: 80 });
 }
+
+initTabSwitches();
