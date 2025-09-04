@@ -1,3 +1,4 @@
+name: robotCode
 tabs:
   - id: java-limelight
     label: Java Limelight
@@ -15,7 +16,7 @@ tabs:
     code: |
       public class Photon {
           public void run() {
-              System.out.println("PhotonVision");
+              System.out.println("Hello PhotonVision");
           }
       }
 
@@ -35,6 +36,6 @@ tabs:
     code: |
       #include <iostream>
       int main() {
-          std::cout << "PhotonVision" << std::endl;
+          std::cout << "Hello PhotonVision" << std::endl;
           return 0;
       }
