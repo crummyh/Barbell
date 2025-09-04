@@ -1,10 +1,48 @@
 {% extends "docs-base.html" %} {% block content %}
 <h1>Authentication</h1>
-<p>Welcome to the docs...</p>
+<p>Letting the backend know who you are</p>
 
 <h2>API Keys</h2>
+<p>
+    API keys are the primary way of authenticating public API requests.
+    An API key consists of two parts: a username, and a 16 character key.
+    Your API looks like this:
+</p>
+<pre><code class="language-plaintext">
+{USERNAME}:{KEY}
+</code></pre>
+<p>
+    To get your final key, just replace the placeholders with your actual
+    username and key.
+</p>
+<h3>Getting your Key</h3>
+<p>
+    To get your key, head to <a href="/dashboard/settings">settings</a>. Find the
+    "API Key" section. Click "Get My Key", and copy the key you are given.
+</p>
+<h3>Using your Key</h3>
+<p>
+    Whenever you are submiting a request to the public API, you need to 
+    include your API key in a header called `x-api-auth`.
+</p>
+{% from "macros/code_switch.html" import code_switch %}
+
+{{ code_switch("apiKeyHeader") }}
 
 <h2>Best Practices</h2>
+<p>
+    There are a number of best practices that need to be followed to 
+    protect your API key.
+</p>
+<h4>Don't Share Your Key</h4>
+<p>
+    Treat your key as a password. It belongs to you, and only you. Don't 
+    share it.
+</p>
+<h4>Never Hardcode API Keys</h4>
+<p>
+    If you are writing an app or scipt, n
+</p>
 
 <h2>Advanced</h2>
 {% endblock %}
