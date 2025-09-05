@@ -1,5 +1,6 @@
 from pathlib import Path
 from typing import Annotated
+import os
 
 import yaml
 from fastapi import APIRouter, Depends
@@ -280,12 +281,18 @@ async def docs(
                 "page": "docs"
             }
         )
-    except TemplateNotFound:
+    except TemplateNotFound as e:
         return not_found_page(request)
+        if config.DEBUG:
+            raise e
 
 def load_snippets():
-    robot_tabs = yaml.safe_load(Path("/app/web/templates/docs/snippets/robotCode.yml").read_text())["tabs"]
-    templates.env.globals["robot_tabs"] = robot_tabs
+
+    for filename in os.listdir(Path("/app/web/templates/docs/snippets/")):
+        full_path = os.path.join(directory_path, filename)
+        if os.path.isfile(full_path):
+            data = yaml.safe_load(Path(full_path).read_text())
+            templates.env.globals["snippets"][data["name"]] = tabs["tabs"]
 
 # ========== { Other } ========== #
 
