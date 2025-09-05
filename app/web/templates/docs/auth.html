@@ -41,8 +41,37 @@
 </p>
 <h4>Never Hardcode API Keys</h4>
 <p>
-    If you are writing an app or scipt, n
+    If you are writing an app or scipt, <strong>never</strong> put your 
+    key directly in the code. Insted, put the key in a <code>.env</code>
+    file and import the key into your code. 
 </p>
 
 <h2>Advanced</h2>
+<p>
+    While API keys are great for the public API, a diffrent approch is needed
+    for the internal API. You will probibly not need this API, unless you are
+    developing ann app off of Barbell, or need some advanced data not found 
+    in the public API. To access this data, you need to authenticate using the
+    OAuth2 Password Bearer Flow. There are a lot of details to this flow, but the basics
+    are below.
+</p>
+<h3>Token Request</h3>
+<p>
+    First, you need to request a token. Everthing for advanced authentication
+    has a <code>/auth/v1/</code> path. For getting a token, you need to call
+    <code>/auth/v1/token/</code>.
+</p>
+{{ code_switch("tokenRequest") }}
+<p>
+    This gives you a <abbr title="JSON Web Token">JWT</abbr> token in the form
+    of a <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Cookies">HTTP-only cookie</a>
+    named <code>access_token</code>. This cookie cann't be modified or read by
+    JavaScript when used in the browser, making it ideal for storing JWT tokens.
+</p>
+<h3>Using the Token</h3>
+TODO HERE
+
+<p>
+    
+</p>
 {% endblock %}

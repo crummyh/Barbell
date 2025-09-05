@@ -26,7 +26,6 @@ function createToc() {
       h.id = h.textContent
         .trim()
         .toLowerCase()
-        .replace(/\s+/g, "-")
         .replace(/[^a-zA-Z ]/g, "");
     }
     const link = document.createElement("a");

@@ -14,19 +14,12 @@ tabs:
     language: js
     code: |
 
-      const apiKey = "myUsername:myLongKeyGoesHere"
+      const apiKey = "myUsername:myLongKeyGoesHere";
 
-      async function callApi(url) {
-        let response = await fetch(url, {
-          method: "GET",
-          headers: {
-            "x-api-auth": apiKey,
-        });
-
-        let data = await response.json();
-        return data;
-      }
-
-      data = callApi("myEndpoint")
+      let response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "x-api-auth": apiKey,
+      });
 
 
