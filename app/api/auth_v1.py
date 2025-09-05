@@ -89,7 +89,7 @@ def register_user(
         )
 
     try:
-        session.exec(select(User).where(User.username == new_user.email)).one()
+        session.exec(select(User).where(User.username == new_user.username)).one()
     except Exception:
         pass
     else:
