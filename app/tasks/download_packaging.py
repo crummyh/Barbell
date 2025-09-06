@@ -60,11 +60,9 @@ def create_download_batch(batch_id: UUID):
 
             for selection in batch.annotations:
                 try:
-                    is_super = selection["super"]
-
-                    if is_super:
+                    if selection.super:
                         # If the selection is super, include all children
-                        super_cat = session.get(LabelSuperCategory, selection["id"])
+                        super_cat = session.get(LabelSuperCategory, selection.id)
                         for category in super_cat.sub_categories:
                             manifest["categories"].append({
                                 "supercategory": super_cat.name,
@@ -74,7 +72,7 @@ def create_download_batch(batch_id: UUID):
                             annotation_category_id_list.append(category.id)
                     else:
                         # The selection is not super, add it alone
-                        category = session.get(LabelCategory, selection["id"])
+                        category = session.get(LabelCategory, selection.id)
 
                         if category.super_category:
                             manifest["categories"].append({
@@ -97,53 +95,53 @@ def create_download_batch(batch_id: UUID):
             session.commit()
 
             archive_obj = BytesIO()
-            archive = tarfile.open(fileobj=archive_obj, mode="w:gz")
+            with tarfile.open(fileobj=archive_obj, mode="w:gz") as archive:
+                images = _get_random_images(session, batch.image_count)
+                for image in images:
+                    manifest["images"].append({
+                        "id": image.id,
+                        "license": 0,
+                        "width": 640,
+                        "hight": 640,
+                        "file_name": str(image.id) + "." + config.IMAGE_STORAGE_FORMAT,
+                        "date_captured": image.created_at.strftime("%y-%m-%d %H:%M:%S")
+                    })
 
-            images = _get_random_images(session, batch.image_count)
-            for i, image in enumerate(images):
-                manifest["images"].append({
-                    "id": image.id,
-                    "license": 0,
-                    "width": 640,
-                    "hight": 640,
-                    "file_name": str(image.id) + "." + config.IMAGE_STORAGE_FORMAT,
-                    "date_captured": image.created_at.strftime("%y-%m-%d %H:%M:%S")
-                })
+                    image_obj = get_image(image.id)
+                    image_obj.seek(0,2)
+                    size = image_obj.tell()
+                    image_obj.seek(0)
 
-                image_obj = get_image(image.id)
-                image_obj.seek(0,2)
-                size = image_obj.tell()
-                image_obj.seek(0)
+                    tar_info = tarfile.TarInfo(name=str(image.id) + "." + config.IMAGE_STORAGE_FORMAT)
+                    tar_info.size = size
+                    tar_info.mtime = image.created_at.timestamp()
+                    tar_info.mode = 0o644
 
-                tar_info = tarfile.TarInfo(name=str(image.id)+"."+config.IMAGE_STORAGE_FORMAT)
-                tar_info.size = size
-                tar_info.mtime = image.created_at.timestamp()
-                tar_info.mode = 0o644
+                    archive.addfile(tarinfo=tar_info, fileobj=image_obj)
 
-                archive.addfile(tarinfo=tar_info, fileobj=image_obj)
+                    for annotation in image.annotations:
+                        if annotation.category_id in annotation_category_id_list:
+                            manifest["annotations"].append({
+                                "id": annotation.id,
+                                "category_id": annotation.category_id,
+                                "iscrowd": annotation.iscrowd,
+                                "area": annotation.bbox_h * annotation.bbox_w,
+                                "bbox": [
+                                    annotation.bbox_x,
+                                    annotation.bbox_y,
+                                    annotation.bbox_w,
+                                    annotation.bbox_h
+                                ]
+                            })
 
-                for annotation in image.annotations:
-                    if annotation.category_id in annotation_category_id_list:
-                        manifest["annotations"].append({
-                            "id": annotation.id,
-                            "category_id": annotation.category_id,
-                            "iscrowd": annotation.iscrowd,
-                            "area": annotation.bbox_h * annotation.bbox_w,
-                            "bbox": [
-                                annotation.bbox_x,
-                                annotation.bbox_y,
-                                annotation.bbox_w,
-                                annotation.bbox_h
-                            ]
-                        })
+                batch.status = DownloadStatus.ADDING_MANIFEST
+                session.add(batch)
+                session.commit()
 
-            batch.status = DownloadStatus.ADDING_MANIFEST
-            session.add(batch)
-            session.commit()
+                manifest_obj = BytesIO()
+                with TextIOWrapper(manifest_obj, encoding="utf-8", write_through=True) as wrapper:
+                    json.dump(manifest, wrapper, cls=UUIDEncoder)
 
-            manifest_obj = BytesIO()
-            with TextIOWrapper(manifest_obj, encoding="utf-8", write_through=True) as wrapper:
-                json.dump(manifest, wrapper, cls=UUIDEncoder)
                 manifest_obj.seek(0)
 
                 tar_info = tarfile.TarInfo(name="manifest.json")
@@ -157,7 +155,6 @@ def create_download_batch(batch_id: UUID):
 
                 archive.addfile(tarinfo=tar_info, fileobj=manifest_obj)
 
-            archive.close()
             archive_obj.seek(0)
             update_download_batch(batch_id, archive_obj)
 
