@@ -1,12 +1,13 @@
 import tarfile
 from datetime import datetime, timezone
 from typing import Annotated, Any, Dict, List
+from uuid import UUID
 
 from fastapi import APIRouter, BackgroundTasks, Depends, UploadFile
 from fastapi.exceptions import HTTPException
-from pydantic.types import UUID4
 from sqlalchemy import func
 from sqlmodel import Session, select
+from starlette.responses import StreamingResponse
 from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 
 from app.core import config
@@ -38,7 +39,7 @@ from app.models.schemas import (
     UploadBatch,
     User,
 )
-from app.services.buckets import create_upload_batch
+from app.services.buckets import create_upload_batch, get_download_batch
 from app.services.monitoring import get_uptime
 from app.tasks.download_packaging import create_download_batch
 from app.tasks.image_processing import (
@@ -88,9 +89,9 @@ def get_label_info(
 
 # ========== { Auth API } ========== #
 
-@router.get("/status/upload/{batch_id}", tags=["Auth Required",  "Stats"], dependencies=[Depends(RateLimiter(requests_limit=30, time_window=10))])
+@router.get("/upload/status/{batch_id}", tags=["Auth Required",  "Stats"], dependencies=[Depends(RateLimiter(requests_limit=30, time_window=10))])
 def get_upload_batch_status(
-    batch_id: UUID4,
+    batch_id: UUID,
     user: Annotated[User, Depends(handle_api_key)],
     session: Annotated[Session, Depends(get_session)]
 ) -> UploadStatusOut:
@@ -199,19 +200,15 @@ async def upload(
     else:
         session.commit()
 
-        try:
-            assert batch.id
-            create_upload_batch(archive.file, batch.id)
 
-        except Exception:
-            raise HTTPException(
-                status_code=500,
-                detail="There was an error creating a S3 object"
-            )
+    async def upload_archive():
+        assert batch.id
+        create_upload_batch(archive.file, batch.id)
+        background_tasks.add_task(process_batch_async, batch_id=batch.id)
 
-        else:
-            background_tasks.add_task(process_batch_async, batch_id=batch.id)
+    background_tasks.add_task(upload_archive)
 
+    assert batch.id
     return UploadStatusOut(
         batch_id=batch.id,
         user=get_username_from_id(batch.user, session),
@@ -224,9 +221,9 @@ async def upload(
         error_msg=None
     )
 
-@router.get("/status/download/{batch_id}", tags=["Auth Required",  "Stats"], dependencies=[Depends(RateLimiter(requests_limit=30, time_window=10))])
+@router.get("/download/status/{batch_id}", tags=["Auth Required",  "Stats"], dependencies=[Depends(RateLimiter(requests_limit=30, time_window=10))])
 def get_download_batch_status(
-    batch_id: UUID4,
+    batch_id: UUID,
     user: Annotated[User, Depends(handle_api_key)],
     session: Annotated[Session, Depends(get_session)]
 ) -> DownloadStatusOut:
@@ -251,8 +248,8 @@ def get_download_batch_status(
     )
     return out
 
-@router.put("/download", tags=["Auth Required"], dependencies=[Depends(RateLimiter(requests_limit=2, time_window=60))])
-def download_batch(
+@router.put("/download/request", tags=["Auth Required"], dependencies=[Depends(RateLimiter(requests_limit=2, time_window=60))])
+def request_download_batch(
     request: DownloadRequest,
     background_tasks: BackgroundTasks,
     user: Annotated[User, Depends(handle_api_key)],
@@ -279,7 +276,6 @@ def download_batch(
         )
 
     else:
-        # return {"id": str(batch.id)}
         background_tasks.add_task(create_download_batch, batch_id=batch.id)
         return DownloadStatusOut(
             id=batch.id,
@@ -293,10 +289,39 @@ def download_batch(
             error_message=batch.error_message
         )
 
+@router.put("/download/get/{batch_id}", tags=["Auth Required"], dependencies=[Depends(RateLimiter(requests_limit=2, time_window=60))])
+def download_batch(
+    batch_id: UUID,
+    user: Annotated[User, Depends(handle_api_key)],
+    session: Annotated[Session, Depends(get_session)]
+):
+    try:
+        batch = session.get(DownloadBatch, batch_id)
+        assert batch
+    except Exception:
+        raise HTTPException(
+            status_code=404,
+            detail="Batch not found"
+        )
+
+    if batch.status != DownloadStatus.READY:
+        raise HTTPException(
+            status_code=400,
+            detail="Batch is not ready to download"
+        )
+
+    return StreamingResponse(
+        content=get_download_batch(batch_id),
+        media_type="application/gzip",
+        headers={"Content-Disposition": "attachment; filename=images.tar.gz"}
+    )
+
+
 # ==========={ Management }=========== #
 
 @router.put("/rotate-key", dependencies=[Depends(RateLimiter(requests_limit=1, time_window=60))])
 def rotate_api_key(
+    batch_id: UUID,
     user: Annotated[User, Depends(handle_api_key)],
     session: Annotated[Session, Depends(get_session)]
 ):

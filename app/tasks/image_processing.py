@@ -1,5 +1,3 @@
-
-
 import tarfile
 from datetime import datetime, timezone
 from io import BytesIO
@@ -18,9 +16,7 @@ from app.services.buckets import create_image, get_upload_batch
 
 
 async def process_batch_async(batch_id: UUID):
-
     with Session(engine) as session:
-
         def _update_batch_property(field: str, value):
             """
             Allows for changing single values of a batch

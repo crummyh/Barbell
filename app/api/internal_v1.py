@@ -1,5 +1,6 @@
 
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import (
     BackgroundTasks,
@@ -11,7 +12,6 @@ from fastapi import (
 )
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
-from pydantic import UUID4
 from sqlmodel import Session, asc, select
 from starlette.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
@@ -117,7 +117,7 @@ def update_image_review_status(
 
 @subapp.get("/image/{image_id}", dependencies=[Depends(RateLimiter(requests_limit=5, time_window=5))])
 def get_image(
-    image_id: UUID4,
+    image_id: UUID,
     current_user: Annotated[User, Security(minimum_role(UserRole.MODERATOR))]
 ):
     return image_response(buckets.get_image(image_id))

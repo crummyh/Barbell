@@ -40,6 +40,17 @@ def update_download_batch(uuid: UUID, new_archive: BinaryIO):
     _upload_file(new_archive, config.DOWNLOAD_BATCHES_BUCKET_NAME, str(uuid) + ".tar.gz")
 
 def get_download_batch(uuid: UUID) -> BinaryIO:
+    """
+    Eventually, this needs to stream. It should look like this:
+        obj = s3.get_object(Bucket="my-bucket", Key=key)
+        body = obj["Body"]  # This is a streaming response from boto3
+
+        return StreamingResponse(
+            body,
+            media_type="application/octet-stream",
+            headers={"Content-Disposition": f"attachment; filename={key}"}
+        )
+    """
     return _download_file(str(uuid) + ".tar.gz", config.UPLOAD_BATCHES_BUCKET_NAME)
 
 def create_image(image: BinaryIO, uuid: UUID):
