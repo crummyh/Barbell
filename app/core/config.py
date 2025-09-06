@@ -6,6 +6,7 @@ from PIL import Image
 
 PROJECT_NAME = "Barbell"
 PROJECT_URL = "example.com"
+URL_PREFIX = "https://"
 PROJECT_VERSION = "0.0.1"
 MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024  # 2GB
 UPLOAD_BATCHES_BUCKET_NAME = "upload_batches"
@@ -39,3 +40,7 @@ load_dotenv()
 JWT_SECRET_TOKEN = os.getenv("JWT_SECRET_KEY")
 DATABASE_URL = os.getenv("DATABASE_URL")
 DEBUG = os.getenv("DEBUG", "false").lower() == "true"
+
+if DEBUG:
+    PROJECT_URL = "127.0.0.1:8000"
+    URL_PREFIX = "http://"

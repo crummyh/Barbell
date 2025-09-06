@@ -6,10 +6,10 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.api import auth_v1, internal_v1, public_v1, web
+from app.core import config
 from app.db.database import init_db
 from app.services import buckets
 from app.services.monitoring import start_monitor
-from app.core import config
 
 
 @asynccontextmanager
@@ -26,16 +26,36 @@ I need to put docs and stuff here
 
 tags_metadata = [
     {
+        "name": "Download",
+        "description": "Download full training sets",
+        "externalDocs": {
+            "description": "Download docs",
+            "url": config.URL_PREFIX + config.PROJECT_URL + "/docs/upload"
+        }
+    },
+    {
+        "name": "Upload",
+        "description": "Upload match images",
+        "externalDocs": {
+            "description": "Upload docs",
+            "url": config.URL_PREFIX + config.PROJECT_URL + "/docs/download"
+        }
+    },
+    {
         "name": "Stats",
-        "description": "Get *information* about the dataset",
+        "description": "Get stats about the database"
     },
     {
-        "name": "Public",
-        "description": "Accessing these endpoints does not require an API key",
+        "name": "Management",
+        "description": "Manage your account",
     },
     {
-        "name": "Auth Required",
-        "description": "An API key is needed to access these endpoints"
+        "name": "Auth",
+        "description": "Advanced Authentication",
+        "externalDocs": {
+            "description": "Auth docs",
+            "url": config.URL_PREFIX + config.PROJECT_URL + "/docs/auth"
+        }
     }
 ]
 
@@ -51,7 +71,7 @@ app = FastAPI(
     },
     license_info={
         "name": "MIT",
-        "url": "https://github.com/crummyh/frcVisonDataset/blob/main/LICENSE"
+        "url": "https://github.com/crummyh/Barbell/blob/main/LICENSE"
     },
     openapi_tags=tags_metadata,
     lifespan=lifespan,

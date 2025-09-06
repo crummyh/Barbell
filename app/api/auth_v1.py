@@ -28,7 +28,7 @@ from app.services.email.email import send_verification_email
 
 router = APIRouter()
 
-@router.post("/token", dependencies=[Depends(RateLimiter(requests_limit=10, time_window=5))])
+@router.post("/token", tags=["Auth"], dependencies=[Depends(RateLimiter(requests_limit=10, time_window=5))])
 def login(
     response: Response,
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
@@ -59,13 +59,13 @@ def login(
 
     return resp
 
-@router.get("/users/me", dependencies=[Depends(RateLimiter(requests_limit=10, time_window=5))])
+@router.get("/users/me", tags=["Auth"], dependencies=[Depends(RateLimiter(requests_limit=10, time_window=5))])
 async def read_users_me(
     current_user: Annotated[User, Depends(get_current_active_user)],
 ):
     return current_user
 
-@router.post("/register", dependencies=[Depends(RateLimiter(requests_limit=1, time_window=10))])
+@router.post("/register", tags=["Auth"], dependencies=[Depends(RateLimiter(requests_limit=1, time_window=10))])
 def register_user(
     new_user: NewUserData,
     session: Annotated[Session, Depends(get_session)]
@@ -114,7 +114,7 @@ def register_user(
         session.commit()
         send_verification_email(user)
 
-@router.get("/verify", dependencies=[Depends(RateLimiter(requests_limit=2, time_window=10))])
+@router.get("/verify", tags=["Auth"], dependencies=[Depends(RateLimiter(requests_limit=2, time_window=10))])
 def verify_email_code(
     code: str,
     session: Annotated[Session, Depends(get_session)]
@@ -137,7 +137,7 @@ def verify_email_code(
     else:
         session.commit()
 
-@router.post("/register/team", dependencies=[Depends(RateLimiter(requests_limit=1, time_window=10))])
+@router.post("/register/team", tags=["Auth"], dependencies=[Depends(RateLimiter(requests_limit=1, time_window=10))])
 def register_team(
     new_team: Annotated[NewTeamData, Query()],
     session: Annotated[Session, Depends(get_session)]
@@ -179,7 +179,7 @@ def register_team(
     else:
         session.commit()
 
-@router.get("/logout")
+@router.get("/logout", tags=["Auth"])
 def logout():
     response = RedirectResponse(url="/login")
     response.delete_cookie("access_token")

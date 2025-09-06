@@ -52,7 +52,7 @@ router = APIRouter()
 
 # ========== { Public API } ========== #
 
-@router.get("/stats", tags=["Public", "Stats"], dependencies=[Depends(RateLimiter(requests_limit=20, time_window=10))])
+@router.get("/stats", tags=["Stats"], dependencies=[Depends(RateLimiter(requests_limit=20, time_window=10))])
 def get_stats(session: Annotated[Session, Depends(get_session)]) -> StatsOut:
     """
     Get stats about the entire database
@@ -65,7 +65,7 @@ def get_stats(session: Annotated[Session, Depends(get_session)]) -> StatsOut:
     )
     return out
 
-@router.get("/stats/labels")
+@router.get("/stats/labels", tags=["Stats"])
 def get_label_info(
     session: Annotated[Session, Depends(get_session)]
 ) -> List[Dict[str, Any]]:
@@ -89,7 +89,7 @@ def get_label_info(
 
 # ========== { Auth API } ========== #
 
-@router.get("/upload/status/{batch_id}", tags=["Auth Required",  "Stats"], dependencies=[Depends(RateLimiter(requests_limit=30, time_window=10))])
+@router.get("/upload/status/{batch_id}", tags=["Upload"], dependencies=[Depends(RateLimiter(requests_limit=30, time_window=10))])
 def get_upload_batch_status(
     batch_id: UUID,
     user: Annotated[User, Depends(handle_api_key)],
@@ -116,7 +116,7 @@ def get_upload_batch_status(
     )
     return out
 
-@router.post("/upload/test")
+@router.post("/upload/test", tags=["Upload"])
 async def test_upload_archive(
     archive:          UploadFile,
     hash:             str,
@@ -161,7 +161,7 @@ async def test_upload_archive(
 
     return "Success"
 
-@router.post("/upload", tags=["Auth Required"], dependencies=[Depends(RateLimiter(requests_limit=2, time_window=60))])
+@router.post("/upload", tags=["Upload"], dependencies=[Depends(RateLimiter(requests_limit=2, time_window=60))])
 async def upload(
     archive:          UploadFile,
     hash:             str,
@@ -221,7 +221,7 @@ async def upload(
         error_msg=None
     )
 
-@router.get("/download/status/{batch_id}", tags=["Auth Required",  "Stats"], dependencies=[Depends(RateLimiter(requests_limit=30, time_window=10))])
+@router.get("/download/status/{batch_id}", tags=["Download"], dependencies=[Depends(RateLimiter(requests_limit=30, time_window=10))])
 def get_download_batch_status(
     batch_id: UUID,
     user: Annotated[User, Depends(handle_api_key)],
@@ -248,7 +248,7 @@ def get_download_batch_status(
     )
     return out
 
-@router.put("/download/request", tags=["Auth Required"], dependencies=[Depends(RateLimiter(requests_limit=2, time_window=60))])
+@router.put("/download/request", tags=["Download"], dependencies=[Depends(RateLimiter(requests_limit=2, time_window=60))])
 def request_download_batch(
     request: DownloadRequest,
     background_tasks: BackgroundTasks,
@@ -289,7 +289,7 @@ def request_download_batch(
             error_message=batch.error_message
         )
 
-@router.put("/download/get/{batch_id}", tags=["Auth Required"], dependencies=[Depends(RateLimiter(requests_limit=2, time_window=60))])
+@router.put("/download/get/{batch_id}", tags=["Download"], dependencies=[Depends(RateLimiter(requests_limit=2, time_window=60))])
 def download_batch(
     batch_id: UUID,
     user: Annotated[User, Depends(handle_api_key)],
@@ -319,7 +319,7 @@ def download_batch(
 
 # ==========={ Management }=========== #
 
-@router.put("/rotate-key", dependencies=[Depends(RateLimiter(requests_limit=1, time_window=60))])
+@router.put("/rotate-key", tags=["Management"], dependencies=[Depends(RateLimiter(requests_limit=1, time_window=60))])
 def rotate_api_key(
     batch_id: UUID,
     user: Annotated[User, Depends(handle_api_key)],
