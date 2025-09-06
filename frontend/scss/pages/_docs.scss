@@ -18,4 +18,9 @@ body[data-page="docs"] {
         scroll-margin-top: 56px;
         margin-top: 1em;
     }
+
+    pre > code.language-plaintext.hljs {
+        padding-top: 1.25em !important;
+        padding-bottom: 1.25em !important;
+    }
 }

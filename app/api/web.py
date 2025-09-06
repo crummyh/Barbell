@@ -1,6 +1,5 @@
 from pathlib import Path
 from typing import Annotated
-import os
 
 import yaml
 from fastapi import APIRouter, Depends
@@ -282,22 +281,25 @@ async def docs(
             }
         )
     except TemplateNotFound as e:
-        return not_found_page(request)
         if config.DEBUG:
             raise e
+        return not_found_page(request)
+
 
 def load_snippets():
+    snippets_dir = Path("/app/web/templates/docs/snippets")
+    all_snippets = {}
 
-    for filename in os.listdir(Path("/app/web/templates/docs/snippets/")):
-        full_path = os.path.join(directory_path, filename)
-        if os.path.isfile(full_path):
-            data = yaml.safe_load(Path(full_path).read_text())
-            templates.env.globals["snippets"][data["name"]] = tabs["tabs"]
+    for file in snippets_dir.glob("*.yml"):
+        data = yaml.safe_load(file.read_text())
+        key = file.stem
+        all_snippets[key] = data
+
+    templates.env.globals["snippets"] = all_snippets
 
 # ========== { Other } ========== #
 
 def not_found_page(request: Request):
-
     return templates.TemplateResponse(
         request=request, name="404.html", context={"user": None, "debug": config.DEBUG, "page": "404"}, status_code=404
     )

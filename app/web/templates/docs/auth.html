@@ -4,74 +4,72 @@
 
 <h2>API Keys</h2>
 <p>
-    API keys are the primary way of authenticating public API requests.
-    An API key consists of two parts: a username, and a 16 character key.
-    Your API looks like this:
+    API keys are the primary way of authenticating public API requests. An API
+    key consists of two parts: a username, and a 16 character key. Your API
+    looks like this:
 </p>
-<pre><code class="language-plaintext">
-{USERNAME}:{KEY}
-</code></pre>
+<pre><code class="language-plaintext">{USERNAME}:{KEY}</code></pre>
 <p>
     To get your final key, just replace the placeholders with your actual
     username and key.
 </p>
 <h3>Getting your Key</h3>
 <p>
-    To get your key, head to <a href="/dashboard/settings">settings</a>. Find the
-    "API Key" section. Click "Get My Key", and copy the key you are given.
+    To get your key, head to <a href="/dashboard/settings">settings</a>. Find
+    the "API Key" section. Click "Get My Key", and copy the key you are given.
 </p>
 <h3>Using your Key</h3>
 <p>
-    Whenever you are submiting a request to the public API, you need to 
-    include your API key in a header called `x-api-auth`.
+    Whenever you are submitting a request to the public API, you need to include
+    your API key in a header called `x-api-auth`.
 </p>
-{% from "macros/code_switch.html" import code_switch %}
-
-{{ code_switch("apiKeyHeader") }}
+{% from "macros/code-switch.html" import code_switch %} {{
+code_switch("apiKeyHeader") }}
 
 <h2>Best Practices</h2>
 <p>
-    There are a number of best practices that need to be followed to 
-    protect your API key.
+    There are a number of best practices that need to be followed to protect
+    your API key.
 </p>
 <h4>Don't Share Your Key</h4>
 <p>
-    Treat your key as a password. It belongs to you, and only you. Don't 
-    share it.
+    Treat your key as a password. It belongs to you, and only you. Don't share
+    it.
 </p>
 <h4>Never Hardcode API Keys</h4>
 <p>
-    If you are writing an app or scipt, <strong>never</strong> put your 
-    key directly in the code. Insted, put the key in a <code>.env</code>
-    file and import the key into your code. 
+    If you are writing an app or script, <strong>never</strong> put your key
+    directly in the code. Instep, put the key in a <code>.env</code>
+    file and import the key into your code.
 </p>
 
 <h2>Advanced</h2>
 <p>
-    While API keys are great for the public API, a diffrent approch is needed
-    for the internal API. You will probibly not need this API, unless you are
-    developing ann app off of Barbell, or need some advanced data not found 
-    in the public API. To access this data, you need to authenticate using the
-    OAuth2 Password Bearer Flow. There are a lot of details to this flow, but the basics
-    are below.
+    While API keys are great for the public API, a different approach is needed
+    for the internal API. You will probably not need this API, unless you are
+    developing ann app off of Barbell, or need some advanced data not found in
+    the public API. To access this data, you need to authenticate using the
+    OAuth2 Password Bearer Flow. There are a lot of details to this flow, but
+    the basics are below.
 </p>
 <h3>Token Request</h3>
 <p>
-    First, you need to request a token. Everthing for advanced authentication
+    First, you need to request a token. Everything for advanced authentication
     has a <code>/auth/v1/</code> path. For getting a token, you need to call
     <code>/auth/v1/token/</code>.
 </p>
 {{ code_switch("tokenRequest") }}
 <p>
     This gives you a <abbr title="JSON Web Token">JWT</abbr> token in the form
-    of a <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Cookies">HTTP-only cookie</a>
-    named <code>access_token</code>. This cookie cann't be modified or read by
+    of a
+    <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Cookies"
+        >HTTP-only cookie</a
+    >
+    named <code>access_token</code>. This cookie cannot be modified or read by
     JavaScript when used in the browser, making it ideal for storing JWT tokens.
 </p>
 <h3>Using the Token</h3>
 TODO HERE
 
-<p>
-    
-</p>
+<p></p>
 {% endblock %}

@@ -2,6 +2,8 @@
     border-top-width: 0px !important;
     border-top-left-radius: 0px !important;
     border-top-right-radius: 0px !important;
+    padding-top: 1.25em !important;
+    padding-bottom: 1.25em !important;
 }
 
 .code-switch-content pre {
@@ -10,4 +12,20 @@
 
 .code-switch {
     margin-bottom: 1em;
+}
+
+.code-switch .nav-link.active {
+    border-bottom: 1px solid transparent;
+}
+
+:root,
+[data-bs-theme="light"] {
+    .code-switch .nav-link.active {
+        background: var(--bs-light-bg-subtle);
+    }
+}
+[data-bs-theme="dark"] {
+    .code-switch .nav-link.active {
+        background: var(--bs-dark-bg-subtle);
+    }
 }
