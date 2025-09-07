@@ -1,0 +1,20 @@
+{% extends "base-page.html" %} {% set navbar = false %} {% set footer = false %}
+{% block title %}Verify{% endblock %} {% block content %}
+
+<div class="container content-center">
+    <div
+        class="size-till-small justify-content-center mt-5"
+        id="registerContainer"
+    >
+        <a href="/">
+            <img
+                src="/static/images/logo.svg"
+                alt=""
+                width="64px"
+                class="mb-3 d-block mx-auto"
+        /></a>
+        <h3 class="text-center" id="headerText">Verifying...</h3>
+        <div id="errorPlaceholder"></div>
+    </div>
+</div>
+{% endblock %}

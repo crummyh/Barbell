@@ -74,6 +74,20 @@ async def register(
 
     return RedirectResponse("/dashboard")
 
+@router.get("/verify", response_class=HTMLResponse)
+async def verify(
+    code: str,
+    request: Request,
+    session: Annotated[Session, Depends(get_session)],
+    user: User | None = Depends(get_current_user)
+):
+    if user is None:
+        return templates.TemplateResponse(
+            request=request, name="verify.html", context={"user": None, "debug": config.DEBUG, "page": "verify"}
+        )
+
+    return RedirectResponse("/dashboard")
+
 @router.get("/about", response_class=HTMLResponse)
 async def about(
     request: Request,

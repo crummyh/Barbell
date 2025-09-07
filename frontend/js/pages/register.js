@@ -21,24 +21,14 @@ if (loginForm) {
       });
 
       if (!response.ok) {
-        data = await response.json();
+        let data = await response.json();
 
         const errorMessage = data?.detail || "An error occurred";
         showError("Registration failed: " + errorMessage);
         return;
       }
 
-      const alertPlaceholder = document.getElementById("errorPlaceholder");
-
-      const wrapper = document.createElement("div");
-      wrapper.innerHTML = [
-        '<div class="alert alert-primary alert-dismissible" role="alert">',
-        `   <div class="small">Registration Successful! Check your email.</div>`,
-        '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
-        "</div>",
-      ].join("");
-
-      alertPlaceholder.append(wrapper);
+      showEmailMsg();
     } catch (err) {
       console.error("Registration error:", err);
       showError("Registration failed. See console for details.");
@@ -58,4 +48,22 @@ if (loginForm) {
 
     alertPlaceholder.append(wrapper);
   }
+}
+
+function showEmailMsg() {
+  const registerContainer = document.getElementById("registerContainer");
+  if (registerContainer === null) {
+    return;
+  }
+  registerContainer.innerHTML = `
+    <a href="/">
+        <img
+            src="/static/images/logo.svg"
+            alt=""
+            width="64px"
+            class="mb-3 d-block mx-auto"
+    /></a>
+    <h3 class="text-center">Account Created!</h3>
+    <p class="text-center">Check your email for a verification link</p>
+    `;
 }

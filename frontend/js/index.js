@@ -12,6 +12,9 @@ async function loadPage(page) {
     case "register":
       await import("./pages/register.js");
       break;
+    case "verify":
+      await import("./pages/verify.js");
+      break;
     case "dashboard":
       await import("./pages/dashboard/index.js");
       break;
