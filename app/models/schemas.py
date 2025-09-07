@@ -3,7 +3,7 @@ from typing import List, Optional
 from uuid import UUID, uuid4
 
 from pydantic import EmailStr
-from sqlmodel import JSON, Column, Field, Relationship, SQLModel
+from sqlmodel import JSON, Column, Field, ForeignKey, Integer, Relationship, SQLModel
 
 import app.models.models as models
 from app.core import config
@@ -31,8 +31,13 @@ class Team(SQLModel, table=True):
     team_name: str | None = Field(default=None, max_length=config.MAX_TEAM_NAME_LEN)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     disabled: bool = Field(default=False)
-    leader_user: int | None = Field(default=None, foreign_key="users.id", index=True)
-
+    leader_user: int | None = Field(
+        default=None,
+        sa_column=Column(
+            Integer,
+            ForeignKey("users.id", use_alter=True, name="fk_team_leader_user")
+        ),
+    )
 class UploadBatch(SQLModel, table=True):
     __tablename__ = "upload_batches" # type: ignore
 

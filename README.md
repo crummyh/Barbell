@@ -81,6 +81,9 @@ Rename .env.db.example to .env.db!!!
 
 # Now start working!
 
+# To run tests use:
+./run-tests.sh
+
 # To run the app use:
 docker compose up --build
 

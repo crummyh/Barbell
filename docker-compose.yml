@@ -18,6 +18,26 @@ services:
       - ./app:/app
     restart: always
 
+  test:
+    build:
+      context: .
+      dockerfile: backend.Dockerfile
+    container_name: barbell-tests
+    depends_on:
+      - test-db
+    env_file:
+      - .env.db
+    environment:
+      - DATABASE_URL=postgresql+psycopg2://test_user:test_password@test-db:5432/test_db
+      - DEBUG=true
+    volumes:
+      - ./app:/app
+      - ./tests:/app/tests
+    entrypoint: []
+    command: ["pytest", "app/tests", "-v", "--maxfail=1", "--disable-warnings"]
+    profiles:
+      - tests
+
   frontend:
     build:
       context: ./frontend
@@ -51,5 +71,21 @@ services:
       - "8025:8025"
     restart: unless-stopped
 
+  test-db:
+    image: postgres:16
+    container_name: postgres-test-db
+    restart: always
+    environment:
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_password
+      POSTGRES_DB: test_db
+    ports:
+      - "5433:5432" # expose on a different host port
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/
+    profiles:
+      - tests
+
 volumes:
   postgres_data:
+  postgres_test_data:

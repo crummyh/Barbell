@@ -15,7 +15,7 @@ from fastapi.responses import RedirectResponse
 from sqlmodel import Session, asc, select
 from starlette.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
-from app.api.public_v1 import download_batch, test_upload_archive
+from app.api.public_v1 import request_download_batch, test_upload_archive
 from app.core.dependencies import (
     RateLimiter,
     generate_api_key,
@@ -302,7 +302,7 @@ def download_redirect(
     user: Annotated[User, Depends(require_login)],
     session: Annotated[Session, Depends(get_session)],
 ):
-    download_batch(request, background_tasks, user, session)
+    request_download_batch(request, background_tasks, user, session)
 
 @subapp.post("/admin/rate-limit")
 def update_rate_limit(
