@@ -2,55 +2,54 @@ from datetime import datetime, timezone
 from typing import List, Optional
 from uuid import UUID, uuid4
 
-from pydantic import EmailStr
-from sqlmodel import JSON, Column, Field, ForeignKey, Integer, Relationship, SQLModel
+from sqlmodel import JSON, Column, Field, Relationship, SQLModel
 
 import app.models.models as models
 from app.core import config
 
+# class User(SQLModel, table=True):
+#     __tablename__ = "users" # type: ignore
 
-class User(SQLModel, table=True):
-    __tablename__ = "users" # type: ignore
+#     id: int | None = Field(default=None, primary_key=True)
+#     username: str = Field(index=True, max_length=config.MAX_USERNAME_LEN, min_length=config.MIN_USERNAME_LEN)
+#     email: EmailStr | None = Field(default=None, unique=True, nullable=True)
+#     password: str | None = Field(default=None, max_length=config.MAX_PASSWORD_LENGTH, min_length=config.MIN_PASSWORD_LENGTH)
+#     api_key: str | None = Field(default=None, index=True, unique=True)
+#     disabled: bool = Field(default=True)
+#     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+#     team: int | None = Field(default=None, foreign_key="teams.id", index=True)
+#     role: models.UserRole = Field(default=models.UserRole.DEFAULT)
+#     code: str | None = Field(max_length=config.VERIFICATION_CODE_STR_LEN)
 
-    id: int | None = Field(default=None, primary_key=True)
-    username: str = Field(index=True, max_length=config.MAX_USERNAME_LEN, min_length=config.MIN_USERNAME_LEN)
-    email: EmailStr | None = Field(default=None, unique=True, nullable=True)
-    password: str | None = Field(default=None, max_length=config.MAX_PASSWORD_LENGTH, min_length=config.MIN_PASSWORD_LENGTH)
-    api_key: str | None = Field(default=None, index=True, unique=True)
-    disabled: bool = Field(default=True)
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    team: int | None = Field(default=None, foreign_key="teams.id", index=True)
-    role: models.UserRole = Field(default=models.UserRole.DEFAULT)
-    code: str | None = Field(max_length=config.VERIFICATION_CODE_STR_LEN)
+# class Team(SQLModel, table=True):
+#     __tablename__ = "teams" # type: ignore
 
-class Team(SQLModel, table=True):
-    __tablename__ = "teams" # type: ignore
+#     id: int | None = Field(default=None, primary_key=True)
+#     team_number: int = Field(index=True, unique=True, ge=0, le=config.MAX_TEAM_NUMB)
+#     team_name: str | None = Field(default=None, max_length=config.MAX_TEAM_NAME_LEN)
+#     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+#     disabled: bool = Field(default=False)
+#     leader_user: int | None = Field(
+#         default=None,
+#         sa_column=Column(
+#             Integer,
+#             ForeignKey("users.id", use_alter=True, name="fk_team_leader_user")
+#         ),
+#     )
 
-    id: int | None = Field(default=None, primary_key=True)
-    team_number: int = Field(index=True, unique=True, ge=0, le=config.MAX_TEAM_NUMB)
-    team_name: str | None = Field(default=None, max_length=config.MAX_TEAM_NAME_LEN)
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    disabled: bool = Field(default=False)
-    leader_user: int | None = Field(
-        default=None,
-        sa_column=Column(
-            Integer,
-            ForeignKey("users.id", use_alter=True, name="fk_team_leader_user")
-        ),
-    )
-class UploadBatch(SQLModel, table=True):
-    __tablename__ = "upload_batches" # type: ignore
+# class UploadBatch(SQLModel, table=True):
+#     __tablename__ = "upload_batches" # type: ignore
 
-    id: UUID | None = Field(default_factory=uuid4, primary_key=True)
-    user: int = Field(foreign_key="users.id", index=True)
-    status: models.UploadStatus = Field()
-    file_size: int | None = Field(default=None, ge=0, le=config.MAX_FILE_SIZE)
-    images_valid: int = Field(default=0, ge=0)
-    images_rejected: int = Field(default=0, ge=0)
-    images_total: int = Field(default=0, ge=0)
-    capture_time: datetime = Field()
-    start_time: datetime | None = Field(default=None)
-    error_message: str | None = Field(default=None, max_length=500)
+#     id: UUID | None = Field(default_factory=uuid4, primary_key=True)
+#     user: int = Field(foreign_key="users.id", index=True)
+#     status: models.UploadStatus = Field()
+#     file_size: int | None = Field(default=None, ge=0, le=config.MAX_FILE_SIZE)
+#     images_valid: int = Field(default=0, ge=0)
+#     images_rejected: int = Field(default=0, ge=0)
+#     images_total: int = Field(default=0, ge=0)
+#     capture_time: datetime = Field()
+#     start_time: datetime | None = Field(default=None)
+#     error_message: str | None = Field(default=None, max_length=500)
 
 class DownloadBatch(SQLModel, table=True):
     __tablename__ = "download_batches" # type: ignore
@@ -73,7 +72,6 @@ class Image(SQLModel, table=True):
     created_by: int = Field(foreign_key="users.id", index=True)
     batch: UUID = Field(foreign_key="upload_batches.id")
     review_status: models.ImageReviewStatus = Field(default=models.ImageReviewStatus.NOT_REVIEWED, index=True)
-
 
     annotations: List["Annotation"] = Relationship(back_populates="image", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
 
