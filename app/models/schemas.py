@@ -51,64 +51,64 @@ from app.core import config
 #     start_time: datetime | None = Field(default=None)
 #     error_message: str | None = Field(default=None, max_length=500)
 
-class DownloadBatch(SQLModel, table=True):
-    __tablename__ = "download_batches" # type: ignore
+# class DownloadBatch(SQLModel, table=True):
+#     __tablename__ = "download_batches" # type: ignore
 
-    id: UUID | None = Field(default_factory=uuid4, primary_key=True)
-    user: int = Field(foreign_key="users.id")
-    status: models.DownloadStatus = Field()
-    non_match_images: bool = Field(default=True)
-    image_count: int = Field(ge=1, le=config.MAX_DOWNLOAD_COUNT)
-    annotations: List[models.AnnotationSelection] = Field(sa_column=Column(JSON))
-    start_time: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    hash: str | None = Field(default=None)
-    error_message: str | None = Field(default=None, max_length=500)
+#     id: UUID | None = Field(default_factory=uuid4, primary_key=True)
+#     user: int = Field(foreign_key="users.id")
+#     status: models.DownloadStatus = Field()
+#     non_match_images: bool = Field(default=True)
+#     image_count: int = Field(ge=1, le=config.MAX_DOWNLOAD_COUNT)
+#     annotations: List[models.AnnotationSelection] = Field(sa_column=Column(JSON))
+#     start_time: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+#     hash: str | None = Field(default=None)
+#     error_message: str | None = Field(default=None, max_length=500)
 
-class Image(SQLModel, table=True):
-    __tablename__ = "images" # type: ignore
+# class Image(SQLModel, table=True):
+#     __tablename__ = "images" # type: ignore
 
-    id: UUID = Field(default_factory=uuid4, primary_key=True)
-    created_at: datetime = Field(index=True)
-    created_by: int = Field(foreign_key="users.id", index=True)
-    batch: UUID = Field(foreign_key="upload_batches.id")
-    review_status: models.ImageReviewStatus = Field(default=models.ImageReviewStatus.NOT_REVIEWED, index=True)
+#     id: UUID = Field(default_factory=uuid4, primary_key=True)
+#     created_at: datetime = Field(index=True)
+#     created_by: int = Field(foreign_key="users.id", index=True)
+#     batch: UUID = Field(foreign_key="upload_batches.id")
+#     review_status: models.ImageReviewStatus = Field(default=models.ImageReviewStatus.NOT_REVIEWED, index=True)
 
-    annotations: List["Annotation"] = Relationship(back_populates="image", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
+#     annotations: List["Annotation"] = Relationship(back_populates="image", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
 
-class Annotation(SQLModel, table=True):
-    __tablename__ = "annotations" # type: ignore
+# class Annotation(SQLModel, table=True):
+#     __tablename__ = "annotations" # type: ignore
 
-    id: int | None = Field(default=None, primary_key=True)
-    image_id: UUID = Field(foreign_key="images.id")
-    category_id: int = Field(foreign_key="label_categories.id", index=True)
-    iscrowd: bool = Field(default=False)
-    area: float | None = Field(default=None)
-    bbox_x: int | None = Field(default=None)
-    bbox_y: int | None = Field(default=None)
-    bbox_w: int | None = Field(default=None)
-    bbox_h: int | None = Field(default=None)
+#     id: int | None = Field(default=None, primary_key=True)
+#     image_id: UUID = Field(foreign_key="images.id")
+#     category_id: int = Field(foreign_key="label_categories.id", index=True)
+#     iscrowd: bool = Field(default=False)
+#     area: float | None = Field(default=None)
+#     bbox_x: int | None = Field(default=None)
+#     bbox_y: int | None = Field(default=None)
+#     bbox_w: int | None = Field(default=None)
+#     bbox_h: int | None = Field(default=None)
 
-    image: Image = Relationship(back_populates="annotations")
+#     image: Image = Relationship(back_populates="annotations")
 
-def set_bbox(annotation: Annotation, bbox: tuple[int,int,int,int]):
-    annotation.bbox_x = bbox[0]
-    annotation.bbox_y = bbox[1]
-    annotation.bbox_w = bbox[2]
-    annotation.bbox_h = bbox[3]
+# def set_bbox(annotation: Annotation, bbox: tuple[int,int,int,int]):
+#     annotation.bbox_x = bbox[0]
+#     annotation.bbox_y = bbox[1]
+#     annotation.bbox_w = bbox[2]
+#     annotation.bbox_h = bbox[3]
 
-class LabelSuperCategory(SQLModel, table=True):
-    __tablename__ = "label_super_categories" # type: ignore
+# class LabelSuperCategory(SQLModel, table=True):
+#     __tablename__ = "label_super_categories" # type: ignore
 
-    id: int | None = Field(default=None, primary_key=True)
-    name: str | None = Field()
+#     id: int | None = Field(default=None, primary_key=True)
+#     name: str | None = Field()
 
-    sub_categories: List["LabelCategory"] = Relationship(back_populates="super_category")
+#     sub_categories: List["LabelCategory"] = Relationship(back_populates="super_category")
 
-class LabelCategory(SQLModel, table=True):
-    __tablename__ = "label_categories" # type: ignore
+# class LabelCategory(SQLModel, table=True):
+#     __tablename__ = "label_categories" # type: ignore
 
-    id: int | None = Field(default=None, primary_key=True)
-    name: str = Field()
-    super_category_id: int | None = Field(foreign_key="label_super_categories.id")
+#     id: int | None = Field(default=None, primary_key=True)
+#     name: str = Field()
+#     super_category_id: int | None = Field(foreign_key="label_super_categories.id")
 
-    super_category: Optional[LabelSuperCategory] = Relationship(back_populates="sub_categories")
+#     super_category: Optional[LabelSuperCategory] = Relationship(back_populates="sub_categories")

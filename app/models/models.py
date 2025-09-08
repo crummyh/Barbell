@@ -104,6 +104,7 @@ class TeamBase(SQLModel):
     leader: "User" = Relationship(sa_relationship_kwargs={"foreign_keys": "Team.leader_user"})
 
     upload_batches: List["UploadBatch"] = Relationship(back_populates="user")
+    download_batches: List["DownloadBatch"] = Relationship(back_populates="user")
 
 class Team(TeamBase, table=True):
     __tablename__ = "teams" # type: ignore
@@ -167,21 +168,138 @@ class UploadBatchUpdate(SQLModel):
 
 class UploadBatchPublic(BaseUploadBatch):
    id: UUID
+    estimated_time_left: float
 
 # ==========={ DownloadBatch }=========== #
 
+class BaseDownloadBatch(SQLModel):
 
+    status: "DownloadStatus" = Field(default=DownloadStatus.UPLOADING)
+    non_match_images: bool = Field(default=True)
+    image_count: int = Field(ge=1, le=config.MAX_DOWNLOAD_COUNT)
+    annotations: List["AnnotationSelection"] = Field(sa_column=Column(JSON))
+    start_time: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    hash: str | None = Field(default=None)
+    error_message: str | None = Field(default=None, max_length=500)
+
+    user: User = Relationship(back_populates="download_batches")
+
+class DownloadBatch(BaseDownloadBatch, table=True):
+    __tablename__ = "download_batches" # type: ignore
+
+    id: UUID | None = Field(default_factory=uuid4, primary_key=True)
+    user_id: int = Field(foreign_key="users.id")
+
+
+class DownloadBatchCreate(SQLModel):
+    annotations: List["AnnotationSelection"]
+    count: int
+    non_match_images: bool = True
+
+class DownloadBatchUpdate(SQLModel):
+    status: "DownloadStatus" | None = None
+    non_match_images: bool | None = None\
+    image_count: int | None = None
+    annotations: List["AnnotationSelection"] | None = None
+    start_time: datetime | None = None
+    hash: str | None = None
+    error_message: str | None = None
+    user: User | None = None
+
+class DownloadBatchPublic(BaseDownloadBatch):
+    id: UUID
+    estimated_time_left: float
 
 # ==========={ Image }=========== #
 
+class ImageBase(SQLModel):
+    created_at: datetime = Field(index=True)
+    created_by: int = Field(foreign_key="users.id", index=True)
+    batch: UUID = Field(foreign_key="upload_batches.id")
+    review_status: "ImageReviewStatus" = Field(default="ImageReviewStatus".NOT_REVIEWED, index=True)
 
+    annotations: List["Annotation"] = Relationship(back_populates="image", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
+
+class Image(ImageBase, table=True):
+    __tablename__ = "images" # type: ignore
+
+    id: UUID | None = Field(default_factory=uuid4, primary_key=True)
+
+class ImageCreate(SQLModel):
+    pass
+
+class ImageUpdate(SQLModel):
+    created_at: datetime | None = None
+    created_by: int | None = None
+    batch: UUID | None = None
+    review_status: "ImageReviewStatus" | None = None
+
+    annotations: List["Annotation"] | None = None
+
+class ImagePublic(ImageBase):
+    id: UUID
 
 # ==========={ Annotation }=========== #
 
+class AnnotationBase(SQLModel, table=True):
+    category_id: int = Field(foreign_key="label_categories.id", index=True)
+    iscrowd: bool = Field(default=False)
+    area: float | None = Field(default=None)
+    bbox_x: int | None = Field(default=None)
+    bbox_y: int | None = Field(default=None)
+    bbox_w: int | None = Field(default=None)
+    bbox_h: int | None = Field(default=None)
 
+    image: Image = Relationship(back_populates="annotations")
+
+    def set_bbox(self, bbox: tuple[int,int,int,int]):
+        self.bbox_x = bbox[0]
+        self.bbox_y = bbox[1]
+        self.bbox_w = bbox[2]
+        self.bbox_h = bbox[3]
+
+class Annotation(AnnotationBase, table=True):
+    __tablename__ = "annotations" # type: ignore
+
+    id: int | None = Field(default=None, primary_key=True)
+    image_id: UUID = Field(foreign_key="images.id")
+
+class AnnotationCreate(SQLModel):
+    pass
+
+class AnnotationUpdate(SQLModel):
+    category_id: int | None = None
+    iscrowd: bool | None = None
+    area: | None = None
+    bbox_x: int | None = None
+    bbox_y: int | None = None
+    bbox_w: int | None = None
+    bbox_h: int | None = None
+    image_id: UUID | None = None
+
+class AnnotationPublic(SQLModel):
+    id: int
+    image_id: UUID
 
 # ==========={ LabelCategory }=========== #
 
+class LabelCategoryBase(SQLModel):
+    name: str | None = Field()
+
+class LabelSuperCategory(LabelCategoryBaseodel, table=True):
+    __tablename__ = "label_super_categories" # type: ignore
+
+    id: int | None = Field(default=None, primary_key=True)
+
+    sub_categories: List["LabelCategory"] = Relationship(back_populates="super_category")
+
+class LabelCategory(LabelCategoryBase, table=True):
+    __tablename__ = "label_categories" # type: ignore
+
+    id: int | None = Field(default=None, primary_key=True)
+    super_category_id: int | None = Field(foreign_key="label_super_categories.id")
+
+    super_category: Optional[LabelSuperCategory] = Relationship(back_populates="sub_categories")
 
 # ==========={ Random }=========== #
 
@@ -195,8 +313,6 @@ class StatsOut(BaseModel):
     image_count: int
     un_reviewed_image_count: int
     team_count: int
-    # years_available: list[int]
-    # labels: dict[str, list[str]]
     uptime: timedelta
 
 class TeamStatsOut(BaseModel):
@@ -205,53 +321,6 @@ class TeamStatsOut(BaseModel):
     years_available: set[int]
     upload_batches: int
 
-class UploadStatusOut(BaseModel):
-    batch_id: UUID
-    user: str
-    status: UploadStatus
-    file_size: Optional[int]
-    images_valid: Optional[int]
-    images_rejected: Optional[int]
-    images_total: Optional[int]
-    estimated_time_left: Optional[float]
-    error_msg: Optional[str]
-
-class DownloadStatusOut(BaseModel):
-    id: UUID | None
-    user: str
-    status: DownloadStatus
-    non_match_images: bool
-    image_count: int | None
-    annotations: List[AnnotationSelection]
-    start_time: datetime
-    hash: str | None
-    error_message: str | None
-
-class UserOut(BaseModel):
-    username: str
-    email: EmailStr | None
-    disabled: bool
-    created_at: datetime
-    team_number: int
-    role: UserRole
-
-# ==========={ Requests }=========== #
-
-class DownloadRequest(BaseModel):
-    annotations: List[AnnotationSelection]
-    count: int
-    non_match_images: bool = True
-
-class NewUserData(BaseModel):
-    username: str
-    email: EmailStr
-    password: str
-    team: Optional[int] = None
-
-class NewTeamData(BaseModel):
-    team_number: int
-    team_name: str
-    leader_username: str
 
 def image_response(file: BinaryIO) -> Response:
     file.seek(0)
@@ -263,20 +332,12 @@ def image_response(file: BinaryIO) -> Response:
         }
     )
 
+# ==========={ Requests }=========== #
+
 class RateLimitUpdate(BaseModel):
     route: str
     requests_limit: int
     time_window: int
-
-# ==========={ Responses and Requests }=========== #
-
-class ReviewMetadata(BaseModel):
-    id: UUID
-    annotations: List["Annotation"] # Use [] for None
-    created_at: datetime
-    created_by: int
-    batch: UUID
-    review_status: ImageReviewStatus
 
 # ==========={ Security }=========== #
 
@@ -287,8 +348,3 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     username: Optional[str] = None
     role: Optional[UserRole] = None
-
-# I'm sorry
-from app.models.schemas import Annotation  # noqa: E402
-
-ReviewMetadata.model_rebuild()
