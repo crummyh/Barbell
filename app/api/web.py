@@ -13,7 +13,7 @@ from sqlmodel import Session
 from app.core import config
 from app.core.dependencies import get_current_user
 from app.core.helpers import get_team_number_from_id
-from app.db.database import get_session
+from app.database import get_session
 from app.models.models import UserOut, UserRole
 from app.models.schemas import User
 

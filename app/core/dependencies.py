@@ -11,7 +11,7 @@ from passlib.context import CryptContext
 from sqlmodel import Session, select
 
 from app.core import config
-from app.db.database import get_session
+from app.database import get_session
 from app.models.models import TokenData, UserRole
 from app.models.schemas import User
 

@@ -3,7 +3,7 @@ from fastapi.testclient import TestClient
 from sqlmodel import Session, SQLModel, create_engine
 
 from app.core.config import DATABASE_URL
-from app.db.database import get_session
+from app.database import get_session
 from app.main import app
 
 # Engine just for tests

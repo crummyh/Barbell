@@ -17,7 +17,7 @@ from sqlmodel import Session, func, select
 
 from app.core import config
 from app.core.helpers import UUIDEncoder
-from app.db.database import engine
+from app.database import engine
 from app.models.models import DownloadStatus
 from app.models.schemas import DownloadBatch, Image, LabelCategory, LabelSuperCategory
 from app.services.buckets import (

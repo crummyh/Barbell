@@ -21,8 +21,8 @@ from app.core.dependencies import (
     get_password_hash,
 )
 from app.core.helpers import get_user_from_username
-from app.db.database import get_session
-from app.models.models import NewTeamData, NewUserData
+from app.database import get_session
+from app.models.models import UserCreate, TeamCreate
 from app.models.schemas import Team, User
 from app.services.email.email import send_verification_email
 
@@ -67,7 +67,7 @@ async def read_users_me(
 
 @router.post("/register", tags=["Auth"], dependencies=[Depends(RateLimiter(requests_limit=1, time_window=10))])
 def register_user(
-    new_user: NewUserData,
+    new_user: CreateUser,
     session: Annotated[Session, Depends(get_session)]
 ):
     if new_user.team:
@@ -99,13 +99,7 @@ def register_user(
         )
 
     try:
-        user = User(
-            username=new_user.username,
-            email=new_user.email,
-            password=get_password_hash(new_user.password),
-            team=new_user.team,
-            code=generate_verification_code(session)
-        )
+        user create_user(new_user)
         session.add(user)
     except:
         session.rollback()

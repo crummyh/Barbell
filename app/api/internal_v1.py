@@ -29,7 +29,7 @@ from app.core.helpers import (
     get_team_number_from_id,
     get_user_from_username,
 )
-from app.db.database import get_session
+from app.database import get_session
 from app.models.models import (
     DownloadRequest,
     ImageReviewStatus,

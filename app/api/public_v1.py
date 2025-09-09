@@ -21,7 +21,7 @@ from app.core.helpers import (
     get_hash_with_streaming,
     get_username_from_id,
 )
-from app.db.database import get_session
+from app.database import get_session
 from app.models.models import (
     DownloadRequest,
     DownloadStatus,

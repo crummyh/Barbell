@@ -67,8 +67,11 @@ class User(UserBase, table=True):
     role: UserRole = Field(default=UserRole.DEFAULT)
     code: str | None = Field(max_length=config.VERIFICATION_CODE_STR_LEN)
 
+    def get_public(self) -> "UserPublic":
+        UserPublic.model_validate(self)
+
 class UserCreate(UserBase):
-    password: str = Field(max_length=config.MAX_PASSWORD_LENGTH, min_length=config.MIN_PASSWORD_LENGTH)
+    password: str
 
 class UserUpdate(SQLModel):
     username: str | None = None
