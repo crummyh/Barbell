@@ -67,9 +67,6 @@ def get_hash_with_streaming(file: BinaryIO, algorithm: str) -> str:
 
     return h.hexdigest()
 
-def get_user_from_username(username: str, session: Session) -> User:
-    return session.exec(select(User).where(User.username == username)).one()
-
 class UUIDEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, UUID):

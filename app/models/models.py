@@ -8,7 +8,7 @@ from uuid import UUID, uuid4
 from fastapi import Response
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, EmailStr
-from sqlmodel import Column, Field, ForeignKey, Integer, Relationship, SQLModel
+from sqlmodel import JSON, Column, Field, ForeignKey, Integer, Relationship, SQLModel
 
 from app.core import config
 
@@ -68,7 +68,7 @@ class User(UserBase, table=True):
     code: str | None = Field(max_length=config.VERIFICATION_CODE_STR_LEN)
 
     def get_public(self) -> "UserPublic":
-        UserPublic.model_validate(self)
+        return UserPublic.model_validate(self)
 
 class UserCreate(UserBase):
     password: str
@@ -84,6 +84,7 @@ class UserUpdate(SQLModel):
     disabled: bool | None = None
     team: int | None = None
     role: UserRole | None = None
+    code: str | None = None
 
 class UserPublic(UserBase):
     id: int
@@ -116,14 +117,18 @@ class Team(TeamBase, table=True):
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     disabled: bool = Field(default=False)
 
+    def get_public(self) -> "TeamPublic":
+        return TeamPublic.model_validate(self)
+
 class TeamCreate(SQLModel):
     team_number: int
     team_name: str
+    leader_username: str
 
 class TeamUpdate(SQLModel):
     team_number: int | None = None
     team_name: str | None = None
-    leader_user: int | None = None
+    leader_username: str | None = None
 
 class TeamPublic(TeamBase):
     id: int
@@ -145,13 +150,14 @@ class BaseUploadBatch(SQLModel):
 
     user: User = Relationship(back_populates="upload_batches")
 
-
 class UploadBatch(BaseUploadBatch, table=True):
     __tablename__ = "upload_batches" # type: ignore
 
     id: UUID | None = Field(default_factory=uuid4, primary_key=True)
     user_id: int = Field(foreign_key="users.id", index=True)
 
+    def get_public(self) -> "UploadBatchPublic":
+        return UploadBatchPublic.model_validate(self)
 
 class UploadBatchCreate(SQLModel):
     capture_time: datetime
@@ -170,14 +176,13 @@ class UploadBatchUpdate(SQLModel):
    user_id: int | None = None
 
 class UploadBatchPublic(BaseUploadBatch):
-   id: UUID
+    id: UUID
     estimated_time_left: float
 
 # ==========={ DownloadBatch }=========== #
 
 class BaseDownloadBatch(SQLModel):
-
-    status: "DownloadStatus" = Field(default=DownloadStatus.UPLOADING)
+    status: "DownloadStatus" = Field(default=DownloadStatus.STARTING)
     non_match_images: bool = Field(default=True)
     image_count: int = Field(ge=1, le=config.MAX_DOWNLOAD_COUNT)
     annotations: List["AnnotationSelection"] = Field(sa_column=Column(JSON))
@@ -193,6 +198,8 @@ class DownloadBatch(BaseDownloadBatch, table=True):
     id: UUID | None = Field(default_factory=uuid4, primary_key=True)
     user_id: int = Field(foreign_key="users.id")
 
+    def get_public(self) -> "DownloadBatchPublic":
+        return DownloadBatchPublic.model_validate(self)
 
 class DownloadBatchCreate(SQLModel):
     annotations: List["AnnotationSelection"]
@@ -200,8 +207,8 @@ class DownloadBatchCreate(SQLModel):
     non_match_images: bool = True
 
 class DownloadBatchUpdate(SQLModel):
-    status: "DownloadStatus" | None = None
-    non_match_images: bool | None = None\
+    status: "DownloadStatus | None" = None
+    non_match_images: bool | None = None
     image_count: int | None = None
     annotations: List["AnnotationSelection"] | None = None
     start_time: datetime | None = None
@@ -219,7 +226,7 @@ class ImageBase(SQLModel):
     created_at: datetime = Field(index=True)
     created_by: int = Field(foreign_key="users.id", index=True)
     batch: UUID = Field(foreign_key="upload_batches.id")
-    review_status: "ImageReviewStatus" = Field(default="ImageReviewStatus".NOT_REVIEWED, index=True)
+    review_status: ImageReviewStatus = Field(default=ImageReviewStatus.NOT_REVIEWED, index=True)
 
     annotations: List["Annotation"] = Relationship(back_populates="image", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
 
@@ -228,6 +235,9 @@ class Image(ImageBase, table=True):
 
     id: UUID | None = Field(default_factory=uuid4, primary_key=True)
 
+    def get_public(self) -> "ImagePublic":
+        return ImagePublic.model_validate(self)
+
 class ImageCreate(SQLModel):
     pass
 
@@ -235,7 +245,7 @@ class ImageUpdate(SQLModel):
     created_at: datetime | None = None
     created_by: int | None = None
     batch: UUID | None = None
-    review_status: "ImageReviewStatus" | None = None
+    review_status: ImageReviewStatus | None = None
 
     annotations: List["Annotation"] | None = None
 
@@ -267,13 +277,16 @@ class Annotation(AnnotationBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
     image_id: UUID = Field(foreign_key="images.id")
 
+    def get_public(self) -> "AnnotationPublic":
+        return AnnotationPublic.model_validate(self)
+
 class AnnotationCreate(SQLModel):
     pass
 
 class AnnotationUpdate(SQLModel):
     category_id: int | None = None
     iscrowd: bool | None = None
-    area: | None = None
+    area: float | None = None
     bbox_x: int | None = None
     bbox_y: int | None = None
     bbox_w: int | None = None
@@ -287,14 +300,17 @@ class AnnotationPublic(SQLModel):
 # ==========={ LabelCategory }=========== #
 
 class LabelCategoryBase(SQLModel):
-    name: str | None = Field()
+    name: str = Field()
 
-class LabelSuperCategory(LabelCategoryBaseodel, table=True):
+class LabelSuperCategory(LabelCategoryBase, table=True):
     __tablename__ = "label_super_categories" # type: ignore
 
     id: int | None = Field(default=None, primary_key=True)
 
     sub_categories: List["LabelCategory"] = Relationship(back_populates="super_category")
+
+    def get_public(self) -> "LabelCategoryPublic":
+        return LabelCategoryPublic.model_validate(self)
 
 class LabelCategory(LabelCategoryBase, table=True):
     __tablename__ = "label_categories" # type: ignore
@@ -303,6 +319,23 @@ class LabelCategory(LabelCategoryBase, table=True):
     super_category_id: int | None = Field(foreign_key="label_super_categories.id")
 
     super_category: Optional[LabelSuperCategory] = Relationship(back_populates="sub_categories")
+
+    def get_public(self) -> "LabelCategoryPublic":
+        return LabelCategoryPublic.model_validate(self)
+
+class LabelCategoryCreate(LabelCategoryBase):
+    super_category_id: int | None = None
+
+class LabelCategoryUpdate(SQLModel):
+    name: str | None = None
+    super_category_id: int | None = None
+
+class LabelSuperCategoryUpdate(LabelCategoryUpdate):
+    name: str | None = None
+
+class LabelCategoryPublic(LabelCategoryBase):
+    id: int
+    super_category_id: int | None = None
 
 # ==========={ Random }=========== #
 
@@ -323,7 +356,6 @@ class TeamStatsOut(BaseModel):
     un_reviewed_image_count: int
     years_available: set[int]
     upload_batches: int
-
 
 def image_response(file: BinaryIO) -> Response:
     file.seek(0)

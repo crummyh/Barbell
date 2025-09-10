@@ -1,0 +1,95 @@
+from sqlmodel import Session
+
+from app.models.models import (
+    LabelCategory,
+    LabelCategoryCreate,
+    LabelCategoryUpdate,
+    LabelSuperCategory,
+    LabelSuperCategoryUpdate,
+)
+
+
+def create_label_category(
+    session: Session,
+    label_category_create: LabelCategoryCreate
+) -> LabelCategory | LabelSuperCategory:
+    if label_category_create.super_category_id:
+        label_category = LabelCategory.model_validate(label_category_create)
+    else:
+        label_category = LabelSuperCategory.model_validate(label_category_create)
+    session.add(label_category)
+    session.commit()
+    session.refresh(label_category)
+    return label_category
+
+def get_label_category(
+    session: Session,
+    id: int,
+    super: bool = False
+) -> LabelCategory | LabelSuperCategory | None:
+    if super:
+        label_category = session.get(LabelCategory, id)
+    else:
+        label_category = session.get(LabelSuperCategory, id)
+    return label_category
+
+def get_label_super_category(
+    session: Session,
+    id: int
+) -> LabelSuperCategory | None:
+    label_super_category = session.get(LabelSuperCategory, id)
+    return label_super_category
+
+def update_label_category(
+    session: Session,
+    id: int,
+    label_category_update: LabelCategoryUpdate
+) -> LabelCategory | None:
+    label_category = session.get(LabelCategory, id)
+    if label_category is None:
+        return None
+
+    new_label_category_data = label_category_update.model_dump(exclude_unset=True)
+    label_category.sqlmodel_update(new_label_category_data)
+    session.add(label_category)
+    session.commit()
+    session.refresh(label_category)
+    return label_category
+
+def update_label_super_category(
+    session: Session,
+    id: int,
+    label_category_update: LabelSuperCategoryUpdate
+) -> LabelSuperCategory | None:
+    label_category = session.get(LabelSuperCategory, id)
+    if label_category is None:
+        return None
+
+    new_label_category_data = label_category_update.model_dump(exclude_unset=True)
+    label_category.sqlmodel_update(new_label_category_data)
+    session.add(label_category)
+    session.commit()
+    session.refresh(label_category)
+    return label_category
+
+def delete_label_category(session: Session, id: int, super: bool = False) -> bool:
+    if super:
+        label_category = session.get(LabelSuperCategory, id)
+    else:
+        label_category = session.get(LabelCategory, id)
+
+    if label_category is None:
+        return False
+
+    session.delete(label_category)
+    session.commit()
+    return True
+
+def delete_label_super_category(session: Session, id: int) -> bool:
+    label_category = session.get(LabelSuperCategory, id)
+    if label_category is None:
+        return False
+
+    session.delete(label_category)
+    session.commit()
+    return True

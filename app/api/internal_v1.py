@@ -24,32 +24,22 @@ from app.core.dependencies import (
     require_login,
     require_role,
 )
-from app.core.helpers import (
-    get_id_from_team_number,
-    get_team_number_from_id,
-    get_user_from_username,
-)
+from app.crud.image import delete_image, get_image, update_image
 from app.database import get_session
 from app.models.models import (
-    DownloadRequest,
+    Image,
+    ImagePublic,
     ImageReviewStatus,
+    ImageUpdate,
     RateLimitUpdate,
-    ReviewMetadata,
+    User,
     UserRole,
     image_response,
-)
-from app.models.schemas import (
-    DownloadBatch,
-    Image,
-    LabelCategory,
-    LabelSuperCategory,
-    UploadBatch,
-    User,
 )
 from app.services import buckets
 
 subapp = FastAPI()
-origins = [ # TODO: UPDATE WITH ACTUAL URL
+origins = [
     "http://127.0.0.1:8000",
     "https://127.0.0.1:8000"
 ]
@@ -66,57 +56,47 @@ def get_image_for_review(
     current_user: Annotated[User, Security(minimum_role(UserRole.MODERATOR))],
     session: Annotated[Session, Depends(get_session)],
     target_status: ImageReviewStatus
-) -> ReviewMetadata:
+) -> ImagePublic:
 
     statement = (
         select(Image).where(Image.review_status == target_status)
-        .order_by(asc(Image.created_at)) # type: ignore
+        .order_by(asc(Image.created_at))
         .limit(1)
     )
     image = session.exec(statement).one()
     if not image:
-        raise LookupError()
+        raise HTTPException(
+            status_code=500,
+            detail="No images found"
+        )
 
-    assert image.id
-    return ReviewMetadata(
-        id=image.id,
-        annotations=image.annotations,
-        created_at=image.created_at,
-        created_by=get_team_number_from_id(image.created_by, session),
-        batch=image.batch,
-        review_status=image.review_status
-    )
+    return image.get_public()
 
 @subapp.put("/review-image", dependencies=[Depends(RateLimiter(requests_limit=5, time_window=5))])
 def update_image_review_status(
-    new_data: ReviewMetadata,
+    id: UUID,
+    image_update: ImageUpdate,
     session: Annotated[Session, Depends(get_session)],
     current_user: Annotated[User, Security(minimum_role(UserRole.MODERATOR))],
     remove_image: bool = False
 ):
-    image = session.get(Image, new_data.id)
+    if remove_image:
+        delete_image(session, id)
+        return
+
+    image = get_image(session, id)
     if not image:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
             detail="Image not found"
         )
 
-    if remove_image:
-        session.delete(image)
-        session.commit()
-        return
-
-    image.batch = new_data.batch
-    image.created_at = new_data.created_at
-    image.created_by = get_id_from_team_number(new_data.created_by, session)
-    image.annotations = new_data.annotations
-    image.review_status = new_data.review_status
-    session.add(image)
+    update_image(session, id, image_update)
 
     session.commit()
 
 @subapp.get("/image/{image_id}", dependencies=[Depends(RateLimiter(requests_limit=5, time_window=5))])
-def get_image(
+def get_image_by_id(
     image_id: UUID,
     current_user: Annotated[User, Security(minimum_role(UserRole.MODERATOR))]
 ):

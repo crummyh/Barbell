@@ -1,7 +1,7 @@
 from datetime import timedelta
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlmodel import Session, select
@@ -16,14 +16,12 @@ from app.core.dependencies import (
     RateLimiter,
     authenticate_user,
     create_access_token,
-    generate_verification_code,
     get_current_active_user,
-    get_password_hash,
 )
-from app.core.helpers import get_user_from_username
+from app.crud.team import create_team
+from app.crud.user import create_user, get_user_from_username, update_user
 from app.database import get_session
-from app.models.models import UserCreate, TeamCreate
-from app.models.schemas import Team, User
+from app.models.models import Team, TeamCreate, User, UserCreate, UserUpdate
 from app.services.email.email import send_verification_email
 
 router = APIRouter()
@@ -35,7 +33,7 @@ def login(
     session: Annotated[Session, Depends(get_session)]
 ):
 
-    user = authenticate_user(session=session, username=form_data.username, password=form_data.password) # type: ignore
+    user = authenticate_user(session=session, username=form_data.username, password=form_data.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -67,17 +65,9 @@ async def read_users_me(
 
 @router.post("/register", tags=["Auth"], dependencies=[Depends(RateLimiter(requests_limit=1, time_window=10))])
 def register_user(
-    new_user: CreateUser,
+    new_user: UserCreate,
     session: Annotated[Session, Depends(get_session)]
 ):
-    if new_user.team:
-        try:
-            session.exec(select(Team).where(Team.team_number == new_user.team)).one()
-        except Exception:
-            raise HTTPException(
-                status_code=HTTP_404_NOT_FOUND,
-                detail="Team does not exist"
-            )
     try:
         session.exec(select(User).where(User.email == new_user.email)).one()
     except Exception:
@@ -99,11 +89,13 @@ def register_user(
         )
 
     try:
-        user create_user(new_user)
-        session.add(user)
-    except:
+        user = create_user(session, new_user)
+    except Exception as e:
         session.rollback()
-        raise
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
     else:
         session.commit()
         send_verification_email(user)
@@ -123,21 +115,24 @@ def verify_email_code(
         )
 
     try:
-        user.code = None
-        user.disabled = False
-        session.add(user)
+        update_user(session, user.id, UserUpdate(code=None, disabled=False))
+
     except Exception:
         session.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to modify user"
+        )
     else:
         session.commit()
 
 @router.post("/register/team", tags=["Auth"], dependencies=[Depends(RateLimiter(requests_limit=1, time_window=10))])
 def register_team(
-    new_team: Annotated[NewTeamData, Query()],
+    team_create: TeamCreate,
     session: Annotated[Session, Depends(get_session)]
 ):
     try:
-        session.exec(select(Team).where(Team.team_number == new_team.team_number)).one()
+        session.exec(select(Team).where(Team.team_number == team_create.team_number)).one()
     except Exception:
         pass
     else:
@@ -146,7 +141,7 @@ def register_team(
             detail="Team already exists"
         )
 
-    new_team_leader = get_user_from_username(new_team.leader_username, session)
+    new_team_leader = get_user_from_username(session, team_create.leader_username)
     try:
         session.exec(select(Team).where(Team.leader_user == new_team_leader.id)).one()
     except Exception:
@@ -158,12 +153,7 @@ def register_team(
         )
 
     try:
-        team = Team(
-            team_number=new_team.team_number,
-            team_name=new_team.team_name,
-            leader_user=new_team_leader.id
-        )
-        session.add(team)
+        create_team(session, team_create)
     except Exception:
         session.rollback()
         raise HTTPException(
