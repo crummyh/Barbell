@@ -52,6 +52,10 @@ router = APIRouter()
 
 # ========== { Public API } ========== #
 
+@router.get("/ping", tags=["Stats"])
+async def ping():
+    return "pong!"
+
 @router.get("/stats", tags=["Stats"], dependencies=[Depends(RateLimiter(requests_limit=20, time_window=10))])
 def get_stats(session: Annotated[Session, Depends(get_session)]) -> StatsOut:
     """
