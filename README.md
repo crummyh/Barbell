@@ -36,7 +36,7 @@ Barbell/
 ├── app/                 # The backend python project
 │   ├── api/             # The API endpoints
 │   ├── core/            # App-level core logic/config
-│   ├── db/              # Database managers
+│   ├── crud/            # CRUD interface layer
 │   ├── models/          # Data models
 │   ├── services/        # Various services and abstractions
 │   ├── tasks/           # Asynchronous background tasks
@@ -44,6 +44,7 @@ Barbell/
 │   ├── web/             # Files for the website
 │   │   ├── static/      # Static files
 │   │   └── templates/   # HTML Jinja templates
+│   ├── database.py      # Database managers
 │   └── main.py          # Main entrypoint
 ├── frontend/            # The frontend Node project
 │   ├── email_templates/ # MJML email templates
