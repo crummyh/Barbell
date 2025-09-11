@@ -17,10 +17,13 @@ def get(session: Session, id: int) -> Team | None:
     team = session.get(Team, id)
     return team
 
-def update(session: Session, id: int, team_update: TeamUpdate) -> Team | None:
+def update(session: Session, id: int, team_update: TeamUpdate | dict) -> Team | None:
     team = session.get(Team, id)
     if team is None:
         return None
+
+    if isinstance(team_update, dict):
+        team_update = AnnotationCreate(**team_update)
 
     new_team_data = team_update.model_dump(exclude_unset=True)
     team.sqlmodel_update(new_team_data)

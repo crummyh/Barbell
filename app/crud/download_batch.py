@@ -16,10 +16,13 @@ def get(session: Session, id: UUID) -> DownloadBatch | None:
     download_batch = session.get(DownloadBatch, id)
     return download_batch
 
-def update(session: Session, id: UUID, download_batch_update: DownloadBatchUpdate) -> DownloadBatch | None:
+def update(session: Session, id: UUID, download_batch_update: DownloadBatchUpdate | dict) -> DownloadBatch | None:
     download_batch = session.get(DownloadBatch, id)
     if download_batch is None:
         return None
+
+    if isinstance(download_batch_update, dict):
+        download_batch_create = AnnotationCreate(**download_batch_create)
 
     new_download_batch_data = download_batch_update.model_dump(exclude_unset=True)
     download_batch.sqlmodel_update(new_download_batch_data)

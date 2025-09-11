@@ -43,11 +43,14 @@ def get_super(
 def update(
     session: Session,
     id: int,
-    label_category_update: LabelCategoryUpdate
+    label_category_update: LabelCategoryUpdate | dict
 ) -> LabelCategory | None:
     label_category = session.get(LabelCategory, id)
     if label_category is None:
         return None
+
+    if isinstance(label_category_update, dict):
+        label_category_update = AnnotationCreate(**label_category_update)
 
     new_label_category_data = label_category_update.model_dump(exclude_unset=True)
     label_category.sqlmodel_update(new_label_category_data)
@@ -59,11 +62,14 @@ def update(
 def update_super(
     session: Session,
     id: int,
-    label_category_update: LabelSuperCategoryUpdate
+    label_category_update: LabelSuperCategoryUpdate | dict
 ) -> LabelSuperCategory | None:
     label_category = session.get(LabelSuperCategory, id)
     if label_category is None:
         return None
+
+    if isinstance(label_category_update, dict):
+        label_category_update = AnnotationCreate(**label_category_update)
 
     new_label_category_data = label_category_update.model_dump(exclude_unset=True)
     label_category.sqlmodel_update(new_label_category_data)

@@ -14,10 +14,13 @@ def get(session: Session, id: int) -> Annotation | None:
     annotation = session.get(Annotation, id)
     return annotation
 
-def update(session: Session, id: int, annotation_update: AnnotationUpdate) -> Annotation | None:
+def update(session: Session, id: int, annotation_update: AnnotationUpdate | dict) -> Annotation | None:
     annotation = session.get(Annotation, id)
     if annotation is None:
         return None
+
+    if isinstance(annotation_update, dict):
+        annotation_update = AnnotationCreate(**annotation_update)
 
     new_annotation_data = annotation_update.model_dump(exclude_unset=True)
     annotation.sqlmodel_update(new_annotation_data)

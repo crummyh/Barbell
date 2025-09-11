@@ -16,10 +16,13 @@ def get(session: Session, id: UUID) -> Image | None:
     image = session.get(Image, id)
     return image
 
-def update(session: Session, id: UUID, image_update: ImageUpdate) -> Image | None:
+def update(session: Session, id: UUID, image_update: ImageUpdate | dict) -> Image | None:
     image = session.get(Image, id)
     if image is None:
         return None
+
+    if isinstance(image_update, dict):
+        image_update = AnnotationCreate(**image_update)
 
     new_image_data = image_update.model_dump(exclude_unset=True)
     image.sqlmodel_update(new_image_data)
