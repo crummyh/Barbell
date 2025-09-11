@@ -5,18 +5,18 @@ from sqlmodel import Session
 from app.models.models import Image, ImageCreate, ImageUpdate
 
 
-def create_image(session: Session, image_create: ImageCreate) -> Image:
+def create(session: Session, image_create: ImageCreate) -> Image:
     image = Image.model_validate(image_create)
     session.add(image)
     session.commit()
     session.refresh(image)
     return image
 
-def get_image(session: Session, id: UUID) -> Image | None:
+def get(session: Session, id: UUID) -> Image | None:
     image = session.get(Image, id)
     return image
 
-def update_image(session: Session, id: UUID, image_update: ImageUpdate) -> Image | None:
+def update(session: Session, id: UUID, image_update: ImageUpdate) -> Image | None:
     image = session.get(Image, id)
     if image is None:
         return None
@@ -28,7 +28,7 @@ def update_image(session: Session, id: UUID, image_update: ImageUpdate) -> Image
     session.refresh(image)
     return image
 
-def delete_image(session: Session, id: UUID) -> bool:
+def delete(session: Session, id: UUID) -> bool:
 
     # TODO: Delete in S3 as well
 

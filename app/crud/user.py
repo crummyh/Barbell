@@ -4,7 +4,7 @@ from app.core.dependencies import get_password_hash
 from app.models.models import User, UserCreate, UserUpdate
 
 
-def create_user(session: Session, user_create: UserCreate) -> User:
+def create(session: Session, user_create: UserCreate) -> User:
     user_create.password = get_password_hash(user_create.password)
 
     user = User.model_validate(user_create)
@@ -13,7 +13,7 @@ def create_user(session: Session, user_create: UserCreate) -> User:
     session.refresh(user)
     return user
 
-def get_user(session: Session, id: int) -> User | None:
+def get(session: Session, id: int) -> User | None:
     user = session.get(User, id)
     return user
 
@@ -21,7 +21,7 @@ def get_user_from_username(session: Session, username: str) -> User | None:
     user = session.exec(select(User).where(User.username == username)).one()
     return user
 
-def update_user(session: Session, id: int, user_update: UserUpdate) -> User | None:
+def update(session: Session, id: int, user_update: UserUpdate) -> User | None:
     if user_update.password is not None:
         user_update.password = get_password_hash(user_update.password)
 
@@ -36,7 +36,7 @@ def update_user(session: Session, id: int, user_update: UserUpdate) -> User | No
     session.refresh(user)
     return user
 
-def delete_user(session: Session, id: int) -> bool:
+def delete(session: Session, id: int) -> bool:
     user = session.get(User, id)
     if user is None:
         return False

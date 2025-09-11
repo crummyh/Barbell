@@ -223,7 +223,7 @@ class DownloadBatchPublic(BaseDownloadBatch):
 # ==========={ Image }=========== #
 
 class ImageBase(SQLModel):
-    created_at: datetime = Field(index=True)
+    created_at: datetime = Field(index=True, default_factory=lambda: datetime.now(timezone.utc))
     created_by: int = Field(foreign_key="users.id", index=True)
     batch: UUID = Field(foreign_key="upload_batches.id")
     review_status: ImageReviewStatus = Field(default=ImageReviewStatus.NOT_REVIEWED, index=True)
@@ -239,7 +239,7 @@ class Image(ImageBase, table=True):
         return ImagePublic.model_validate(self)
 
 class ImageCreate(SQLModel):
-    pass
+    batch: UUID
 
 class ImageUpdate(SQLModel):
     created_at: datetime | None = None

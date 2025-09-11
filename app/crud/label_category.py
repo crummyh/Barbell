@@ -9,7 +9,7 @@ from app.models.models import (
 )
 
 
-def create_label_category(
+def create(
     session: Session,
     label_category_create: LabelCategoryCreate
 ) -> LabelCategory | LabelSuperCategory:
@@ -22,7 +22,7 @@ def create_label_category(
     session.refresh(label_category)
     return label_category
 
-def get_label_category(
+def get(
     session: Session,
     id: int,
     super: bool = False
@@ -33,14 +33,14 @@ def get_label_category(
         label_category = session.get(LabelSuperCategory, id)
     return label_category
 
-def get_label_super_category(
+def get_super(
     session: Session,
     id: int
 ) -> LabelSuperCategory | None:
     label_super_category = session.get(LabelSuperCategory, id)
     return label_super_category
 
-def update_label_category(
+def update(
     session: Session,
     id: int,
     label_category_update: LabelCategoryUpdate
@@ -56,7 +56,7 @@ def update_label_category(
     session.refresh(label_category)
     return label_category
 
-def update_label_super_category(
+def update_super(
     session: Session,
     id: int,
     label_category_update: LabelSuperCategoryUpdate
@@ -72,7 +72,7 @@ def update_label_super_category(
     session.refresh(label_category)
     return label_category
 
-def delete_label_category(session: Session, id: int, super: bool = False) -> bool:
+def delete(session: Session, id: int, super: bool = False) -> bool:
     if super:
         label_category = session.get(LabelSuperCategory, id)
     else:
@@ -85,7 +85,7 @@ def delete_label_category(session: Session, id: int, super: bool = False) -> boo
     session.commit()
     return True
 
-def delete_label_super_category(session: Session, id: int) -> bool:
+def delete_super(session: Session, id: int) -> bool:
     label_category = session.get(LabelSuperCategory, id)
     if label_category is None:
         return False

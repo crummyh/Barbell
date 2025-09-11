@@ -18,8 +18,7 @@ from app.core.dependencies import (
     create_access_token,
     get_current_active_user,
 )
-from app.crud.team import create_team
-from app.crud.user import create_user, get_user_from_username, update_user
+from app.crud import team, user
 from app.database import get_session
 from app.models.models import Team, TeamCreate, User, UserCreate, UserUpdate
 from app.services.email.email import send_verification_email
@@ -89,7 +88,7 @@ def register_user(
         )
 
     try:
-        user = create_user(session, new_user)
+        db_user = user.create(session, new_user)
     except Exception as e:
         session.rollback()
         raise HTTPException(
@@ -98,7 +97,7 @@ def register_user(
         )
     else:
         session.commit()
-        send_verification_email(user)
+        send_verification_email(db_user)
 
 @router.get("/verify", tags=["Auth"], dependencies=[Depends(RateLimiter(requests_limit=2, time_window=10))])
 def verify_email_code(
@@ -106,7 +105,7 @@ def verify_email_code(
     session: Annotated[Session, Depends(get_session)]
 ):
     try:
-        user = session.exec(select(User).where(User.code == code)).one()
+        db_user = session.exec(select(User).where(User.code == code)).one()
 
     except Exception:
         raise HTTPException(
@@ -115,7 +114,7 @@ def verify_email_code(
         )
 
     try:
-        update_user(session, user.id, UserUpdate(code=None, disabled=False))
+        user.update(session, db_user.id, UserUpdate(code=None, disabled=False))
 
     except Exception:
         session.rollback()
@@ -141,7 +140,7 @@ def register_team(
             detail="Team already exists"
         )
 
-    new_team_leader = get_user_from_username(session, team_create.leader_username)
+    new_team_leader = team.get_user_from_username(session, team_create.leader_username)
     try:
         session.exec(select(Team).where(Team.leader_user == new_team_leader.id)).one()
     except Exception:
@@ -153,7 +152,7 @@ def register_team(
         )
 
     try:
-        create_team(session, team_create)
+        team.create(session, team_create)
     except Exception:
         session.rollback()
         raise HTTPException(

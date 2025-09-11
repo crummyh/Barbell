@@ -24,7 +24,7 @@ from app.core.dependencies import (
     require_login,
     require_role,
 )
-from app.crud.image import delete_image, get_image, update_image
+from app.crud import image
 from app.database import get_session
 from app.models.models import (
     Image,
@@ -63,14 +63,14 @@ def get_image_for_review(
         .order_by(asc(Image.created_at))
         .limit(1)
     )
-    image = session.exec(statement).one()
-    if not image:
+    db_image = session.exec(statement).one()
+    if not db_image:
         raise HTTPException(
             status_code=500,
             detail="No images found"
         )
 
-    return image.get_public()
+    return db_image.get_public()
 
 @subapp.put("/review-image", dependencies=[Depends(RateLimiter(requests_limit=5, time_window=5))])
 def update_image_review_status(
@@ -81,11 +81,11 @@ def update_image_review_status(
     remove_image: bool = False
 ):
     if remove_image:
-        delete_image(session, id)
+        image.delete(session, id)
         return
 
-    image = get_image(session, id)
-    if not image:
+    db_image = image.get(session, id)
+    if not db_image:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
             detail="Image not found"
@@ -116,9 +116,9 @@ def change_user_role(
     session: Annotated[Session, Depends(get_session)],
     current_user: Annotated[User, Security(require_role(UserRole.ADMIN))]
 ):
-    user = get_user_from_username(username, session)
-    user.role = new_role
-    session.add(user)
+    db_user = user.get_user_from_username(username, session)
+    db_user.role = new_role
+    session.add(db_user)
     session.commit()
 
 @subapp.post("/categories/super/create")

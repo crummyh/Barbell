@@ -5,18 +5,18 @@ from sqlmodel import Session
 from app.models.models import DownloadBatch, DownloadBatchCreate, DownloadBatchUpdate
 
 
-def create_download_batch(session: Session, download_batch_create: DownloadBatchCreate) -> DownloadBatch:
+def create(session: Session, download_batch_create: DownloadBatchCreate) -> DownloadBatch:
     download_batch = DownloadBatch.model_validate(download_batch_create)
     session.add(download_batch)
     session.commit()
     session.refresh(download_batch)
     return download_batch
 
-def get_download_batch(session: Session, id: UUID) -> DownloadBatch | None:
+def get(session: Session, id: UUID) -> DownloadBatch | None:
     download_batch = session.get(DownloadBatch, id)
     return download_batch
 
-def update_download_batch(session: Session, id: UUID, download_batch_update: DownloadBatchUpdate) -> DownloadBatch | None:
+def update(session: Session, id: UUID, download_batch_update: DownloadBatchUpdate) -> DownloadBatch | None:
     download_batch = session.get(DownloadBatch, id)
     if download_batch is None:
         return None
@@ -28,7 +28,7 @@ def update_download_batch(session: Session, id: UUID, download_batch_update: Dow
     session.refresh(download_batch)
     return download_batch
 
-def delete_download_batch(session: Session, id: UUID) -> bool:
+def delete(session: Session, id: UUID) -> bool:
     download_batch = session.get(DownloadBatch, id)
     if download_batch is None:
         return False
