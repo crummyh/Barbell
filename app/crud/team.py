@@ -1,4 +1,4 @@
-from sqlmodel import Session
+from sqlmodel import Session, select
 
 from app.crud.user import get_user_from_username
 from app.models.models import Team, TeamCreate, TeamUpdate
@@ -15,6 +15,13 @@ def create(session: Session, team_create: TeamCreate) -> Team:
 
 def get(session: Session, id: int) -> Team | None:
     team = session.get(Team, id)
+    return team
+
+def get_from_number(session: Session, number: int) -> Team | None:
+    team = session.exec(
+        select(Team)
+        .where(Team.team_number == team_number)
+    ).one()
     return team
 
 def update(session: Session, id: int, team_update: TeamUpdate | dict) -> Team | None:

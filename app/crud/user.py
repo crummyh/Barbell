@@ -18,7 +18,10 @@ def get(session: Session, id: int) -> User | None:
     return user
 
 def get_user_from_username(session: Session, username: str) -> User | None:
-    user = session.exec(select(User).where(User.username == username)).one()
+    user = session.exec(
+        select(User)
+        .where(User.username == username)
+    ).one()
     return user
 
 def update(session: Session, id: int, user_update: UserUpdate | dict) -> User | None:
