@@ -34,7 +34,7 @@ def with_smtp_server(func):
     return inner
 
 @with_smtp_server
-def send_verification_email(user: User, server: smtplib.SMTP | None = None):
+async def send_verification_email(user: User, server: smtplib.SMTP | None = None):
     assert server is not None
 
     message = MIMEMultipart("alternative")

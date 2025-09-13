@@ -1,7 +1,7 @@
 from datetime import timedelta
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Response, status
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlmodel import Session, select
@@ -60,11 +60,12 @@ def login(
 async def read_users_me(
     current_user: Annotated[User, Depends(get_current_active_user)],
 ):
-    return current_user
+    return current_user.get_public()
 
 @router.post("/register", tags=["Auth"], dependencies=[Depends(RateLimiter(requests_limit=1, time_window=10))])
 def register_user(
     new_user: UserCreate,
+    background_tasks: BackgroundTasks,
     session: Annotated[Session, Depends(get_session)]
 ):
     try:
@@ -96,8 +97,8 @@ def register_user(
             detail=str(e)
         )
     else:
-        session.commit()
-        send_verification_email(db_user)
+        background_tasks.add(send_verification_email, db_user)
+        return {"detail": "Successfully registered"}
 
 @router.get("/verify", tags=["Auth"], dependencies=[Depends(RateLimiter(requests_limit=2, time_window=10))])
 def verify_email_code(
@@ -114,7 +115,7 @@ def verify_email_code(
         )
 
     try:
-        user.update(session, db_user.id, UserUpdate(code=None, disabled=False))
+        user.update(session, db_user.id, {"code"=None, "disabled"=False})
 
     except Exception:
         session.rollback()
@@ -123,7 +124,7 @@ def verify_email_code(
             detail="Failed to modify user"
         )
     else:
-        session.commit()
+        return {"detail": "Successfully verified"}
 
 @router.post("/register/team", tags=["Auth"], dependencies=[Depends(RateLimiter(requests_limit=1, time_window=10))])
 def register_team(
@@ -160,7 +161,7 @@ def register_team(
             detail="Failed to add team to database"
         )
     else:
-        session.commit()
+        return {"detail": "Successfully registered team"}
 
 @router.get("/logout", tags=["Auth"])
 def logout():

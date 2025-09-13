@@ -24,7 +24,7 @@ from app.core.dependencies import (
     require_login,
     require_role,
 )
-from app.crud import image
+from app.crud import image, user, label_category
 from app.database import get_session
 from app.models.models import (
     Image,
@@ -34,6 +34,12 @@ from app.models.models import (
     RateLimitUpdate,
     User,
     UserRole,
+    UserUpdate,
+    LabelSuperCategory,
+    LabelSuperCategoryUpdate,
+    LabelCategory,
+    LabelCategoryUpdate
+    LabelCategoryCreate,
     image_response,
 )
 from app.services import buckets
@@ -51,7 +57,7 @@ subapp.add_middleware(
     allow_headers=['*'],
 )
 
-@subapp.get("/review-image", dependencies=[Depends(RateLimiter(requests_limit=5, time_window=5))])
+@subapp.get("/image", dependencies=[Depends(RateLimiter(requests_limit=5, time_window=5))])
 def get_image_for_review(
     current_user: Annotated[User, Security(minimum_role(UserRole.MODERATOR))],
     session: Annotated[Session, Depends(get_session)],
@@ -72,8 +78,8 @@ def get_image_for_review(
 
     return db_image.get_public()
 
-@subapp.put("/review-image", dependencies=[Depends(RateLimiter(requests_limit=5, time_window=5))])
-def update_image_review_status(
+@subapp.put("/image/update", dependencies=[Depends(RateLimiter(requests_limit=5, time_window=5))])
+def update_image(
     id: UUID,
     image_update: ImageUpdate,
     session: Annotated[Session, Depends(get_session)],
@@ -91,7 +97,7 @@ def update_image_review_status(
             detail="Image not found"
         )
 
-    update_image(session, id, image_update)
+    image.update(session, id, image_update)
 
     session.commit()
 
@@ -109,21 +115,33 @@ def redirect_token():
     """
     return RedirectResponse(url="/token", status_code=307)
 
-@subapp.put("/change-user-role", dependencies=[Depends(RateLimiter(requests_limit=5, time_window=5))])
-def change_user_role(
+@subapp.put("/update_user", dependencies=[Depends(RateLimiter(requests_limit=5, time_window=5))])
+def update_user(
     username: str,
-    new_role: UserRole,
+    user_update: UserUpdate,
     session: Annotated[Session, Depends(get_session)],
     current_user: Annotated[User, Security(require_role(UserRole.ADMIN))]
 ):
     db_user = user.get_user_from_username(username, session)
-    db_user.role = new_role
-    session.add(db_user)
-    session.commit()
+    if db_user is None:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    
+    try:
+        user.update(session, db_user.id, user_update)
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
+    else:
+        return db_user.get_public()
 
 @subapp.post("/categories/super/create")
 def create_label_super_category(
-    category: LabelSuperCategory,
+    category: LabelSuperCategoryCreate,
     session: Annotated[Session, Depends(get_session)],
     current_user: Annotated[User, Security(minimum_role(UserRole.MODERATOR))]
 ):
@@ -137,24 +155,18 @@ def get_label_super_categories(
 ):
     return session.exec(select(LabelSuperCategory)).all()
 
-
-@subapp.post("/categories/create")
-def create_label_category(
-    category: LabelCategory,
-    session: Annotated[Session, Depends(get_session)],
-    current_user: Annotated[User, Security(minimum_role(UserRole.MODERATOR))]
-):
-    session.add(category)
-    session.commit()
-
-@subapp.delete("/categories/remove")
-def remove_label_category(
+@subapp.put("/categories/super/update")
+def modify_label_super_category(
     id: int,
+    new_name: str,
     session: Annotated[Session, Depends(get_session)],
     current_user: Annotated[User, Security(minimum_role(UserRole.MODERATOR))]
 ):
     try:
-        session.delete(session.get(LabelCategory, id))
+        catagory = session.get(LabelSuperCategory, id)
+        assert catagory
+        catagory.name = new_name
+        session.add(catagory)
     except Exception:
         session.rollback()
         raise HTTPException(
@@ -186,18 +198,23 @@ def remove_label_super_category(
     else:
         session.commit()
 
-@subapp.put("/categories/super/modify")
-def modify_label_super_category(
+@subapp.post("/categories/create")
+def create_label_category(
+    category: LabelCategory,
+    session: Annotated[Session, Depends(get_session)],
+    current_user: Annotated[User, Security(minimum_role(UserRole.MODERATOR))]
+):
+    session.add(category)
+    session.commit()
+
+@subapp.delete("/categories/remove")
+def remove_label_category(
     id: int,
-    new_name: str,
     session: Annotated[Session, Depends(get_session)],
     current_user: Annotated[User, Security(minimum_role(UserRole.MODERATOR))]
 ):
     try:
-        catagory = session.get(LabelSuperCategory, id)
-        assert catagory
-        catagory.name = new_name
-        session.add(catagory)
+        session.delete(session.get(LabelCategory, id))
     except Exception:
         session.rollback()
         raise HTTPException(
@@ -207,7 +224,7 @@ def modify_label_super_category(
     else:
         session.commit()
 
-@subapp.put("/categories/modify")
+@subapp.put("/categories/update")
 def modify_label_category(
     id: int,
     new_name: str,
@@ -269,7 +286,7 @@ def create_or_rotate_api_key(
         )
 
 @subapp.get("/api-key")
-def get_api_key(
+def  (
     session: Annotated[Session, Depends(get_session)],
     current_user: Annotated[User, Security(require_login)]
 ):
