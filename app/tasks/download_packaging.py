@@ -17,9 +17,13 @@ from sqlmodel import Session, func, select
 
 from app.core import config
 from app.core.helpers import UUIDEncoder
+from app.crud import download_batch, label_category
 from app.database import engine
-from app.models.models import DownloadStatus
-from app.models.schemas import DownloadBatch, Image, LabelCategory, LabelSuperCategory
+from app.models.models import (
+    DownloadStatus,
+    Image,
+    LabelSuperCategory,
+)
 from app.services.buckets import (
     get_image,
     update_download_batch,
@@ -45,15 +49,15 @@ BASE_COCO_MANIFEST = {
 
 def create_download_batch(batch_id: UUID):
     with Session(engine) as session:
-        batch = session.get(DownloadBatch, batch_id) # Get the batch
+        batch = download_batch.get(session, batch_id)
 
         if not batch:
             raise ValueError(f"DownloadBatch with id {batch_id} not found")
 
         try:
-            batch.status = DownloadStatus.ASSEMBLING_LABELS
-            session.add(batch)
-            session.commit()
+            download_batch.update(session, batch_id, {
+                "status": DownloadStatus.ASSEMBLING_LABELS
+            })
 
             manifest = BASE_COCO_MANIFEST.copy() # Make a copy of the manifest
             annotation_category_id_list = [] # Store the selected ids so I don't have to loop later
@@ -62,7 +66,10 @@ def create_download_batch(batch_id: UUID):
                 try:
                     if selection.super:
                         # If the selection is super, include all children
-                        super_cat = session.get(LabelSuperCategory, selection.id)
+                        super_cat = label_category.get_super(session, selection.id)
+                        if super_cat is None:
+                            raise
+
                         for category in super_cat.sub_categories:
                             manifest["categories"].append({
                                 "supercategory": super_cat.name,
@@ -72,7 +79,9 @@ def create_download_batch(batch_id: UUID):
                             annotation_category_id_list.append(category.id)
                     else:
                         # The selection is not super, add it alone
-                        category = session.get(LabelCategory, selection.id)
+                        category = label_category.get(session, selection.id)
+                        if category is None or isinstance(category, LabelSuperCategory):
+                            raise
 
                         if category.super_category:
                             manifest["categories"].append({
@@ -90,9 +99,9 @@ def create_download_batch(batch_id: UUID):
                 except Exception:
                     pass
 
-            batch.status = DownloadStatus.ASSEMBLING_IMAGES
-            session.add(batch)
-            session.commit()
+            download_batch.update(session, batch_id, {
+                "status": DownloadStatus.ASSEMBLING_IMAGES
+            })
 
             archive_obj = BytesIO()
             with tarfile.open(fileobj=archive_obj, mode="w:gz") as archive:
@@ -134,9 +143,9 @@ def create_download_batch(batch_id: UUID):
                                 ]
                             })
 
-                batch.status = DownloadStatus.ADDING_MANIFEST
-                session.add(batch)
-                session.commit()
+                download_batch.update(session, batch_id, {
+                    "status": DownloadStatus.ADDING_MANIFEST
+                })
 
                 manifest_obj = BytesIO()
                 with TextIOWrapper(manifest_obj, encoding="utf-8", write_through=True) as wrapper:

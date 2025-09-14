@@ -2,11 +2,13 @@ from uuid import UUID
 
 from sqlmodel import Session
 
-from app.models.models import Image, ImageCreate, ImageUpdate
+from app.models.models import Image, ImageCreate, ImageUpdate, User
 
 
-def create(session: Session, image_create: ImageCreate) -> Image:
+def create(session: Session, image_create: ImageCreate, user: User) -> Image:
     image = Image.model_validate(image_create)
+    assert user.id
+    image.created_by = user.id
     session.add(image)
     session.commit()
     session.refresh(image)
@@ -22,7 +24,7 @@ def update(session: Session, id: UUID, image_update: ImageUpdate | dict) -> Imag
         return None
 
     if isinstance(image_update, dict):
-        image_update = AnnotationCreate(**image_update)
+        image_update = ImageUpdate(**image_update)
 
     new_image_data = image_update.model_dump(exclude_unset=True)
     image.sqlmodel_update(new_image_data)

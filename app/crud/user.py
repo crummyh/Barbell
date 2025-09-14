@@ -25,15 +25,15 @@ def get_user_from_username(session: Session, username: str) -> User | None:
     return user
 
 def update(session: Session, id: int, user_update: UserUpdate | dict) -> User | None:
-    if user_update.password is not None:
-        user_update.password = get_password_hash(user_update.password)
-
     user = session.get(User, id)
     if user is None:
         return None
 
     if isinstance(user_update, dict):
-        user_update = AnnotationCreate(**user_update)
+        user_update = UserUpdate(**user_update)
+
+    if user_update.password is not None:
+        user_update.password = get_password_hash(user_update.password)
 
     new_user_data = user_update.model_dump(exclude_unset=True)
     user.sqlmodel_update(new_user_data)

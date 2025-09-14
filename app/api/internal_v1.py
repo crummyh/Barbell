@@ -1,4 +1,3 @@
-
 from typing import Annotated
 from uuid import UUID
 
@@ -11,7 +10,7 @@ from fastapi import (
     UploadFile,
 )
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, StreamingResponse
 from sqlmodel import Session, asc, select
 from starlette.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
@@ -24,22 +23,30 @@ from app.core.dependencies import (
     require_login,
     require_role,
 )
-from app.crud import image, user, label_category
+from app.crud import image, label_category, user
 from app.database import get_session
 from app.models.models import (
+    DownloadBatch,
+    DownloadBatchCreate,
+    DownloadBatchPublic,
     Image,
     ImagePublic,
     ImageReviewStatus,
     ImageUpdate,
+    LabelCategoryCreate,
+    LabelCategoryPublic,
+    LabelCategoryUpdate,
+    LabelSuperCategory,
+    LabelSuperCategoryCreate,
+    LabelSuperCategoryPublic,
+    LabelSuperCategoryUpdate,
     RateLimitUpdate,
+    UploadBatch,
+    UploadBatchPublic,
     User,
+    UserPublic,
     UserRole,
     UserUpdate,
-    LabelSuperCategory,
-    LabelSuperCategoryUpdate,
-    LabelCategory,
-    LabelCategoryUpdate
-    LabelCategoryCreate,
     image_response,
 )
 from app.services import buckets
@@ -85,7 +92,7 @@ def update_image(
     session: Annotated[Session, Depends(get_session)],
     current_user: Annotated[User, Security(minimum_role(UserRole.MODERATOR))],
     remove_image: bool = False
-):
+) -> ImagePublic | None:
     if remove_image:
         image.delete(session, id)
         return
@@ -97,15 +104,21 @@ def update_image(
             detail="Image not found"
         )
 
-    image.update(session, id, image_update)
-
-    session.commit()
+    try:
+        image.update(session, id, image_update)
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
+    else:
+        return db_image.get_public()
 
 @subapp.get("/image/{image_id}", dependencies=[Depends(RateLimiter(requests_limit=5, time_window=5))])
 def get_image_by_id(
     image_id: UUID,
     current_user: Annotated[User, Security(minimum_role(UserRole.MODERATOR))]
-):
+) -> StreamingResponse:
     return image_response(buckets.get_image(image_id))
 
 @subapp.post("/token", dependencies=[Depends(RateLimiter(requests_limit=10, time_window=5))])
@@ -115,20 +128,20 @@ def redirect_token():
     """
     return RedirectResponse(url="/token", status_code=307)
 
-@subapp.put("/update_user", dependencies=[Depends(RateLimiter(requests_limit=5, time_window=5))])
+@subapp.put("/user/update", dependencies=[Depends(RateLimiter(requests_limit=5, time_window=5))])
 def update_user(
     username: str,
     user_update: UserUpdate,
     session: Annotated[Session, Depends(get_session)],
     current_user: Annotated[User, Security(require_role(UserRole.ADMIN))]
-):
-    db_user = user.get_user_from_username(username, session)
+) -> UserPublic:
+    db_user = user.get_user_from_username(session, username)
     if db_user is None:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
             detail="User not found"
         )
-    
+
     try:
         user.update(session, db_user.id, user_update)
     except Exception as e:
@@ -144,37 +157,43 @@ def create_label_super_category(
     category: LabelSuperCategoryCreate,
     session: Annotated[Session, Depends(get_session)],
     current_user: Annotated[User, Security(minimum_role(UserRole.MODERATOR))]
-):
-    session.add(category)
-    session.commit()
+) -> LabelSuperCategoryPublic:
+    try:
+        return label_category.create_super(session, category).get_public()
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
 
 @subapp.get("/categories/super")
 def get_label_super_categories(
     session: Annotated[Session, Depends(get_session)],
     current_user: Annotated[User, Security(require_login)]
-):
-    return session.exec(select(LabelSuperCategory)).all()
+) -> list[LabelSuperCategoryPublic]:
+    return [i.get_public() for i in session.exec(select(LabelSuperCategory)).all()]
 
 @subapp.put("/categories/super/update")
 def modify_label_super_category(
     id: int,
-    new_name: str,
+    update: LabelSuperCategoryUpdate,
     session: Annotated[Session, Depends(get_session)],
     current_user: Annotated[User, Security(minimum_role(UserRole.MODERATOR))]
-):
+) -> LabelSuperCategoryPublic:
     try:
-        catagory = session.get(LabelSuperCategory, id)
-        assert catagory
-        catagory.name = new_name
-        session.add(catagory)
-    except Exception:
+        public_label = label_category.update_super(session, id, update)
+    except Exception as e:
         session.rollback()
         raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail="Catagory does not exist"
+            status_code=500,
+            detail=str(e)
         )
-    else:
-        session.commit()
+    if public_label is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Super Category not found"
+        )
+    return public_label.get_public()
 
 @subapp.delete("/categories/super/remove")
 def remove_label_super_category(
@@ -183,29 +202,33 @@ def remove_label_super_category(
     current_user: Annotated[User, Security(minimum_role(UserRole.MODERATOR))]
 ):
     try:
-        super_catagory = session.get(LabelSuperCategory, id)
-        assert super_catagory
-        if super_catagory.sub_categories:
-            for catagory in super_catagory.sub_categories:
-                session.delete(catagory)
-        session.delete(super_catagory)
-    except Exception:
+        if label_category.delete_super(session, id) is True:
+            return {"detail": "Successfully deleted"}
+        else:
+            raise HTTPException(
+                status_code=HTTP_400_BAD_REQUEST,
+                detail="Catagory does not exist"
+            )
+    except Exception as e:
         session.rollback()
         raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail="Catagory does not exist"
+            status_code=500,
+            detail=str(e)
         )
-    else:
-        session.commit()
 
 @subapp.post("/categories/create")
 def create_label_category(
-    category: LabelCategory,
+    category: LabelCategoryCreate,
     session: Annotated[Session, Depends(get_session)],
     current_user: Annotated[User, Security(minimum_role(UserRole.MODERATOR))]
-):
-    session.add(category)
-    session.commit()
+) -> LabelCategoryPublic:
+    try:
+        return label_category.create(session, category).get_public()
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
 
 @subapp.delete("/categories/remove")
 def remove_label_category(
@@ -214,61 +237,63 @@ def remove_label_category(
     current_user: Annotated[User, Security(minimum_role(UserRole.MODERATOR))]
 ):
     try:
-        session.delete(session.get(LabelCategory, id))
-    except Exception:
+        if label_category.delete(session, id) is True:
+            return {"detail": "Successfully deleted"}
+        else:
+            raise HTTPException(
+                status_code=HTTP_400_BAD_REQUEST,
+                detail="Catagory does not exist"
+            )
+    except Exception as e:
         session.rollback()
         raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail="Catagory does not exist"
+            status_code=500,
+            detail=str(e)
         )
-    else:
-        session.commit()
 
 @subapp.put("/categories/update")
 def modify_label_category(
     id: int,
-    new_name: str,
-    new_super_cat: int,
+    update: LabelCategoryUpdate,
     session: Annotated[Session, Depends(get_session)],
     current_user: Annotated[User, Security(minimum_role(UserRole.MODERATOR))]
-):
+) -> LabelCategoryPublic:
     try:
-        catagory = session.get(LabelCategory, id)
-        assert catagory
-        if (new_super_cat != 0):
-            catagory.super_catagory_id = new_super_cat
-        catagory.name = new_name
-        session.add(catagory)
-    except Exception:
+        public_label = label_category.update(session, id, update)
+    except Exception as e:
         session.rollback()
         raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail="Catagory does not exist"
+            status_code=500,
+            detail=str(e)
         )
-    else:
-        session.commit()
+    if public_label is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Super Category not found"
+        )
+    return public_label.get_public()
 
 @subapp.get("/download-batches/history")
 def get_download_batch_history(
     session: Annotated[Session, Depends(get_session)],
     current_user: Annotated[User, Security(require_login)]
-):
+) -> list[DownloadBatchPublic] | None:
     batches = session.exec(select(DownloadBatch).where(DownloadBatch.user == current_user.id)).all()
     if len(batches) == 0:
         return None
 
-    return batches
+    return [i.get_public() for i in batches]
 
 @subapp.get("/upload-batches/history")
 def get_upload_batch_history(
     session: Annotated[Session, Depends(get_session)],
     current_user: Annotated[User, Security(require_login)]
-):
+) -> list[UploadBatchPublic] | None:
     batches = session.exec(select(UploadBatch).where(UploadBatch.user == current_user.id)).all()
     if len(batches) == 0:
         return None
 
-    return batches
+    return [i.get_public() for i in batches]
 
 @subapp.put("/api-key")
 def create_or_rotate_api_key(
@@ -286,26 +311,26 @@ def create_or_rotate_api_key(
         )
 
 @subapp.get("/api-key")
-def  (
+def get_api_key(
     session: Annotated[Session, Depends(get_session)],
     current_user: Annotated[User, Security(require_login)]
-):
+) -> str | None:
     return current_user.api_key
 
 @subapp.put("/download")
 def download_redirect(
-    request: DownloadRequest,
+    request: DownloadBatchCreate,
     background_tasks: BackgroundTasks,
     user: Annotated[User, Depends(require_login)],
     session: Annotated[Session, Depends(get_session)],
 ):
     request_download_batch(request, background_tasks, user, session)
 
-@subapp.post("/admin/rate-limit")
+@subapp.post("/admin/rate-limit/update")
 def update_rate_limit(
     cfg: RateLimitUpdate,
     user: Annotated[User, Depends(minimum_role(UserRole.ADMIN))]
-):
+) -> dict:
     rate_limit_config[cfg.route]["requests_limit"] = cfg.requests_limit
     rate_limit_config[cfg.route]["time_window"] = cfg.time_window
     return {"message": "Rate limit updated", "config": rate_limit_config}
@@ -322,4 +347,4 @@ async def test_upload(
     hash:             str,
     user: Annotated[User, Depends(require_login)],
 ):
-    await test_upload_archive(archive,hash,user)
+    await test_upload_archive(archive, hash, user)

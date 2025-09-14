@@ -20,7 +20,7 @@ from app.core.dependencies import (
 )
 from app.crud import team, user
 from app.database import get_session
-from app.models.models import Team, TeamCreate, User, UserCreate, UserUpdate
+from app.models.models import Team, TeamCreate, User, UserCreate
 from app.services.email.email import send_verification_email
 
 router = APIRouter()
@@ -97,7 +97,7 @@ def register_user(
             detail=str(e)
         )
     else:
-        background_tasks.add(send_verification_email, db_user)
+        background_tasks.add_task(send_verification_email, db_user)
         return {"detail": "Successfully registered"}
 
 @router.get("/verify", tags=["Auth"], dependencies=[Depends(RateLimiter(requests_limit=2, time_window=10))])
@@ -115,7 +115,7 @@ def verify_email_code(
         )
 
     try:
-        user.update(session, db_user.id, {"code"=None, "disabled"=False})
+        user.update(session, db_user.id, {"code": None, "disabled": False})
 
     except Exception:
         session.rollback()

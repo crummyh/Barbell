@@ -20,7 +20,7 @@ def get(session: Session, id: int) -> Team | None:
 def get_from_number(session: Session, number: int) -> Team | None:
     team = session.exec(
         select(Team)
-        .where(Team.team_number == team_number)
+        .where(Team.team_number == number)
     ).one()
     return team
 
@@ -30,7 +30,7 @@ def update(session: Session, id: int, team_update: TeamUpdate | dict) -> Team | 
         return None
 
     if isinstance(team_update, dict):
-        team_update = AnnotationCreate(**team_update)
+        team_update = TeamUpdate(**team_update)
 
     new_team_data = team_update.model_dump(exclude_unset=True)
     team.sqlmodel_update(new_team_data)

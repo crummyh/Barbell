@@ -22,7 +22,7 @@ def update(session: Session, id: UUID, upload_batch_update: UploadBatchUpdate | 
         return None
 
     if isinstance(upload_batch_update, dict):
-        upload_batch_update = AnnotationCreate(**upload_batch_update)
+        upload_batch_update = UploadBatchUpdate(**upload_batch_update)
 
     new_upload_batch_data = upload_batch_update.model_dump(exclude_unset=True)
     upload_batch.sqlmodel_update(new_upload_batch_data)

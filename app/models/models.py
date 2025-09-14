@@ -5,10 +5,9 @@ from enum import Enum
 from typing import BinaryIO, List, Optional
 from uuid import UUID, uuid4
 
-from fastapi import Response
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, EmailStr
-from sqlmodel import JSON, Column, Field, ForeignKey, Integer, Relationship, SQLModel
+from sqlmodel import JSON, Column, Field, Relationship, SQLModel
 
 from app.core import config
 
@@ -28,7 +27,7 @@ class DownloadStatus(Enum):
     READY = "ready"
     FAILED = "failed"
 
-class UserRole(Enum):
+class UserRole(int, Enum):
     DEFAULT     = 0
     TEAM_LEADER = 1
     MODERATOR   = 2
@@ -53,22 +52,28 @@ A guild for separating schemas:
 class UserBase(SQLModel):
     username: str = Field(index=True, max_length=config.MAX_USERNAME_LEN, min_length=config.MIN_USERNAME_LEN)
     email: EmailStr = Field(unique=True)
-    led_team: "Team" = Relationship(back_populates="leader")
 
 class User(UserBase, table=True):
     __tablename__ = "users" # type: ignore
 
-    id: int | None = Field(default=None, primary_key=True)
+    id: Optional[int] = Field(default=None, primary_key=True)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     disabled: bool = Field(default=True)
-    team: int | None = Field(default=None, foreign_key="teams.id", index=True)
-    api_key: str | None = Field(default=None, index=True, unique=True)
+    api_key: Optional[str] = Field(default=None, index=True, unique=True)
     password: str = Field(max_length=config.MAX_PASSWORD_LENGTH, min_length=config.MIN_PASSWORD_LENGTH)
-    role: UserRole = Field(default=UserRole.DEFAULT)
-    code: str | None = Field(max_length=config.VERIFICATION_CODE_STR_LEN)
+    role: "UserRole" = Field(default=UserRole.DEFAULT)
+    code: Optional[str] = Field(max_length=config.VERIFICATION_CODE_STR_LEN)
+
+    led_team: Optional["Team"] = Relationship(back_populates="leader")
+    upload_batches: List["UploadBatch"] = Relationship(back_populates="user")
+    download_batches: List["DownloadBatch"] = Relationship(back_populates="user")
 
     def get_public(self) -> "UserPublic":
-        return UserPublic.model_validate(self)
+        public = UserPublic.model_validate(self)
+        if self.led_team:
+            public.team = self.led_team.team_number
+
+        return public
 
 class UserCreate(UserBase):
     password: str
@@ -98,17 +103,6 @@ class UserPublic(UserBase):
 class TeamBase(SQLModel):
     team_number: int = Field(index=True, unique=True, ge=0, le=config.MAX_TEAM_NUMB)
     team_name: str = Field(max_length=config.MAX_TEAM_NAME_LEN)
-    leader_user: int | None = Field(
-        default=None,
-        sa_column=Column(
-            Integer,
-            ForeignKey("users.id", use_alter=True, name="fk_team_leader_user")
-        ),
-    )
-    leader: "User" = Relationship(sa_relationship_kwargs={"foreign_keys": "Team.leader_user"})
-
-    upload_batches: List["UploadBatch"] = Relationship(back_populates="user")
-    download_batches: List["DownloadBatch"] = Relationship(back_populates="user")
 
 class Team(TeamBase, table=True):
     __tablename__ = "teams" # type: ignore
@@ -116,6 +110,9 @@ class Team(TeamBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     disabled: bool = Field(default=False)
+    leader_user: Optional[int] = Field(default=None, foreign_key="users.id", unique=True)
+
+    leader: Optional["User"] = Relationship(back_populates="led_team")
 
     def get_public(self) -> "TeamPublic":
         return TeamPublic.model_validate(self)
@@ -138,7 +135,6 @@ class TeamPublic(TeamBase):
 # ==========={ UploadBatch }=========== #
 
 class BaseUploadBatch(SQLModel):
-
     status: UploadStatus = Field(default=UploadStatus.UPLOADING)
     file_size: int | None = Field(default=None, ge=0, le=config.MAX_FILE_SIZE)
     images_valid: int = Field(default=0, ge=0)
@@ -148,16 +144,18 @@ class BaseUploadBatch(SQLModel):
     start_time: datetime | None = Field(default=None)
     error_message: str | None = Field(default=None, max_length=500)
 
-    user: User = Relationship(back_populates="upload_batches")
-
 class UploadBatch(BaseUploadBatch, table=True):
     __tablename__ = "upload_batches" # type: ignore
 
     id: UUID | None = Field(default_factory=uuid4, primary_key=True)
     user_id: int = Field(foreign_key="users.id", index=True)
 
+    user: "User" = Relationship(back_populates="upload_batches")
+
     def get_public(self) -> "UploadBatchPublic":
-        return UploadBatchPublic.model_validate(self)
+        public = UploadBatchPublic.model_validate(self)
+        public.username = self.user.username
+        return public
 
 class UploadBatchCreate(SQLModel):
     capture_time: datetime
@@ -177,6 +175,7 @@ class UploadBatchUpdate(SQLModel):
 
 class UploadBatchPublic(BaseUploadBatch):
     id: UUID
+    username: str
     estimated_time_left: float
 
 # ==========={ DownloadBatch }=========== #
@@ -190,16 +189,18 @@ class BaseDownloadBatch(SQLModel):
     hash: str | None = Field(default=None)
     error_message: str | None = Field(default=None, max_length=500)
 
-    user: User = Relationship(back_populates="download_batches")
-
 class DownloadBatch(BaseDownloadBatch, table=True):
     __tablename__ = "download_batches" # type: ignore
 
     id: UUID | None = Field(default_factory=uuid4, primary_key=True)
     user_id: int = Field(foreign_key="users.id")
 
+    user: "User" = Relationship(back_populates="download_batches")
+
     def get_public(self) -> "DownloadBatchPublic":
-        return DownloadBatchPublic.model_validate(self)
+        public = DownloadBatchPublic.model_validate(self)
+        public.username = self.user.username
+        return public
 
 class DownloadBatchCreate(SQLModel):
     annotations: List["AnnotationSelection"]
@@ -228,15 +229,20 @@ class ImageBase(SQLModel):
     batch: UUID = Field(foreign_key="upload_batches.id")
     review_status: ImageReviewStatus = Field(default=ImageReviewStatus.NOT_REVIEWED, index=True)
 
-    annotations: List["Annotation"] = Relationship(back_populates="image", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
-
 class Image(ImageBase, table=True):
     __tablename__ = "images" # type: ignore
 
     id: UUID | None = Field(default_factory=uuid4, primary_key=True)
 
+    annotations: List["Annotation"] = Relationship(
+        back_populates="image",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"}
+    )
+
     def get_public(self) -> "ImagePublic":
-        return ImagePublic.model_validate(self)
+        public = ImagePublic.model_validate(self)
+        public.annotations = [i.get_public() for i in self.annotations]
+        return public
 
 class ImageCreate(SQLModel):
     batch: UUID
@@ -251,10 +257,11 @@ class ImageUpdate(SQLModel):
 
 class ImagePublic(ImageBase):
     id: UUID
+    annotations: List["AnnotationPublic"]
 
 # ==========={ Annotation }=========== #
 
-class AnnotationBase(SQLModel, table=True):
+class AnnotationBase(SQLModel):
     category_id: int = Field(foreign_key="label_categories.id", index=True)
     iscrowd: bool = Field(default=False)
     area: float | None = Field(default=None)
@@ -262,8 +269,6 @@ class AnnotationBase(SQLModel, table=True):
     bbox_y: int | None = Field(default=None)
     bbox_w: int | None = Field(default=None)
     bbox_h: int | None = Field(default=None)
-
-    image: Image = Relationship(back_populates="annotations")
 
     def set_bbox(self, bbox: tuple[int,int,int,int]):
         self.bbox_x = bbox[0]
@@ -277,10 +282,12 @@ class Annotation(AnnotationBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
     image_id: UUID = Field(foreign_key="images.id")
 
+    image: Image = Relationship(back_populates="annotations")
+
     def get_public(self) -> "AnnotationPublic":
         return AnnotationPublic.model_validate(self)
 
-class AnnotationCreate(SQLModel):
+class AnnotationCreate(AnnotationBase):
     pass
 
 class AnnotationUpdate(SQLModel):
@@ -309,8 +316,10 @@ class LabelSuperCategory(LabelCategoryBase, table=True):
 
     sub_categories: List["LabelCategory"] = Relationship(back_populates="super_category")
 
-    def get_public(self) -> "LabelCategoryPublic":
-        return LabelCategoryPublic.model_validate(self)
+    def get_public(self) -> "LabelSuperCategoryPublic":
+        public = LabelSuperCategoryPublic.model_validate(self)
+        public.sub_categories = [i.get_public() for i in self.sub_categories]
+        return public
 
 class LabelCategory(LabelCategoryBase, table=True):
     __tablename__ = "label_categories" # type: ignore
@@ -324,7 +333,10 @@ class LabelCategory(LabelCategoryBase, table=True):
         return LabelCategoryPublic.model_validate(self)
 
 class LabelCategoryCreate(LabelCategoryBase):
-    super_category_id: int | None = None
+    super_category_id: int | None
+
+class LabelSuperCategoryCreate(LabelCategoryBase):
+    pass
 
 class LabelCategoryUpdate(SQLModel):
     name: str | None = None
@@ -335,7 +347,11 @@ class LabelSuperCategoryUpdate(LabelCategoryUpdate):
 
 class LabelCategoryPublic(LabelCategoryBase):
     id: int
-    super_category_id: int | None = None
+    super_category_id: int | None
+
+class LabelSuperCategoryPublic(LabelCategoryBase):
+    id: int
+    sub_categories: List["LabelCategoryPublic"]
 
 # ==========={ Random }=========== #
 
@@ -357,7 +373,7 @@ class TeamStatsOut(BaseModel):
     years_available: set[int]
     upload_batches: int
 
-def image_response(file: BinaryIO) -> Response:
+def image_response(file: BinaryIO) -> StreamingResponse:
     file.seek(0)
     return StreamingResponse(
         file,

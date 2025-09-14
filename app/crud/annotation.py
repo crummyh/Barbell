@@ -20,7 +20,7 @@ def update(session: Session, id: int, annotation_update: AnnotationUpdate | dict
         return None
 
     if isinstance(annotation_update, dict):
-        annotation_update = AnnotationCreate(**annotation_update)
+        annotation_update = AnnotationUpdate(**annotation_update)
 
     new_annotation_data = annotation_update.model_dump(exclude_unset=True)
     annotation.sqlmodel_update(new_annotation_data)

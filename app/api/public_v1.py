@@ -1,6 +1,6 @@
 import tarfile
 from datetime import datetime, timezone
-from typing import Annotated, Any, Dict, List
+from typing import Annotated, List
 from uuid import UUID
 
 from fastapi import APIRouter, BackgroundTasks, Depends, UploadFile
@@ -19,24 +19,21 @@ from app.core.dependencies import (
 )
 from app.core.helpers import (
     get_hash_with_streaming,
-    get_username_from_id,
 )
+from app.crud import download_batch, upload_batch
 from app.database import get_session
 from app.models.models import (
-    DownloadRequest,
+    DownloadBatchCreate,
+    DownloadBatchPublic,
     DownloadStatus,
-    DownloadStatusOut,
-    ImageReviewStatus,
-    StatsOut,
-    UploadStatus,
-    UploadStatusOut,
-)
-from app.models.schemas import (
-    DownloadBatch,
     Image,
+    ImageReviewStatus,
     LabelSuperCategory,
+    LabelSuperCategoryPublic,
+    StatsOut,
     Team,
-    UploadBatch,
+    UploadBatchCreate,
+    UploadBatchPublic,
     User,
 )
 from app.services.buckets import create_upload_batch, get_download_batch
@@ -54,7 +51,7 @@ router = APIRouter()
 
 @router.get("/ping", tags=["Stats"])
 async def ping():
-    return "pong!"
+    return {"ping": "pong!"}
 
 @router.get("/stats", tags=["Stats"], dependencies=[Depends(RateLimiter(requests_limit=20, time_window=10))])
 def get_stats(session: Annotated[Session, Depends(get_session)]) -> StatsOut:
@@ -72,7 +69,7 @@ def get_stats(session: Annotated[Session, Depends(get_session)]) -> StatsOut:
 @router.get("/stats/labels", tags=["Stats"])
 def get_label_info(
     session: Annotated[Session, Depends(get_session)]
-) -> List[Dict[str, Any]]:
+) -> List[LabelSuperCategoryPublic]:
     categories = session.exec(select(LabelSuperCategory)).all()
 
     if not categories:
@@ -83,11 +80,8 @@ def get_label_info(
 
     output = []
     for catagory in categories:
-        output.append({
-            "id": catagory.id,
-            "name": catagory.name,
-            "categories": catagory.sub_categories
-        })
+        public = catagory.get_public()
+        output.append(public)
 
     return output
 
@@ -98,26 +92,18 @@ def get_upload_batch_status(
     batch_id: UUID,
     user: Annotated[User, Depends(handle_api_key)],
     session: Annotated[Session, Depends(get_session)]
-) -> UploadStatusOut:
+) -> UploadBatchPublic:
 
-    batch = session.get(UploadBatch, batch_id)
+    batch = upload_batch.get(session, batch_id)
     if not batch:
         raise HTTPException(
             status_code=404,
             detail="Batch not found"
         )
 
-    out = UploadStatusOut(
-        batch_id=batch_id,
-        user=get_username_from_id(batch.user, session),
-        status=batch.status,
-        file_size=batch.file_size,
-        images_valid=batch.images_valid,
-        images_rejected=batch.images_rejected,
-        images_total=batch.images_total,
-        estimated_time_left=estimate_upload_processing_time(session,batch_id),
-        error_msg=batch.error_message
-    )
+    out = batch.get_public()
+    out.estimated_time_left = estimate_upload_processing_time(session, batch_id)
+
     return out
 
 @router.post("/upload/test", tags=["Upload"])
@@ -163,7 +149,7 @@ async def test_upload_archive(
                     detail=f"Image \"{i.name}\" is not a supported file type. See `PIL.Image.registered_extensions().items()`"
                 )
 
-    return "Success"
+    return {"status": "success"}
 
 @router.post("/upload", tags=["Upload"], dependencies=[Depends(RateLimiter(requests_limit=2, time_window=60))])
 async def upload(
@@ -173,9 +159,9 @@ async def upload(
     user: Annotated[User, Depends(handle_api_key)],
     session: Annotated[Session, Depends(get_session)],
     capture_time:     datetime = datetime.now(timezone.utc)
-) -> UploadStatusOut:
+) -> UploadBatchPublic:
     """
-    Upload images to the dataset. Requires and API key
+    Upload images to the dataset. Requires an API key
 
     `archive`: The images in a .tar.gz archive
 
@@ -188,22 +174,19 @@ async def upload(
 
     try:
         assert user.id
-        batch = UploadBatch(
-            user=user.id,
-            status=UploadStatus.UPLOADING,
+        assert archive.size
+
+        batch = upload_batch.create(session, UploadBatchCreate(
+            capture_time=capture_time,
             file_size=archive.size,
-            capture_time=capture_time
-        )
-        session.add(batch)
+            user_id=user.id,
+        ))
     except Exception:
         session.rollback()
         raise HTTPException(
             status_code=500,
             detail="There was an error adding the batch to the database. Sorry!"
         )
-    else:
-        session.commit()
-
 
     async def upload_archive():
         assert batch.id
@@ -212,66 +195,37 @@ async def upload(
 
     background_tasks.add_task(upload_archive)
 
-    assert batch.id
-    return UploadStatusOut(
-        batch_id=batch.id,
-        user=get_username_from_id(batch.user, session),
-        status=UploadStatus.PROCESSING,
-        file_size=archive.size,
-        images_valid=None,
-        images_total=None,
-        images_rejected=None,
-        estimated_time_left=config.DEFAULT_PROCESSING_TIME,
-        error_msg=None
-    )
+    out = batch.get_public()
+    out.estimated_time_left = config.DEFAULT_PROCESSING_TIME
+    return out
+
 
 @router.get("/download/status/{batch_id}", tags=["Download"], dependencies=[Depends(RateLimiter(requests_limit=30, time_window=10))])
 def get_download_batch_status(
     batch_id: UUID,
     user: Annotated[User, Depends(handle_api_key)],
     session: Annotated[Session, Depends(get_session)]
-) -> DownloadStatusOut:
+) -> DownloadBatchPublic:
 
-    batch = session.get(DownloadBatch, batch_id)
+    batch = download_batch.get(session, batch_id)
     if not batch:
         raise HTTPException(
             status_code=404,
             detail="Batch not found"
         )
 
-    out = DownloadStatusOut(
-        id=batch_id,
-        user=get_username_from_id(batch.user, session),
-        status=batch.status,
-        non_match_images=batch.non_match_images,
-        image_count=batch.image_count,
-        annotations=batch.annotations,
-        start_time=batch.start_time,
-        hash=batch.hash,
-        error_message=batch.error_message
-    )
+    out = batch.get_public()
     return out
 
 @router.put("/download/request", tags=["Download"], dependencies=[Depends(RateLimiter(requests_limit=2, time_window=60))])
 def request_download_batch(
-    request: DownloadRequest,
+    request: DownloadBatchCreate,
     background_tasks: BackgroundTasks,
     user: Annotated[User, Depends(handle_api_key)],
     session: Annotated[Session, Depends(get_session)]
 ):
     try:
-        assert user.id
-        batch = DownloadBatch(
-            user=user.id,
-            status=DownloadStatus.STARTING,
-            non_match_images=request.non_match_images,
-            image_count=request.count,
-            annotations=request.annotations
-        )
-        session.add(batch)
-        session.commit()
-        session.refresh(batch)
-        assert batch.id
+        batch = download_batch.create(session, request, user)
 
     except Exception:
         raise HTTPException(
@@ -279,30 +233,17 @@ def request_download_batch(
             detail="Failed to add batch to database"
         )
 
-    else:
-        background_tasks.add_task(create_download_batch, batch_id=batch.id)
-        return DownloadStatusOut(
-            id=batch.id,
-            user=get_username_from_id(batch.user, session),
-            status=batch.status,
-            non_match_images=batch.non_match_images,
-            image_count=batch.image_count,
-            annotations=batch.annotations,
-            start_time=batch.start_time,
-            hash=batch.hash,
-            error_message=batch.error_message
-        )
+    background_tasks.add_task(create_download_batch, batch_id=batch.id)
+    return batch.get_public()
 
 @router.put("/download/get/{batch_id}", tags=["Download"], dependencies=[Depends(RateLimiter(requests_limit=2, time_window=60))])
-def download_batch(
+def download_download_batch(
     batch_id: UUID,
     user: Annotated[User, Depends(handle_api_key)],
     session: Annotated[Session, Depends(get_session)]
 ):
-    try:
-        batch = session.get(DownloadBatch, batch_id)
-        assert batch
-    except Exception:
+    batch = download_batch.get(session, batch_id)
+    if batch is None:
         raise HTTPException(
             status_code=404,
             detail="Batch not found"

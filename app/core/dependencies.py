@@ -12,8 +12,7 @@ from sqlmodel import Session, select
 
 from app.core import config
 from app.database import get_session
-from app.models.models import TokenData, UserRole
-from app.models.schemas import User
+from app.models.models import TokenData, User, UserRole
 
 # ==========={ Database }=========== #
 

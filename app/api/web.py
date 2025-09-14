@@ -12,10 +12,8 @@ from sqlmodel import Session
 
 from app.core import config
 from app.core.dependencies import get_current_user
-from app.core.helpers import get_team_number_from_id
 from app.database import get_session
-from app.models.models import UserOut, UserRole
-from app.models.schemas import User
+from app.models.models import User, UserRole
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -35,14 +33,7 @@ async def home(
             request=request, name="home.html", context={"user": None, "debug": config.DEBUG, "page": "index"}
         )
 
-    user_out = UserOut(
-        username=user.username,
-        email=user.email,
-        disabled=user.disabled,
-        created_at=user.created_at,
-        team_number=get_team_number_from_id(user.team, session),
-        role=user.role
-    )
+    user_out = user.get_public()
 
     return templates.TemplateResponse(
         request=request, name="home.html", context={"user": user_out, "debug": config.DEBUG, "page": "index"}
@@ -99,14 +90,7 @@ async def about(
             request=request, name="about.html", context={"user": None, "debug": config.DEBUG, "page": "about"}
         )
 
-    user_out = UserOut(
-        username=user.username,
-        email=user.email,
-        disabled=user.disabled,
-        created_at=user.created_at,
-        team_number=get_team_number_from_id(user.team, session),
-        role=user.role
-    )
+    user_out = user.get_public()
 
     return templates.TemplateResponse(
         request=request, name="about.html", context={"user": user_out, "debug": config.DEBUG, "page": "about"}
@@ -144,14 +128,7 @@ async def dashboard(
     if user is None:
         return RedirectResponse("/login")
 
-    user_out = UserOut(
-        username=user.username,
-        email=user.email,
-        disabled=user.disabled,
-        created_at=user.created_at,
-        team_number=get_team_number_from_id(user.team, session),
-        role=user.role
-    )
+    user_out = user.get_public()
 
     page_title = None
     for section in dashboard_structure:
@@ -188,14 +165,7 @@ async def account(
     if user is None:
         return RedirectResponse("/login")
 
-    user_out = UserOut(
-        username=user.username,
-        email=user.email,
-        disabled=user.disabled,
-        created_at=user.created_at,
-        team_number=get_team_number_from_id(user.team, session),
-        role=user.role
-    )
+    user_out = user.get_public()
 
     return templates.TemplateResponse(
         request=request, name="account.html", context={"user": user_out, "debug": config.DEBUG, "page": "account"}
@@ -253,14 +223,7 @@ async def docs(
 ):
     user_out = None
     if user is not None:
-        user_out = UserOut(
-            username=user.username,
-            email=user.email,
-            disabled=user.disabled,
-            created_at=user.created_at,
-            team_number=get_team_number_from_id(user.team, session),
-            role=user.role
-        )
+        user_out = user.get_public()
 
     if page == "api":
         return get_swagger_ui_html(
