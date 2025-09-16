@@ -1,0 +1,26 @@
+[project]
+name = "barbell"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "bcrypt==4.3.0",
+    "fastapi[standard]>=0.115.0,<0.116.0",
+    "passlib==1.7.4",
+    "pillow==11.3.0",
+    "pre-commit>=4.3.0",
+    "psycopg2-binary==2.9.10",
+    "pyjwt==2.10.1",
+    "pytest==8.4.2",
+    "slowapi==0.1.9",
+    "sqlmodel==0.0.24",
+]
+
+[dependency-groups]
+dev = [
+    "black>=25.1.0",
+    "pre-commit>=4.3.0",
+    "pytest>=8.4.2",
+    "ruff>=0.13.0",
+]
