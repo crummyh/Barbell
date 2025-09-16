@@ -1,7 +1,7 @@
 from sqlmodel import Session, select
 
 from app.crud.user import get_user_from_username
-from app.models.models import Team, TeamCreate, TeamUpdate
+from app.models.team import Team, TeamCreate, TeamUpdate
 
 
 def create(session: Session, team_create: TeamCreate) -> Team:

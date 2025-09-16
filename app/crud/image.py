@@ -2,7 +2,8 @@ from uuid import UUID
 
 from sqlmodel import Session
 
-from app.models.models import Image, ImageCreate, ImageUpdate, User
+from app.models.image import Image, ImageCreate, ImageUpdate
+from app.models.user import User
 
 
 def create(session: Session, image_create: ImageCreate, user: User) -> Image:

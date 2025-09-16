@@ -1,6 +1,6 @@
 from sqlmodel import Session
 
-from app.models.models import Annotation, AnnotationCreate, AnnotationUpdate
+from app.models.annotation import Annotation, AnnotationCreate, AnnotationUpdate
 
 
 def create(session: Session, annotation_create: AnnotationCreate) -> Annotation:

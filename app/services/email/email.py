@@ -7,7 +7,7 @@ from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
 
 from app.core import config
-from app.models.models import User
+from app.models.user import User
 
 context = ssl.create_default_context()
 

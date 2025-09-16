@@ -20,7 +20,8 @@ from app.core.dependencies import (
 )
 from app.crud import team, user
 from app.database import get_session
-from app.models.models import Team, TeamCreate, User, UserCreate
+from app.models.team import Team, TeamCreate
+from app.models.user import User, UserCreate
 from app.services.email.email import send_verification_email
 
 router = APIRouter()

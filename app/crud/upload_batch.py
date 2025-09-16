@@ -2,7 +2,7 @@ from uuid import UUID
 
 from sqlmodel import Session
 
-from app.models.models import UploadBatch, UploadBatchCreate, UploadBatchUpdate
+from app.models.upload_batch import UploadBatch, UploadBatchCreate, UploadBatchUpdate
 
 
 def create(session: Session, upload_batch_create: UploadBatchCreate) -> UploadBatch:

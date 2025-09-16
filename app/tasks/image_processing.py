@@ -12,7 +12,8 @@ from app.core import config
 from app.crud import image as image_crud
 from app.crud import upload_batch
 from app.database import engine
-from app.models.models import ImageCreate, UploadBatch, UploadStatus
+from app.models.image import ImageCreate
+from app.models.upload_batch import UploadBatch, UploadStatus
 from app.services.buckets import create_image, get_upload_batch
 
 

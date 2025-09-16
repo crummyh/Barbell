@@ -13,7 +13,7 @@ from sqlmodel import Session
 from app.core import config
 from app.core.dependencies import get_current_user
 from app.database import get_session
-from app.models.models import User, UserRole
+from app.models.user import User, UserRole
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 

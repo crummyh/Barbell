@@ -19,11 +19,9 @@ from app.core import config
 from app.core.helpers import UUIDEncoder
 from app.crud import download_batch, label_category
 from app.database import engine
-from app.models.models import (
-    DownloadStatus,
-    Image,
-    LabelSuperCategory,
-)
+from app.models.download_batch import DownloadStatus
+from app.models.image import Image
+from app.models.label_category import LabelSuperCategory
 from app.services.buckets import (
     get_image,
     update_download_batch,

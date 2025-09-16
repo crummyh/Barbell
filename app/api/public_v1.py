@@ -22,20 +22,25 @@ from app.core.helpers import (
 )
 from app.crud import download_batch, upload_batch
 from app.database import get_session
-from app.models.models import (
+from app.models.download_batch import (
     DownloadBatchCreate,
     DownloadBatchPublic,
     DownloadStatus,
-    Image,
-    ImageReviewStatus,
+)
+from app.models.image import Image, ImageReviewStatus
+from app.models.label_category import (
     LabelSuperCategory,
     LabelSuperCategoryPublic,
+)
+from app.models.models import (
     StatsOut,
-    Team,
+)
+from app.models.team import Team
+from app.models.upload_batch import (
     UploadBatchCreate,
     UploadBatchPublic,
-    User,
 )
+from app.models.user import User
 from app.services.buckets import create_upload_batch, get_download_batch
 from app.services.monitoring import get_uptime
 from app.tasks.download_packaging import create_download_batch

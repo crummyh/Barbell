@@ -12,4 +12,13 @@ def get_session():
         yield session
 
 def init_db():
+    from app.models import configure_relationships
+    from app.models.annotation import Annotation  # noqa: F401
+    from app.models.download_batch import DownloadBatch  # noqa: F401
+    from app.models.image import Image  # noqa: F401
+    from app.models.team import Team  # noqa: F401
+    from app.models.upload_batch import UploadBatch  # noqa: F401
+    from app.models.user import User  # noqa: F401
+    configure_relationships()
+
     SQLModel.metadata.create_all(engine)

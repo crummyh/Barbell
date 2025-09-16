@@ -12,7 +12,8 @@ from sqlmodel import Session, select
 
 from app.core import config
 from app.database import get_session
-from app.models.models import TokenData, User, UserRole
+from app.models.models import TokenData
+from app.models.user import User, UserRole
 
 # ==========={ Database }=========== #
 
@@ -106,6 +107,9 @@ def get_current_user(
 ) -> Optional[User]:
 
     try:
+        if token is None:
+            raise InvalidTokenError()
+
         payload = jwt.decode(
             token,
             config.JWT_SECRET_TOKEN,

@@ -1,6 +1,6 @@
 from sqlmodel import Session
 
-from app.models.models import (
+from app.models.label_category import (
     LabelCategory,
     LabelCategoryCreate,
     LabelCategoryUpdate,

@@ -2,12 +2,12 @@ from uuid import UUID
 
 from sqlmodel import Session
 
-from app.models.models import (
+from app.models.download_batch import (
     DownloadBatch,
     DownloadBatchCreate,
     DownloadBatchUpdate,
-    User,
 )
+from app.models.user import User
 
 
 def create(session: Session, download_batch_create: DownloadBatchCreate, user: User) -> DownloadBatch:

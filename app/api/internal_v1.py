@@ -25,14 +25,13 @@ from app.core.dependencies import (
 )
 from app.crud import image, label_category, user
 from app.database import get_session
-from app.models.models import (
+from app.models.download_batch import (
     DownloadBatch,
     DownloadBatchCreate,
     DownloadBatchPublic,
-    Image,
-    ImagePublic,
-    ImageReviewStatus,
-    ImageUpdate,
+)
+from app.models.image import Image, ImagePublic, ImageReviewStatus, ImageUpdate
+from app.models.label_category import (
     LabelCategoryCreate,
     LabelCategoryPublic,
     LabelCategoryUpdate,
@@ -40,15 +39,13 @@ from app.models.models import (
     LabelSuperCategoryCreate,
     LabelSuperCategoryPublic,
     LabelSuperCategoryUpdate,
+)
+from app.models.models import (
     RateLimitUpdate,
-    UploadBatch,
-    UploadBatchPublic,
-    User,
-    UserPublic,
-    UserRole,
-    UserUpdate,
     image_response,
 )
+from app.models.upload_batch import UploadBatch, UploadBatchPublic
+from app.models.user import User, UserPublic, UserRole, UserUpdate
 from app.services import buckets
 
 subapp = FastAPI()
