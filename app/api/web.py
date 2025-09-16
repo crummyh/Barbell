@@ -12,10 +12,8 @@ from sqlmodel import Session
 
 from app.core import config
 from app.core.dependencies import get_current_user
-from app.core.helpers import get_team_number_from_id
-from app.db.database import get_session
-from app.models.models import UserOut, UserRole
-from app.models.schemas import User
+from app.database import get_session
+from app.models.user import User, UserRole
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -24,93 +22,99 @@ templates = Jinja2Templates(str(Path(BASE_DIR, config.TEMPLATES_PATH)))
 
 # ========== { Public Pages } ========== #
 
+
 @router.get("/", response_class=HTMLResponse)
 async def home(
     request: Request,
     session: Annotated[Session, Depends(get_session)],
-    user: User | None = Depends(get_current_user)
+    user: User | None = Depends(get_current_user),
 ):
     if user is None:
         return templates.TemplateResponse(
-            request=request, name="home.html", context={"user": None, "debug": config.DEBUG, "page": "index"}
+            request=request,
+            name="home.html",
+            context={"user": None, "debug": config.DEBUG, "page": "index"},
         )
 
-    user_out = UserOut(
-        username=user.username,
-        email=user.email,
-        disabled=user.disabled,
-        created_at=user.created_at,
-        team_number=get_team_number_from_id(user.team, session),
-        role=user.role
-    )
+    user_out = user.get_public()
 
     return templates.TemplateResponse(
-        request=request, name="home.html", context={"user": user_out, "debug": config.DEBUG, "page": "index"}
+        request=request,
+        name="home.html",
+        context={"user": user_out, "debug": config.DEBUG, "page": "index"},
     )
+
 
 @router.get("/login", response_class=HTMLResponse)
 async def login(
     request: Request,
     session: Annotated[Session, Depends(get_session)],
-    user: User | None = Depends(get_current_user)
+    user: User | None = Depends(get_current_user),
 ):
     if user is None:
         return templates.TemplateResponse(
-            request=request, name="login.html", context={"user": None, "debug": config.DEBUG, "page": "login"}
+            request=request,
+            name="login.html",
+            context={"user": None, "debug": config.DEBUG, "page": "login"},
         )
 
     return RedirectResponse("/dashboard")
+
 
 @router.get("/register", response_class=HTMLResponse)
 async def register(
     request: Request,
     session: Annotated[Session, Depends(get_session)],
-    user: User | None = Depends(get_current_user)
+    user: User | None = Depends(get_current_user),
 ):
     if user is None:
         return templates.TemplateResponse(
-            request=request, name="register.html", context={"user": None, "debug": config.DEBUG, "page": "register"}
+            request=request,
+            name="register.html",
+            context={"user": None, "debug": config.DEBUG, "page": "register"},
         )
 
     return RedirectResponse("/dashboard")
+
 
 @router.get("/verify", response_class=HTMLResponse)
 async def verify(
     code: str,
     request: Request,
     session: Annotated[Session, Depends(get_session)],
-    user: User | None = Depends(get_current_user)
+    user: User | None = Depends(get_current_user),
 ):
     if user is None:
         return templates.TemplateResponse(
-            request=request, name="verify.html", context={"user": None, "debug": config.DEBUG, "page": "verify"}
+            request=request,
+            name="verify.html",
+            context={"user": None, "debug": config.DEBUG, "page": "verify"},
         )
 
     return RedirectResponse("/dashboard")
+
 
 @router.get("/about", response_class=HTMLResponse)
 async def about(
     request: Request,
     session: Annotated[Session, Depends(get_session)],
-    user: User | None = Depends(get_current_user)
+    user: User | None = Depends(get_current_user),
 ):
     if user is None:
         return templates.TemplateResponse(
-            request=request, name="about.html", context={"user": None, "debug": config.DEBUG, "page": "about"}
+            request=request,
+            name="about.html",
+            context={"user": None, "debug": config.DEBUG, "page": "about"},
         )
 
-    user_out = UserOut(
-        username=user.username,
-        email=user.email,
-        disabled=user.disabled,
-        created_at=user.created_at,
-        team_number=get_team_number_from_id(user.team, session),
-        role=user.role
-    )
+    user_out = user.get_public()
 
     return templates.TemplateResponse(
-        request=request, name="about.html", context={"user": user_out, "debug": config.DEBUG, "page": "about"}
+        request=request,
+        name="about.html",
+        context={"user": user_out, "debug": config.DEBUG, "page": "about"},
     )
+
 
 # ========== { Private Pages } ========== #
 
@@ -133,25 +137,19 @@ dashboard_structure = {
     ],
 }
 
+
 @router.get("/dashboard/{page}")
 @router.get("/dashboard", response_class=HTMLResponse)
 async def dashboard(
     request: Request,
     session: Annotated[Session, Depends(get_session)],
     page: str = "home",
-    user: User | None = Depends(get_current_user)
+    user: User | None = Depends(get_current_user),
 ):
     if user is None:
         return RedirectResponse("/login")
 
-    user_out = UserOut(
-        username=user.username,
-        email=user.email,
-        disabled=user.disabled,
-        created_at=user.created_at,
-        team_number=get_team_number_from_id(user.team, session),
-        role=user.role
-    )
+    user_out = user.get_public()
 
     page_title = None
     for section in dashboard_structure:
@@ -166,40 +164,39 @@ async def dashboard(
     template_name = f"dashboard/{user.role.name.lower()}/{page}.html"
     try:
         return templates.TemplateResponse(
-            request=request, name=template_name, context={
+            request=request,
+            name=template_name,
+            context={
                 "user": user_out,
                 "dashboard_structure": dashboard_structure[user.role],
                 "current_page": page,
                 "current_title": page_title,
                 "debug": config.DEBUG,
-                "page": "dashboard"
-            }
+                "page": "dashboard",
+            },
         )
     except TemplateNotFound:
         print("Template not found: " + template_name)
         return not_found_page(request)
 
+
 @router.get("/account", response_class=HTMLResponse)
 async def account(
     request: Request,
     session: Annotated[Session, Depends(get_session)],
-    user: User | None = Depends(get_current_user)
+    user: User | None = Depends(get_current_user),
 ):
     if user is None:
         return RedirectResponse("/login")
 
-    user_out = UserOut(
-        username=user.username,
-        email=user.email,
-        disabled=user.disabled,
-        created_at=user.created_at,
-        team_number=get_team_number_from_id(user.team, session),
-        role=user.role
-    )
+    user_out = user.get_public()
 
     return templates.TemplateResponse(
-        request=request, name="account.html", context={"user": user_out, "debug": config.DEBUG, "page": "account"}
+        request=request,
+        name="account.html",
+        context={"user": user_out, "debug": config.DEBUG, "page": "account"},
     )
+
 
 # ========== { Docs } ========== #
 
@@ -210,7 +207,7 @@ docs_structure = [
             {"title": "Introduction", "slug": "introduction"},
             {"title": "Quickstart", "slug": "quickstart"},
             {"title": "Capture Setup", "slug": "capture"},
-            {"title": "FAQ / Troubleshooting", "slug": "faq"}
+            {"title": "FAQ / Troubleshooting", "slug": "faq"},
         ],
     },
     {
@@ -243,24 +240,18 @@ docs_structure = [
     },
 ]
 
+
 @router.get("/docs/{page}", response_class=HTMLResponse)
 @router.get("/docs", response_class=HTMLResponse)
 async def docs(
     request: Request,
     session: Annotated[Session, Depends(get_session)],
     page: str = "introduction",
-    user: User | None = Depends(get_current_user)
+    user: User | None = Depends(get_current_user),
 ):
     user_out = None
     if user is not None:
-        user_out = UserOut(
-            username=user.username,
-            email=user.email,
-            disabled=user.disabled,
-            created_at=user.created_at,
-            team_number=get_team_number_from_id(user.team, session),
-            role=user.role
-        )
+        user_out = user.get_public()
 
     if page == "api":
         return get_swagger_ui_html(
@@ -285,14 +276,16 @@ async def docs(
     template_name = f"docs/{page}.html"
     try:
         return templates.TemplateResponse(
-            request=request, name=template_name, context={
+            request=request,
+            name=template_name,
+            context={
                 "user": user_out,
                 "docs_structure": docs_structure,
                 "current_page": page,
                 "current_title": page_title,
                 "debug": config.DEBUG,
-                "page": "docs"
-            }
+                "page": "docs",
+            },
         )
     except TemplateNotFound as e:
         if config.DEBUG:
@@ -311,9 +304,14 @@ def load_snippets():
 
     templates.env.globals["snippets"] = all_snippets
 
+
 # ========== { Other } ========== #
+
 
 def not_found_page(request: Request):
     return templates.TemplateResponse(
-        request=request, name="404.html", context={"user": None, "debug": config.DEBUG, "page": "404"}, status_code=404
+        request=request,
+        name="404.html",
+        context={"user": None, "debug": config.DEBUG, "page": "404"},
+        status_code=404,
     )

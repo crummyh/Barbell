@@ -2,9 +2,11 @@ from datetime import datetime, timezone
 
 start_time = None
 
+
 def start_monitor():
     global start_time
     start_time = datetime.now(timezone.utc)
+
 
 def get_uptime():
     """

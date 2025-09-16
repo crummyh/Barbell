@@ -1,7 +1,8 @@
 import time
+from collections.abc import AsyncGenerator
 from datetime import datetime, timedelta, timezone
 from secrets import token_hex, token_urlsafe
-from typing import Annotated, AsyncGenerator, Optional
+from typing import Annotated
 
 import jwt
 from fastapi import Depends, HTTPException, Request, Security, status
@@ -11,9 +12,9 @@ from passlib.context import CryptContext
 from sqlmodel import Session, select
 
 from app.core import config
-from app.db.database import get_session
-from app.models.models import TokenData, UserRole
-from app.models.schemas import User
+from app.database import get_session
+from app.models.models import TokenData
+from app.models.user import User, UserRole
 
 # ==========={ Database }=========== #
 
@@ -29,14 +30,16 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 # {USERNAME}:{KEY}
 api_auth_scheme = APIKeyHeader(name="x-api-auth", auto_error=False)
 
+
 async def handle_api_key(
-    db: SessionDep,
-    token: str = Security(api_auth_scheme)
+    db: SessionDep, token: str = Security(api_auth_scheme)
 ) -> AsyncGenerator[User, None]:
     try:
         username, key = token.split(":", 1)
 
-        res = db.exec(select(User).where(User.username == username).where(User.disabled == False))  # noqa: E712
+        res = db.exec(
+            select(User).where(User.username == username).where(User.disabled == False)  # noqa: E712
+        )  # noqa: E712
         user = res.one()
 
         if not pwd_context.verify(key, user.api_key):
@@ -47,15 +50,18 @@ async def handle_api_key(
     except Exception:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or missing API key"
-        )
+            detail="Invalid or missing API key",
+        ) from None
+
 
 def generate_api_key() -> str:
     return token_hex(config.API_KEY_LEN)
 
+
 # ==========={ Passwords }=========== #
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
+
 
 async def get_token_from_cookie(request: Request) -> str:
     token = request.cookies.get("access_token")
@@ -63,23 +69,25 @@ async def get_token_from_cookie(request: Request) -> str:
         raise HTTPException(status_code=401, detail="Not authenticated")
     return token
 
-async def optional_auth(request: Request) -> Optional[str]:
+
+async def optional_auth(request: Request) -> str | None:
     try:
         return await get_token_from_cookie(request)
     except HTTPException:
         return None
 
+
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
+
 
 def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
+
 def authenticate_user(
-    session: Annotated[Session, Depends(get_session)],
-    username: str,
-    password: str
-) -> Optional[User]:
+    session: Annotated[Session, Depends(get_session)], username: str, password: str
+) -> User | None:
     user = session.exec(select(User).where(User.username == username)).one_or_none()
     if not user:
         user = session.exec(select(User).where(User.email == username)).one_or_none()
@@ -90,27 +98,27 @@ def authenticate_user(
         return None
     return user
 
+
 def create_access_token(data: dict, expires_delta: timedelta = timedelta(minutes=15)):
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + expires_delta
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(
-        to_encode,
-        config.JWT_SECRET_TOKEN,
-        algorithm=config.SECURE_ALGORITHM
+        to_encode, config.JWT_SECRET_TOKEN, algorithm=config.SECURE_ALGORITHM
     )
     return encoded_jwt
 
-def get_current_user(
-    token: Annotated[Optional[str], Depends(optional_auth)],
-    session: Annotated[Session, Depends(get_session)]
-) -> Optional[User]:
 
+def get_current_user(
+    token: Annotated[str | None, Depends(optional_auth)],
+    session: Annotated[Session, Depends(get_session)],
+) -> User | None:
     try:
+        if token is None:
+            raise InvalidTokenError()
+
         payload = jwt.decode(
-            token,
-            config.JWT_SECRET_TOKEN,
-            algorithms=[config.SECURE_ALGORITHM]
+            token, config.JWT_SECRET_TOKEN, algorithms=[config.SECURE_ALGORITHM]
         )
         username = payload.get("sub")
         if username is None:
@@ -121,11 +129,14 @@ def get_current_user(
     except InvalidTokenError:
         return None
 
-    user = session.exec(select(User).where(User.username == token_data.username)).one_or_none()
+    user = session.exec(
+        select(User).where(User.username == token_data.username)
+    ).one_or_none()
     if user is None:
         return None
 
     return user
+
 
 def get_current_active_user(
     current_user: Annotated[User, Depends(get_current_user)],
@@ -139,6 +150,7 @@ def get_current_active_user(
     if current_user.disabled:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
+
 
 def require_login(
     current_user: Annotated[User, Depends(get_current_user)],
@@ -166,7 +178,9 @@ def require_role(*roles: UserRole):
                 detail=f"Requires role: {[i.name for i in roles]}, but you have: {user.role.name}",
             )
         return user
+
     return role_checker
+
 
 def minimum_role(role: UserRole):
     def role_checker(user: User = Depends(get_current_active_user)):
@@ -182,17 +196,20 @@ def minimum_role(role: UserRole):
                 detail=f"Requires role: {role.name} or greater, but you have: {user.role.name}",
             )
         return user
+
     return role_checker
 
+
 def generate_verification_code(
-    session: Annotated[Session, Depends(get_session)]
+    session: Annotated[Session, Depends(get_session)],
 ) -> str:
     while True:
         code = token_urlsafe(config.VERIFICATION_CODE_BYTES_LEN)
         try:
-           session.exec(select(User).where(User.code == code)).one()
+            session.exec(select(User).where(User.code == code)).one()
         except Exception:
             return code
+
 
 # ==========={ Rate Limiting }=========== #
 
@@ -217,7 +234,10 @@ class RateLimiter:
         # Look up per-endpoint config, fallback to defaults
         cfg = rate_limit_config.get(
             route_path,
-            {"requests_limit": self.default_requests, "time_window": self.default_window},
+            {
+                "requests_limit": self.default_requests,
+                "time_window": self.default_window,
+            },
         )
         requests_limit = cfg["requests_limit"]
         time_window = cfg["time_window"]

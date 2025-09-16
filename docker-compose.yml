@@ -34,7 +34,7 @@ services:
       - ./app:/app
       - ./tests:/app/tests
     entrypoint: []
-    command: ["pytest", "app/tests", "-v", "--maxfail=1", "--disable-warnings"]
+    command: ["pytest", "app/tests", "--maxfail=1", "--disable-warnings"]
     profiles:
       - tests
 
