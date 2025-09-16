@@ -3,11 +3,14 @@ from datetime import datetime
 import pytest
 from sqlmodel import Session
 
+from app.crud import annotation as annotation_crud
 from app.crud import download_batch as download_batch_crud
 from app.crud import image as image_crud
 from app.crud import team as team_crud
+from app.crud import label_category as label_category_crud
 from app.crud import upload_batch as upload_batch_crud
 from app.crud import user as user_crud
+from app.crud.base import CRUDModuleProtocol
 from app.models.models import (
     DownloadBatch,
     DownloadBatchCreate,
@@ -21,6 +24,42 @@ from app.models.models import (
     UserCreate,
 )
 
+def test_crud_layers_protocol()):
+    protocols = [
+        annotation,
+        download_batch_crud,
+        image_crud,
+        team_crud,
+        label_category_crud,
+        upload_batch_crud,
+        user_crud
+    ]
+    for proto in protocols:
+        assert isinstance(proto, CRUDModuleProtocol)
+
+def generic_test_crud(
+    crud_module: CRUDModuleProtocol[ModelType, CreateSchemaType, UpdateSchemaType],
+    session: Session,
+    create_data: CreateSchemaType,
+    update_data: UpdateSchemaType
+) -> None:
+    """Generic test that works with any CRUD module."""
+    
+    # Test create
+    created = crud_module.create(session, create_data)
+    assert created is not None
+    
+    # Test get
+    retrieved = crud_module.get(session, created.id)  # type: ignore
+    assert retrieved is not None
+    
+    # Test update
+    updated = crud_module.update(session, created.id, update_data)  # type: ignore
+    assert updated is not None
+    
+    # Test delete
+    deleted = crud_module.delete(session, created.id)  # type: ignore
+    assert deleted is True
 
 @pytest.fixture
 def test_user(session):
