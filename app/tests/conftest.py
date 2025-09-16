@@ -9,12 +9,14 @@ from app.main import app
 # Engine just for tests
 engine = create_engine(DATABASE_URL, echo=True)
 
+
 @pytest.fixture(scope="session", autouse=True)
 def prepare_database():
     """Create all tables at the start of the test session, drop them at the end."""
     SQLModel.metadata.create_all(engine)
     yield
     SQLModel.metadata.drop_all(engine)
+
 
 @pytest.fixture(scope="function")
 def test_db():
@@ -23,11 +25,13 @@ def test_db():
         yield session
         session.rollback()  # rollback after each test just in case
 
+
 @pytest.fixture(scope="function")
 def client(test_db):
     """
     Override FastAPI's get_session dependency to use the test session.
     """
+
     def override_get_db():
         yield test_db
 

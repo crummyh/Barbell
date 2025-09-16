@@ -14,7 +14,9 @@ DOWNLOAD_BATCHES_BUCKET_NAME = "download_batches"
 IMAGES_BUCKET_NAME = "images"
 HASHING_BUF_SIZE = 65536
 BUCKET_NAME_HASH_ALGORITHM = "sha256"
-ALLOWED_IMAGE_EXTENSIONS = {ex for ex, f in Image.registered_extensions().items() if f in Image.OPEN}
+ALLOWED_IMAGE_EXTENSIONS = {
+    ex for ex, f in Image.registered_extensions().items() if f in Image.OPEN
+}
 IMAGE_STORAGE_FORMAT = "png"
 DEFAULT_PROCESSING_TIME = 100
 TEMPLATES_PATH = "web/templates"

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import timedelta
-from typing import BinaryIO, Optional
+from typing import BinaryIO
 
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
@@ -19,11 +19,13 @@ A guild for separating schemas:
 
 # ==========={ Responses }=========== #
 
+
 class StatsOut(BaseModel):
     image_count: int
     un_reviewed_image_count: int
     team_count: int
     uptime: timedelta
+
 
 class TeamStatsOut(BaseModel):
     image_count: int
@@ -31,29 +33,31 @@ class TeamStatsOut(BaseModel):
     years_available: set[int]
     upload_batches: int
 
+
 def image_response(file: BinaryIO) -> StreamingResponse:
     file.seek(0)
     return StreamingResponse(
-        file,
-        media_type="image",
-        headers={
-            "Content-Disposition": "attachment"
-        }
+        file, media_type="image", headers={"Content-Disposition": "attachment"}
     )
 
+
 # ==========={ Requests }=========== #
+
 
 class RateLimitUpdate(BaseModel):
     route: str
     requests_limit: int
     time_window: int
 
+
 # ==========={ Security }=========== #
+
 
 class Token(BaseModel):
     access_token: str
     token_type: str
 
+
 class TokenData(BaseModel):
-    username: Optional[str] = None
-    role: Optional[UserRole] = None
+    username: str | None = None
+    role: UserRole | None = None

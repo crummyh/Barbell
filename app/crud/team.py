@@ -13,16 +13,16 @@ def create(session: Session, team_create: TeamCreate) -> Team:
     session.refresh(team)
     return team
 
+
 def get(session: Session, id: int) -> Team | None:
     team = session.get(Team, id)
     return team
 
+
 def get_from_number(session: Session, number: int) -> Team | None:
-    team = session.exec(
-        select(Team)
-        .where(Team.team_number == number)
-    ).one()
+    team = session.exec(select(Team).where(Team.team_number == number)).one()
     return team
+
 
 def update(session: Session, id: int, team_update: TeamUpdate | dict) -> Team | None:
     team = session.get(Team, id)
@@ -38,6 +38,7 @@ def update(session: Session, id: int, team_update: TeamUpdate | dict) -> Team | 
     session.commit()
     session.refresh(team)
     return team
+
 
 def delete(session: Session, id: int) -> bool:
     team = session.get(Team, id)

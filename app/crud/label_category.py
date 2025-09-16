@@ -13,7 +13,7 @@ from app.models.label_category import (
 def create(
     session: Session,
     label_category_create: LabelCategoryCreate | LabelSuperCategoryCreate | dict,
-    super: bool = False
+    super: bool = False,
 ) -> LabelCategory | LabelSuperCategory:
     if super or isinstance(label_category_create, LabelSuperCategoryCreate):
         label_category = LabelSuperCategory.model_validate(label_category_create)
@@ -23,6 +23,7 @@ def create(
     session.commit()
     session.refresh(label_category)
     return label_category
+
 
 def create_super(
     session: Session,
@@ -34,10 +35,9 @@ def create_super(
     session.refresh(label_category)
     return label_category
 
+
 def get(
-    session: Session,
-    id: int,
-    super: bool = False
+    session: Session, id: int, super: bool = False
 ) -> LabelCategory | LabelSuperCategory | None:
     if super:
         label_category = session.get(LabelCategory, id)
@@ -45,18 +45,17 @@ def get(
         label_category = session.get(LabelSuperCategory, id)
     return label_category
 
-def get_super(
-    session: Session,
-    id: int
-) -> LabelSuperCategory | None:
+
+def get_super(session: Session, id: int) -> LabelSuperCategory | None:
     label_super_category = session.get(LabelSuperCategory, id)
     return label_super_category
+
 
 def update(
     session: Session,
     id: int,
     label_category_update: LabelCategoryUpdate | LabelSuperCategoryUpdate | dict,
-    super: bool = False
+    super: bool = False,
 ) -> LabelCategory | LabelSuperCategory | None:
     label_category = get(session, id, super)
 
@@ -76,10 +75,9 @@ def update(
     session.refresh(label_category)
     return label_category
 
+
 def update_super(
-    session: Session,
-    id: int,
-    label_category_update: LabelSuperCategoryUpdate | dict
+    session: Session, id: int, label_category_update: LabelSuperCategoryUpdate | dict
 ) -> LabelSuperCategory | None:
     label_category = get_super(session, id)
     if label_category is None:
@@ -95,6 +93,7 @@ def update_super(
     session.refresh(label_category)
     return label_category
 
+
 def delete(session: Session, id: int, super: bool = False) -> bool:
     if super:
         label_category = session.get(LabelSuperCategory, id)
@@ -107,6 +106,7 @@ def delete(session: Session, id: int, super: bool = False) -> bool:
     session.delete(label_category)
     session.commit()
     return True
+
 
 def delete_super(session: Session, id: int) -> bool:
     label_category = session.get(LabelSuperCategory, id)

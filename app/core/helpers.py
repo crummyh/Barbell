@@ -1,4 +1,3 @@
-
 import hashlib
 import json
 from typing import BinaryIO
@@ -17,6 +16,7 @@ def get_hash_with_streaming(file: BinaryIO, algorithm: str) -> str:
         h.update(data)
 
     return h.hexdigest()
+
 
 class UUIDEncoder(json.JSONEncoder):
     def default(self, o):

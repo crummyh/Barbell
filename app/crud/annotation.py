@@ -10,11 +10,15 @@ def create(session: Session, annotation_create: AnnotationCreate) -> Annotation:
     session.refresh(annotation)
     return annotation
 
+
 def get(session: Session, id: int) -> Annotation | None:
     annotation = session.get(Annotation, id)
     return annotation
 
-def update(session: Session, id: int, annotation_update: AnnotationUpdate | dict) -> Annotation | None:
+
+def update(
+    session: Session, id: int, annotation_update: AnnotationUpdate | dict
+) -> Annotation | None:
     annotation = session.get(Annotation, id)
     if annotation is None:
         return None
@@ -28,6 +32,7 @@ def update(session: Session, id: int, annotation_update: AnnotationUpdate | dict
     session.commit()
     session.refresh(annotation)
     return annotation
+
 
 def delete(session: Session, id: int) -> bool:
     annotation = session.get(Annotation, id)

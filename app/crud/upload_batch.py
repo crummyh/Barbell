@@ -12,11 +12,15 @@ def create(session: Session, upload_batch_create: UploadBatchCreate) -> UploadBa
     session.refresh(upload_batch)
     return upload_batch
 
+
 def get(session: Session, id: UUID) -> UploadBatch | None:
     upload_batch = session.get(UploadBatch, id)
     return upload_batch
 
-def update(session: Session, id: UUID, upload_batch_update: UploadBatchUpdate | dict) -> UploadBatch | None:
+
+def update(
+    session: Session, id: UUID, upload_batch_update: UploadBatchUpdate | dict
+) -> UploadBatch | None:
     upload_batch = session.get(UploadBatch, id)
     if upload_batch is None:
         return None
@@ -30,6 +34,7 @@ def update(session: Session, id: UUID, upload_batch_update: UploadBatchUpdate | 
     session.commit()
     session.refresh(upload_batch)
     return upload_batch
+
 
 def delete(session: Session, id: UUID) -> bool:
     upload_batch = session.get(UploadBatch, id)

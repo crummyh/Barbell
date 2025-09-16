@@ -19,57 +19,80 @@ from app.services.buckets import create_image, get_upload_batch
 
 async def process_batch_async(batch_id: UUID):
     with Session(engine) as session:
-        batch = upload_batch.get(session, batch_id) # Get the batch
+        batch = upload_batch.get(session, batch_id)  # Get the batch
         if not batch:
             raise ValueError(f"UploadBatch with id {batch_id} not found")
 
         # Update the status and time to show that we have started
-        upload_batch.update(session, batch_id, {
-            "status": UploadStatus.PROCESSING,
-            "start_time": datetime.now(timezone.utc)
-        })
+        upload_batch.update(
+            session,
+            batch_id,
+            {
+                "status": UploadStatus.PROCESSING,
+                "start_time": datetime.now(timezone.utc),
+            },
+        )
 
         try:
-            file = get_upload_batch(batch_id) # Get the actual file
+            file = get_upload_batch(batch_id)  # Get the actual file
             with tarfile.open(fileobj=file, mode="r:gz") as tar:
-                image_files = [ # Get all the valid images in the archive
-                    m for m in tar.getmembers()
-                    if m.isfile()
+                image_files = [  # Get all the valid images in the archive
+                    m for m in tar.getmembers() if m.isfile()
                 ]
                 # Update the # of total images
-                upload_batch.update(session, batch_id, {"images_total": len(image_files)})
+                upload_batch.update(
+                    session, batch_id, {"images_total": len(image_files)}
+                )
 
                 # Loop through every image
-                for i, member in enumerate(image_files):
+                for member in image_files:
                     try:
                         if not validate_image_pre(member):
-                            upload_batch.update(session, batch_id, {"images_rejected": batch.images_rejected + 1})
-                            continue # Stop the loop here and start the next image
+                            upload_batch.update(
+                                session,
+                                batch_id,
+                                {"images_rejected": batch.images_rejected + 1},
+                            )
+                            continue  # Stop the loop here and start the next image
 
-                        image = tar.extractfile(member) # Extract the image
-                        assert image # The image has to exist
+                        image = tar.extractfile(member)  # Extract the image
+                        assert image  # The image has to exist
 
                         # Validate the image and add it to the database
                         if validate_image(image):
-                            image_entry = image_crud.create(session, ImageCreate(
-                                batch=batch_id
-                            ), batch.user_id)
+                            image_entry = image_crud.create(
+                                session, ImageCreate(batch=batch_id), batch.user_id
+                            )
 
                             image = _force_image_format(image)
 
-                            assert image_entry.id # The ID is generated, so we assume it exists
-                            create_image(image, image_entry.id) # Add the image to S3
+                            assert (
+                                image_entry.id
+                            )  # The ID is generated, so we assume it exists
+                            create_image(image, image_entry.id)  # Add the image to S3
 
                             # Increment the valid image count
-                            upload_batch.update(session, batch_id, {"images_valid": batch.images_valid + 1})
+                            upload_batch.update(
+                                session,
+                                batch_id,
+                                {"images_valid": batch.images_valid + 1},
+                            )
 
                         else:
                             # The image is not valid
-                            upload_batch.update(session, batch_id, {"images_rejected": batch.images_rejected + 1})
+                            upload_batch.update(
+                                session,
+                                batch_id,
+                                {"images_rejected": batch.images_rejected + 1},
+                            )
 
                     except Exception:
                         # Something went wrong somewhere, and the image is passed
-                        upload_batch.update(session, batch_id, {"images_rejected": batch.images_rejected + 1})
+                        upload_batch.update(
+                            session,
+                            batch_id,
+                            {"images_rejected": batch.images_rejected + 1},
+                        )
                         raise
 
             if batch.images_valid == 0:
@@ -78,15 +101,22 @@ async def process_batch_async(batch_id: UUID):
                 upload_batch.update(session, batch_id, {"status": UploadStatus.FAILED})
             else:
                 # but if at least some worked then we are done!
-                upload_batch.update(session, batch_id, {"status": UploadStatus.COMPLETED})
+                upload_batch.update(
+                    session, batch_id, {"status": UploadStatus.COMPLETED}
+                )
 
         except Exception as e:
             # Something went wrong, so we rollback and say we failed
             session.rollback()
-            upload_batch.update(session, batch_id, {"status": UploadStatus.FAILED, "error_message": str(e)})
+            upload_batch.update(
+                session,
+                batch_id,
+                {"status": UploadStatus.FAILED, "error_message": str(e)},
+            )
             raise
         else:
             session.commit()
+
 
 def _force_image_format(image: BinaryIO) -> BytesIO:
     with PIL_Image.open(image) as img:
@@ -94,6 +124,7 @@ def _force_image_format(image: BinaryIO) -> BytesIO:
         img.save(output, format=config.IMAGE_STORAGE_FORMAT)
         output.seek(0)
         return output
+
 
 def validate_image(image_path: BinaryIO) -> bool:
     """Validate image meets requirements (640x640, etc.)"""
@@ -103,9 +134,11 @@ def validate_image(image_path: BinaryIO) -> bool:
     except Exception:
         return False
 
+
 def validate_image_pre(image_member: tarfile.TarInfo) -> bool:
     """Validate image *before* extracting"""
     return Path(image_member.name).suffix.lower() in config.ALLOWED_IMAGE_EXTENSIONS
+
 
 def estimate_upload_processing_time(session: Session, batch_id: UUID) -> float:
     """Estimate the time left in processing (in seconds)"""
@@ -124,4 +157,4 @@ def estimate_upload_processing_time(session: Session, batch_id: UUID) -> float:
     assert batch.start_time
     delta_time = (batch.start_time - datetime.now(timezone.utc)).total_seconds()
 
-    return (delta_time/progress)
+    return delta_time / progress

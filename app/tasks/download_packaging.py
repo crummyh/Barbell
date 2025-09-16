@@ -35,15 +35,20 @@ BASE_COCO_MANIFEST = {
         "version": config.PROJECT_VERSION,
         "year": str(datetime.now(timezone.utc).year),
         "contributor": "",
-        "date_created": str(datetime.now(timezone.utc).date)
+        "date_created": str(datetime.now(timezone.utc).date),
     },
     "licenses": [
-        {"url": "https://creativecommons.org/licenses/by-nc/4.0/","id": 0,"name": "Creative Commons Attribution-NonCommercial 4.0 International"}
+        {
+            "url": "https://creativecommons.org/licenses/by-nc/4.0/",
+            "id": 0,
+            "name": "Creative Commons Attribution-NonCommercial 4.0 International",
+        }
     ],
     "images": [],
     "annotations": [],
-    "categories": []
+    "categories": [],
 }
+
 
 def create_download_batch(batch_id: UUID):
     with Session(engine) as session:
@@ -53,12 +58,12 @@ def create_download_batch(batch_id: UUID):
             raise ValueError(f"DownloadBatch with id {batch_id} not found")
 
         try:
-            download_batch.update(session, batch_id, {
-                "status": DownloadStatus.ASSEMBLING_LABELS
-            })
+            download_batch.update(
+                session, batch_id, {"status": DownloadStatus.ASSEMBLING_LABELS}
+            )
 
-            manifest = BASE_COCO_MANIFEST.copy() # Make a copy of the manifest
-            annotation_category_id_list = [] # Store the selected ids so I don't have to loop later
+            manifest = BASE_COCO_MANIFEST.copy()  # Make a copy of the manifest
+            annotation_category_id_list = []  # Store the selected ids so I don't have to loop later
 
             for selection in batch.annotations:
                 try:
@@ -69,11 +74,13 @@ def create_download_batch(batch_id: UUID):
                             raise
 
                         for category in super_cat.sub_categories:
-                            manifest["categories"].append({
-                                "supercategory": super_cat.name,
-                                "id": category.id,
-                                "name": category.name
-                            })
+                            manifest["categories"].append(
+                                {
+                                    "supercategory": super_cat.name,
+                                    "id": category.id,
+                                    "name": category.name,
+                                }
+                            )
                             annotation_category_id_list.append(category.id)
                     else:
                         # The selection is not super, add it alone
@@ -82,44 +89,53 @@ def create_download_batch(batch_id: UUID):
                             raise
 
                         if category.super_category:
-                            manifest["categories"].append({
-                                "supercategory": category.super_category.name,
-                                "id": category.id,
-                                "name": category.name
-                            })
+                            manifest["categories"].append(
+                                {
+                                    "supercategory": category.super_category.name,
+                                    "id": category.id,
+                                    "name": category.name,
+                                }
+                            )
                         else:
-                            manifest["categories"].append({
-                                "id": category.id,
-                                "name": category.name
-                            })
+                            manifest["categories"].append(
+                                {"id": category.id, "name": category.name}
+                            )
                         annotation_category_id_list.append(category.id)
 
                 except Exception:
                     pass
 
-            download_batch.update(session, batch_id, {
-                "status": DownloadStatus.ASSEMBLING_IMAGES
-            })
+            download_batch.update(
+                session, batch_id, {"status": DownloadStatus.ASSEMBLING_IMAGES}
+            )
 
             archive_obj = BytesIO()
             with tarfile.open(fileobj=archive_obj, mode="w:gz") as archive:
                 images = _get_random_images(session, batch.image_count)
                 for image in images:
-                    manifest["images"].append({
-                        "id": image.id,
-                        "license": 0,
-                        "width": 640,
-                        "hight": 640,
-                        "file_name": str(image.id) + "." + config.IMAGE_STORAGE_FORMAT,
-                        "date_captured": image.created_at.strftime("%y-%m-%d %H:%M:%S")
-                    })
+                    manifest["images"].append(
+                        {
+                            "id": image.id,
+                            "license": 0,
+                            "width": 640,
+                            "hight": 640,
+                            "file_name": str(image.id)
+                            + "."
+                            + config.IMAGE_STORAGE_FORMAT,
+                            "date_captured": image.created_at.strftime(
+                                "%y-%m-%d %H:%M:%S"
+                            ),
+                        }
+                    )
 
                     image_obj = get_image(image.id)
-                    image_obj.seek(0,2)
+                    image_obj.seek(0, 2)
                     size = image_obj.tell()
                     image_obj.seek(0)
 
-                    tar_info = tarfile.TarInfo(name=str(image.id) + "." + config.IMAGE_STORAGE_FORMAT)
+                    tar_info = tarfile.TarInfo(
+                        name=str(image.id) + "." + config.IMAGE_STORAGE_FORMAT
+                    )
                     tar_info.size = size
                     tar_info.mtime = image.created_at.timestamp()
                     tar_info.mode = 0o644
@@ -128,25 +144,29 @@ def create_download_batch(batch_id: UUID):
 
                     for annotation in image.annotations:
                         if annotation.category_id in annotation_category_id_list:
-                            manifest["annotations"].append({
-                                "id": annotation.id,
-                                "category_id": annotation.category_id,
-                                "iscrowd": annotation.iscrowd,
-                                "area": annotation.bbox_h * annotation.bbox_w,
-                                "bbox": [
-                                    annotation.bbox_x,
-                                    annotation.bbox_y,
-                                    annotation.bbox_w,
-                                    annotation.bbox_h
-                                ]
-                            })
+                            manifest["annotations"].append(
+                                {
+                                    "id": annotation.id,
+                                    "category_id": annotation.category_id,
+                                    "iscrowd": annotation.iscrowd,
+                                    "area": annotation.bbox_h * annotation.bbox_w,
+                                    "bbox": [
+                                        annotation.bbox_x,
+                                        annotation.bbox_y,
+                                        annotation.bbox_w,
+                                        annotation.bbox_h,
+                                    ],
+                                }
+                            )
 
-                download_batch.update(session, batch_id, {
-                    "status": DownloadStatus.ADDING_MANIFEST
-                })
+                download_batch.update(
+                    session, batch_id, {"status": DownloadStatus.ADDING_MANIFEST}
+                )
 
                 manifest_obj = BytesIO()
-                with TextIOWrapper(manifest_obj, encoding="utf-8", write_through=True) as wrapper:
+                with TextIOWrapper(
+                    manifest_obj, encoding="utf-8", write_through=True
+                ) as wrapper:
                     json.dump(manifest, wrapper, cls=UUIDEncoder)
 
                 manifest_obj.seek(0)
@@ -155,7 +175,7 @@ def create_download_batch(batch_id: UUID):
 
                 manifest_obj.seek(0, 2)  # Move to end to get size
                 tar_info.size = manifest_obj.tell()
-                manifest_obj.seek(0)     # Rewind for reading
+                manifest_obj.seek(0)  # Rewind for reading
 
                 tar_info.mtime = datetime.now(timezone.utc).timestamp()
                 tar_info.mode = 0o644
@@ -180,6 +200,7 @@ def create_download_batch(batch_id: UUID):
             session.commit()
             raise
 
+
 def _get_random_images(session: Session, count: int):
     # First, get the total count
     total_images = session.exec(select(func.count()).select_from(Image)).one()
@@ -192,10 +213,6 @@ def _get_random_images(session: Session, count: int):
     offset = random.randint(0, max_offset)
 
     # Fetch `count` images starting from the offset
-    images = session.exec(
-        select(Image)
-        .offset(offset)
-        .limit(count)
-    )
+    images = session.exec(select(Image).offset(offset).limit(count))
 
     return images

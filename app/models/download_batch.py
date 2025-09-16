@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from enum import Enum
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
 from sqlmodel import JSON, Column, Field, Relationship, SQLModel
@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from app.models.annotation import AnnotationSelection
     from app.models.user import User
 
+
 class DownloadStatus(str, Enum):
     STARTING = "starting"
     ASSEMBLING_LABELS = "assembling_labels"
@@ -19,17 +20,19 @@ class DownloadStatus(str, Enum):
     READY = "ready"
     FAILED = "failed"
 
+
 class BaseDownloadBatch(SQLModel):
     status: "DownloadStatus" = Field(default=DownloadStatus.STARTING)
     non_match_images: bool = Field(default=True)
     image_count: int = Field(ge=1, le=config.MAX_DOWNLOAD_COUNT)
-    annotations: List["AnnotationSelection"] = Field(sa_column=Column(JSON))
+    annotations: list["AnnotationSelection"] = Field(sa_column=Column(JSON))
     start_time: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     hash: str | None = Field(default=None)
     error_message: str | None = Field(default=None, max_length=500)
 
+
 class DownloadBatch(BaseDownloadBatch, table=True):
-    __tablename__ = "download_batches" # type: ignore
+    __tablename__ = "download_batches"  # type: ignore
 
     id: UUID | None = Field(default_factory=uuid4, primary_key=True)
     user_id: int = Field(foreign_key="users.id")
@@ -41,20 +44,23 @@ class DownloadBatch(BaseDownloadBatch, table=True):
         public.username = self.user.username
         return public
 
+
 class DownloadBatchCreate(SQLModel):
-    annotations: List["AnnotationSelection"]
+    annotations: list["AnnotationSelection"]
     count: int
     non_match_images: bool = True
+
 
 class DownloadBatchUpdate(SQLModel):
     status: "DownloadStatus | None" = None
     non_match_images: bool | None = None
     image_count: int | None = None
-    annotations: List["AnnotationSelection"] | None = None
+    annotations: list["AnnotationSelection"] | None = None
     start_time: datetime | None = None
     hash: str | None = None
     error_message: str | None = None
     user: "User | None" = None
+
 
 class DownloadBatchPublic(BaseDownloadBatch):
     id: UUID

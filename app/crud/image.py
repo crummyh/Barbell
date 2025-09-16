@@ -15,11 +15,15 @@ def create(session: Session, image_create: ImageCreate, user: User) -> Image:
     session.refresh(image)
     return image
 
+
 def get(session: Session, id: UUID) -> Image | None:
     image = session.get(Image, id)
     return image
 
-def update(session: Session, id: UUID, image_update: ImageUpdate | dict) -> Image | None:
+
+def update(
+    session: Session, id: UUID, image_update: ImageUpdate | dict
+) -> Image | None:
     image = session.get(Image, id)
     if image is None:
         return None
@@ -34,8 +38,8 @@ def update(session: Session, id: UUID, image_update: ImageUpdate | dict) -> Imag
     session.refresh(image)
     return image
 
-def delete(session: Session, id: UUID) -> bool:
 
+def delete(session: Session, id: UUID) -> bool:
     # TODO: Delete in S3 as well
 
     image = session.get(Image, id)

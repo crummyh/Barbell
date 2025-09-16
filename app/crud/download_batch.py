@@ -10,7 +10,9 @@ from app.models.download_batch import (
 from app.models.user import User
 
 
-def create(session: Session, download_batch_create: DownloadBatchCreate, user: User) -> DownloadBatch:
+def create(
+    session: Session, download_batch_create: DownloadBatchCreate, user: User
+) -> DownloadBatch:
     download_batch = DownloadBatch.model_validate(download_batch_create)
     assert user.id
     download_batch.user_id = user.id
@@ -19,11 +21,15 @@ def create(session: Session, download_batch_create: DownloadBatchCreate, user: U
     session.refresh(download_batch)
     return download_batch
 
+
 def get(session: Session, id: UUID) -> DownloadBatch | None:
     download_batch = session.get(DownloadBatch, id)
     return download_batch
 
-def update(session: Session, id: UUID, download_batch_update: DownloadBatchUpdate | dict) -> DownloadBatch | None:
+
+def update(
+    session: Session, id: UUID, download_batch_update: DownloadBatchUpdate | dict
+) -> DownloadBatch | None:
     download_batch = session.get(DownloadBatch, id)
     if download_batch is None:
         return None
@@ -37,6 +43,7 @@ def update(session: Session, id: UUID, download_batch_update: DownloadBatchUpdat
     session.commit()
     session.refresh(download_batch)
     return download_batch
+
 
 def delete(session: Session, id: UUID) -> bool:
     download_batch = session.get(DownloadBatch, id)

@@ -13,16 +13,16 @@ def create(session: Session, user_create: UserCreate) -> User:
     session.refresh(user)
     return user
 
+
 def get(session: Session, id: int) -> User | None:
     user = session.get(User, id)
     return user
 
+
 def get_user_from_username(session: Session, username: str) -> User | None:
-    user = session.exec(
-        select(User)
-        .where(User.username == username)
-    ).one()
+    user = session.exec(select(User).where(User.username == username)).one()
     return user
+
 
 def update(session: Session, id: int, user_update: UserUpdate | dict) -> User | None:
     user = session.get(User, id)
@@ -41,6 +41,7 @@ def update(session: Session, id: int, user_update: UserUpdate | dict) -> User | 
     session.commit()
     session.refresh(user)
     return user
+
 
 def delete(session: Session, id: int) -> bool:
     user = session.get(User, id)
