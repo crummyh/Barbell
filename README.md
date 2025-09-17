@@ -85,8 +85,8 @@ uv sync
 uv run pre-commit install
 
 # Run setup script
-chmod +x setup.sh
-./setup.sh
+chmod +x ./scripts/setup.sh
+./scripts/setup.sh
 
 # Rename environment file
 # ⚠️  IMPORTANT: Rename .env.db.example to .env.db !!!
