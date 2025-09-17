@@ -161,8 +161,10 @@ uv tree                          # Show dependency tree
 uv run pre-commit run            # Run hooks on staged files
 uv run pre-commit run --all-files # Run hooks on all files
 uv run pre-commit autoupdate     # Update hook versions
-Running Scripts
-bashuv run python script.py          # Run Python scripts
+```
+#### Running Scripts
+```bash
+uv run python script.py          # Run Python scripts
 uv run uvicorn main:app --reload # Run FastAPI with auto-reload
 uv run pytest tests/             # Run specific test directory
 ```
