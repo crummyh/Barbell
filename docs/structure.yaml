@@ -1,0 +1,39 @@
+sections:
+  - title: "Getting Started"
+    pages:
+      - title: "Introduction"
+        slug: "introduction"
+      - title: "Quickstart" 
+        slug: "quickstart"
+      - title: "Capture Setup"
+        slug: "capture"
+      - title: "FAQ / Troubleshooting"
+        slug: "faq"
+        
+  - title: "Using Data"
+    pages:
+      - title: "Uploading"
+        slug: "upload"
+      - title: "Downloading" 
+        slug: "download"
+        
+  - title: "API Guild"
+    pages:
+      - title: "Authentication"
+        slug: "auth"
+      - title: "Public API"
+        slug: "public"
+        
+  - title: "Contributing"
+    pages:
+      - title: "Moderating"
+        slug: "moderating"
+      - title: "Developing"
+        slug: "developing"
+        
+  - title: "Community"
+    pages:
+      - title: "Roadmap"
+        slug: "roadmap"
+      - title: "Discussions"
+        slug: "discussions"
