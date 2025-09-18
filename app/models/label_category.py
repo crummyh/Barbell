@@ -2,6 +2,8 @@ from typing import TYPE_CHECKING
 
 from sqlmodel import Field, Relationship, SQLModel
 
+from app.models.helpers import validated
+
 if TYPE_CHECKING:
     pass
 
@@ -20,7 +22,7 @@ class LabelSuperCategory(LabelCategoryBase, table=True):
     )
 
     def get_public(self) -> "LabelSuperCategoryPublic":
-        public = LabelSuperCategoryPublic.model_validate(self)
+        public = validated(LabelSuperCategoryPublic, self)
         public.sub_categories = [i.get_public() for i in self.sub_categories]
         return public
 
@@ -36,7 +38,7 @@ class LabelCategory(LabelCategoryBase, table=True):
     )
 
     def get_public(self) -> "LabelCategoryPublic":
-        return LabelCategoryPublic.model_validate(self)
+        return validated(LabelCategoryPublic, self)
 
 
 class LabelCategoryCreate(LabelCategoryBase):

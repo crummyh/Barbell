@@ -1,7 +1,9 @@
 import hashlib
 import json
-from typing import BinaryIO
+from typing import BinaryIO, TypeVar
 from uuid import UUID
+
+from sqlmodel import SQLModel
 
 from app.core import config
 
@@ -24,3 +26,10 @@ class UUIDEncoder(json.JSONEncoder):
             # if the o is uuid, we return the value of uuid
             return o.hex
         return json.JSONEncoder.default(self, o)
+
+
+T = TypeVar("T", bound=SQLModel)
+
+
+def validated(model: type[T], obj: object) -> T:
+    return model.model_validate(obj)

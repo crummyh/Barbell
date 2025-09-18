@@ -4,6 +4,8 @@ from uuid import UUID
 from pydantic import BaseModel
 from sqlmodel import Field, Relationship, SQLModel
 
+from app.core.helpers import validated
+
 if TYPE_CHECKING:
     from app.models.image import Image
 
@@ -22,7 +24,7 @@ class AnnotationBase(SQLModel):
     bbox_w: int | None = Field(default=None)
     bbox_h: int | None = Field(default=None)
 
-    def set_bbox(self, bbox: tuple[int, int, int, int]):
+    def set_bbox(self, bbox: tuple[int, int, int, int]) -> None:
         self.bbox_x = bbox[0]
         self.bbox_y = bbox[1]
         self.bbox_w = bbox[2]
@@ -38,7 +40,7 @@ class Annotation(AnnotationBase, table=True):
     image: "Image" = Relationship(back_populates="annotations")
 
     def get_public(self) -> "AnnotationPublic":
-        return AnnotationPublic.model_validate(self)
+        return validated(AnnotationPublic, self)
 
 
 class AnnotationCreate(AnnotationBase):

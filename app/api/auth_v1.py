@@ -91,20 +91,26 @@ def register_user(
     except Exception:
         pass
     else:
-        raise HTTPException(status_code=HTTP_409_CONFLICT, detail="Email is taken")
+        raise HTTPException(
+            status_code=HTTP_409_CONFLICT, detail="Email is taken"
+        ) from None
 
     try:
         session.exec(select(User).where(User.username == new_user.username)).one()
     except Exception:
         pass
     else:
-        raise HTTPException(status_code=HTTP_409_CONFLICT, detail="Username is taken")
+        raise HTTPException(
+            status_code=HTTP_409_CONFLICT, detail="Username is taken"
+        ) from None
 
     try:
         db_user = user.create(session, new_user)
     except Exception as e:
         session.rollback()
-        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+        ) from None
     else:
         background_tasks.add_task(send_verification_email, db_user)
         return {"detail": "Successfully registered"}
@@ -122,14 +128,14 @@ def verify_email_code(code: str, session: Annotated[Session, Depends(get_session
     except Exception:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND, detail="Incorrect Verification Code"
-        )
+        ) from None
 
     try:
         user.update(session, db_user.id, {"code": None, "disabled": False})
 
     except Exception:
         session.rollback()
-        raise HTTPException(status_code=500, detail="Failed to modify user")
+        raise HTTPException(status_code=500, detail="Failed to modify user") from None
     else:
         return {"detail": "Successfully verified"}
 
@@ -168,7 +174,7 @@ def register_team(
         raise HTTPException(
             status_code=HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to add team to database",
-        )
+        ) from None
     else:
         return {"detail": "Successfully registered team"}
 

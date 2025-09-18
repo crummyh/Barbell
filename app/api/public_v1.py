@@ -207,7 +207,7 @@ async def upload(
         raise HTTPException(
             status_code=500,
             detail="There was an error adding the batch to the database. Sorry!",
-        )
+        ) from None
 
     async def upload_archive():
         assert batch.id
@@ -257,7 +257,7 @@ def request_download_batch(
         raise HTTPException(
             status_code=HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to add batch to database",
-        )
+        ) from None
 
     background_tasks.add_task(create_download_batch, batch_id=batch.id)
     return batch.get_public()

@@ -3,9 +3,9 @@ from typing import Any, Generic, Protocol, TypeVar, runtime_checkable
 from sqlmodel import Session
 
 # Type variables
-ModelType = TypeVar("ModelType")
-CreateSchemaType = TypeVar("CreateSchemaType")
-UpdateSchemaType = TypeVar("UpdateSchemaType")
+ModelType = TypeVar("ModelType", covariant=True)
+CreateSchemaType = TypeVar("CreateSchemaType", contravariant=True)
+UpdateSchemaType = TypeVar("UpdateSchemaType", contravariant=True)
 
 
 @runtime_checkable

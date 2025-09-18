@@ -5,6 +5,8 @@ from uuid import UUID, uuid4
 
 from sqlmodel import Field, Relationship, SQLModel
 
+from app.core.helpers import validated
+
 if TYPE_CHECKING:
     from app.models.annotation import Annotation, AnnotationPublic
 
@@ -36,7 +38,7 @@ class Image(ImageBase, table=True):
     )
 
     def get_public(self) -> "ImagePublic":
-        public = ImagePublic.model_validate(self)
+        public = validated(ImagePublic, self)
         public.annotations = [i.get_public() for i in self.annotations]
         return public
 

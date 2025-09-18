@@ -15,7 +15,7 @@ _init = False
 _DATA_PATH = "data"  # Needs to change for real testing
 
 
-def init():
+def init() -> None:
     global _init
     try:
         if not os.path.exists(_DATA_PATH):
@@ -30,7 +30,7 @@ def init():
         raise
 
 
-def create_upload_batch(archive: BinaryIO, uuid: UUID):
+def create_upload_batch(archive: BinaryIO, uuid: UUID) -> None:
     if not _init:
         raise Exception("Buckets where not initialized. Run `init()`")
 
@@ -41,7 +41,7 @@ def get_upload_batch(uuid: UUID) -> BinaryIO:
     return _download_file(str(uuid), config.UPLOAD_BATCHES_BUCKET_NAME)
 
 
-def update_download_batch(uuid: UUID, new_archive: BinaryIO):
+def update_download_batch(uuid: UUID, new_archive: BinaryIO) -> None:
     _upload_file(
         new_archive, config.DOWNLOAD_BATCHES_BUCKET_NAME, str(uuid) + ".tar.gz"
     )
@@ -62,7 +62,7 @@ def get_download_batch(uuid: UUID) -> BinaryIO:
     return _download_file(str(uuid) + ".tar.gz", config.UPLOAD_BATCHES_BUCKET_NAME)
 
 
-def create_image(image: BinaryIO, uuid: UUID):
+def create_image(image: BinaryIO, uuid: UUID) -> None:
     if not _init:
         raise Exception("Buckets where not initialized. Run `init()`")
 
@@ -73,12 +73,12 @@ def get_image(uuid: UUID) -> BinaryIO:
     return _download_file(str(uuid), config.IMAGES_BUCKET_NAME)
 
 
-def _create_s3_bucket(name: str):
+def _create_s3_bucket(name: str) -> None:
     if not os.path.exists(_DATA_PATH + "/" + name):
         os.makedirs(_DATA_PATH + "/" + name)
 
 
-def _upload_file(file: BinaryIO, bucket: str, object_name: str):
+def _upload_file(file: BinaryIO, bucket: str, object_name: str) -> None:
     with open(_DATA_PATH + "/" + bucket + "/" + object_name, "wb") as f:
         file.seek(0)
         f.write(file.read())

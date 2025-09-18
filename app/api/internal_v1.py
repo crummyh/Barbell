@@ -102,7 +102,7 @@ def update_image(
     try:
         image.update(session, id, image_update)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from None
     else:
         return db_image.get_public()
 
@@ -144,7 +144,7 @@ def update_user(
     try:
         user.update(session, db_user.id, user_update)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from None
     else:
         return db_user.get_public()
 
@@ -158,7 +158,7 @@ def create_label_super_category(
     try:
         return label_category.create_super(session, category).get_public()
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from None
 
 
 @subapp.get("/categories/super")
@@ -180,7 +180,7 @@ def modify_label_super_category(
         public_label = label_category.update_super(session, id, update)
     except Exception as e:
         session.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from None
     if public_label is None:
         raise HTTPException(status_code=404, detail="Super Category not found")
     return public_label.get_public()
@@ -201,7 +201,7 @@ def remove_label_super_category(
             )
     except Exception as e:
         session.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from None
 
 
 @subapp.post("/categories/create")
@@ -213,7 +213,7 @@ def create_label_category(
     try:
         return label_category.create(session, category).get_public()
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from None
 
 
 @subapp.delete("/categories/remove")
@@ -231,7 +231,7 @@ def remove_label_category(
             )
     except Exception as e:
         session.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from None
 
 
 @subapp.put("/categories/update")
@@ -245,7 +245,7 @@ def modify_label_category(
         public_label = label_category.update(session, id, update)
     except Exception as e:
         session.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from None
     if public_label is None:
         raise HTTPException(status_code=404, detail="Super Category not found")
     return public_label.get_public()
@@ -289,7 +289,9 @@ def create_or_rotate_api_key(
         return current_user.api_key
     except Exception:
         session.rollback()
-        raise HTTPException(status_code=500, detail="Failed to change API key")
+        raise HTTPException(
+            status_code=500, detail="Failed to change API key"
+        ) from None
 
 
 @subapp.get("/api-key")
