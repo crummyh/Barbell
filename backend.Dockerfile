@@ -9,7 +9,7 @@ RUN uv sync --frozen --no-install-project
 
 COPY ./app ./app
 COPY setup.sh setup.sh
-COPY docker-entrypoint.sh /entrypoint.sh
+COPY ./scripts/docker-entrypoint.sh /entrypoint.sh
 
 RUN chmod +x setup.sh
 RUN ./setup.sh
