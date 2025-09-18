@@ -95,7 +95,7 @@ def not_found_error(request: Request, exc: HTTPException) -> JSONResponse:
 def not_found_exception_handler(
     request: Request,
     exc: HTTPException,
-) -> (JSONResponse | _TemplateResponse):
+) -> JSONResponse | _TemplateResponse:
     path = str(request.url).replace(str(request.base_url), "")
     if "api" in path or "auth" in path or "internal" in path or "static" in path:
         return not_found_error(request, exc)
