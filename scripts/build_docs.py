@@ -3,6 +3,8 @@ import yaml
 from pathlib import Path
 from markdown_it import MarkdownIt
 
+from ..docs.plugins.code_switch import code_switch_plugin
+
 def load_docs_structure():
     """Load docs structure from YAML"""
     structure_file = Path("docs/structure.yaml")
@@ -48,6 +50,8 @@ def build_docs():
         'linkify': True,
         'typographer': True
     })
+
+    md.use(code_switch_plugin)
     
     docs_structure = load_docs_structure()
     
