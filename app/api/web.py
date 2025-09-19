@@ -1,3 +1,4 @@
+from functools import lru_cache
 from pathlib import Path
 from typing import Annotated
 
@@ -151,6 +152,7 @@ async def dashboard(
 
     user_out = user.get_public()
 
+    assert user.role
     page_title = None
     for section in dashboard_structure:
         if section == user.role:
@@ -200,45 +202,17 @@ async def account(
 
 # ========== { Docs } ========== #
 
-docs_structure = [
-    {
-        "title": "Getting Started",
-        "pages": [
-            {"title": "Introduction", "slug": "introduction"},
-            {"title": "Quickstart", "slug": "quickstart"},
-            {"title": "Capture Setup", "slug": "capture"},
-            {"title": "FAQ / Troubleshooting", "slug": "faq"},
-        ],
-    },
-    {
-        "title": "Using Data",
-        "pages": [
-            {"title": "Uploading", "slug": "upload"},
-            {"title": "Downloading", "slug": "download"},
-        ],
-    },
-    {
-        "title": "API Guild",
-        "pages": [
-            {"title": "Authentication", "slug": "auth"},
-            {"title": "Public API", "slug": "public"},
-        ],
-    },
-    {
-        "title": "Contributing",
-        "pages": [
-            {"title": "Moderating", "slug": "moderating"},
-            {"title": "Developing", "slug": "developing"},
-        ],
-    },
-    {
-        "title": "Community",
-        "pages": [
-            {"title": "Roadmap", "slug": "roadmap"},
-            {"title": "Discussions", "slug": "discussions"},
-        ],
-    },
-]
+
+@lru_cache
+def load_docs_structure():
+    """Load docs structure from YAML file (cached)"""
+    structure_file = Path("app/web/templates/docs/structure.yaml")
+    if not structure_file.exists():
+        return []
+
+    with open(structure_file, encoding="utf-8") as f:
+        data = yaml.safe_load(f)
+        return data.get("sections", [])
 
 
 @router.get("/docs/{page}", response_class=HTMLResponse)
@@ -267,6 +241,8 @@ async def docs(
             redoc_favicon_url="/static/images/favicon.ico",
         )
 
+    docs_structure = load_docs_structure()
+
     page_title = None
     for section in docs_structure:
         for _page in section["pages"]:
@@ -287,6 +263,7 @@ async def docs(
                 "page": "docs",
             },
         )
+
     except TemplateNotFound as e:
         if config.DEBUG:
             raise e
