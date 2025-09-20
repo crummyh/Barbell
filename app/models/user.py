@@ -49,9 +49,20 @@ class User(UserBase, table=True):
     download_batches: list["DownloadBatch"] = Relationship(back_populates="user")
 
     def get_public(self) -> "UserPublic":
-        public = UserPublic.model_validate(self)
         if self.led_team:
-            public.team = self.led_team.team_number
+            team = self.led_team.team_number
+        else:
+            team = None
+
+        public = UserPublic(
+            username=self.username,
+            email=self.email,
+            id=self.id,
+            created_at=self.created_at,
+            disabled=self.disabled,
+            role=self.role,
+            team=team,
+        )
 
         return public
 

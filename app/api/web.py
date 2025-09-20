@@ -152,7 +152,6 @@ async def dashboard(
 
     user_out = user.get_public()
 
-    assert user.role
     page_title = None
     for section in dashboard_structure:
         if section == user.role:
