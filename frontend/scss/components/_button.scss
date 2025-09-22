@@ -1,0 +1,3 @@
+.btn.btn-primary {
+    @include button-variant($primary, $primary, #fff);
+}

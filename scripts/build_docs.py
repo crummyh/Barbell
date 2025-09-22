@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+from typing import Any
 
 import yaml
 from markdown_it import MarkdownIt
@@ -7,10 +8,10 @@ from markdown_it import MarkdownIt
 docs_dir = Path(__file__).parent.parent / "docs"
 sys.path.insert(0, str(docs_dir))
 
-from plugins.code_switch import code_switch_plugin  # type: ignore  # noqa: E402
+from plugins.code_switch import code_switch_plugin  # noqa: E402
 
 
-def load_docs_structure():
+def load_docs_structure() -> Any:
     """Load docs structure from YAML"""
     structure_file = Path("docs/structure.yaml")
     with open(structure_file, encoding="utf-8") as f:
@@ -18,7 +19,7 @@ def load_docs_structure():
         return data.get("sections", [])
 
 
-def validate_docs_structure():
+def validate_docs_structure() -> bool:
     """Validate that all pages in structure have corresponding markdown files"""
     docs_structure = load_docs_structure()
     docs_content_dir = Path("docs")
@@ -42,7 +43,7 @@ def validate_docs_structure():
     return True
 
 
-def build_docs():
+def build_docs() -> bool:
     """Convert markdown files to HTML templates using structure from YAML"""
     if not validate_docs_structure():
         print("Build aborted due to missing files")

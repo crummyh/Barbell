@@ -1,6 +1,6 @@
 from functools import lru_cache
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Any
 
 import yaml
 from fastapi import APIRouter, Depends
@@ -10,6 +10,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from jinja2 import TemplateNotFound
 from sqlmodel import Session
+from starlette.templating import _TemplateResponse
 
 from app.core import config
 from app.core.dependencies import get_current_user
@@ -29,7 +30,7 @@ async def home(
     request: Request,
     session: Annotated[Session, Depends(get_session)],
     user: User | None = Depends(get_current_user),
-):
+) -> _TemplateResponse:
     if user is None:
         return templates.TemplateResponse(
             request=request,
@@ -51,7 +52,7 @@ async def login(
     request: Request,
     session: Annotated[Session, Depends(get_session)],
     user: User | None = Depends(get_current_user),
-):
+) -> _TemplateResponse | RedirectResponse:
     if user is None:
         return templates.TemplateResponse(
             request=request,
@@ -67,7 +68,7 @@ async def register(
     request: Request,
     session: Annotated[Session, Depends(get_session)],
     user: User | None = Depends(get_current_user),
-):
+) -> _TemplateResponse | RedirectResponse:
     if user is None:
         return templates.TemplateResponse(
             request=request,
@@ -84,7 +85,7 @@ async def verify(
     request: Request,
     session: Annotated[Session, Depends(get_session)],
     user: User | None = Depends(get_current_user),
-):
+) -> _TemplateResponse | RedirectResponse:
     if user is None:
         return templates.TemplateResponse(
             request=request,
@@ -100,7 +101,7 @@ async def about(
     request: Request,
     session: Annotated[Session, Depends(get_session)],
     user: User | None = Depends(get_current_user),
-):
+) -> _TemplateResponse:
     if user is None:
         return templates.TemplateResponse(
             request=request,
@@ -146,7 +147,7 @@ async def dashboard(
     session: Annotated[Session, Depends(get_session)],
     page: str = "home",
     user: User | None = Depends(get_current_user),
-):
+) -> _TemplateResponse | RedirectResponse:
     if user is None:
         return RedirectResponse("/login")
 
@@ -186,7 +187,7 @@ async def account(
     request: Request,
     session: Annotated[Session, Depends(get_session)],
     user: User | None = Depends(get_current_user),
-):
+) -> _TemplateResponse | RedirectResponse:
     if user is None:
         return RedirectResponse("/login")
 
@@ -203,7 +204,7 @@ async def account(
 
 
 @lru_cache
-def load_docs_structure():
+def load_docs_structure() -> Any:
     """Load docs structure from YAML file (cached)"""
     structure_file = Path("app/web/templates/docs/structure.yaml")
     if not structure_file.exists():
@@ -221,7 +222,7 @@ async def docs(
     session: Annotated[Session, Depends(get_session)],
     page: str = "introduction",
     user: User | None = Depends(get_current_user),
-):
+) -> _TemplateResponse | HTMLResponse:
     user_out = None
     if user is not None:
         user_out = user.get_public()
@@ -269,22 +270,10 @@ async def docs(
         return not_found_page(request)
 
 
-def load_snippets():
-    snippets_dir = Path("/app/web/templates/docs/snippets")
-    all_snippets = {}
-
-    for file in snippets_dir.glob("*.yml"):
-        data = yaml.safe_load(file.read_text())
-        key = file.stem
-        all_snippets[key] = data
-
-    templates.env.globals["snippets"] = all_snippets
-
-
 # ========== { Other } ========== #
 
 
-def not_found_page(request: Request):
+def not_found_page(request: Request) -> _TemplateResponse:
     return templates.TemplateResponse(
         request=request,
         name="404.html",

@@ -1,18 +1,12 @@
 from typing import TYPE_CHECKING
 from uuid import UUID
 
-from pydantic import BaseModel
 from sqlmodel import Field, Relationship, SQLModel
 
 from app.core.helpers import validated
 
 if TYPE_CHECKING:
     from app.models.image import Image
-
-
-class AnnotationSelection(BaseModel):
-    id: int
-    super: bool
 
 
 class AnnotationBase(SQLModel):

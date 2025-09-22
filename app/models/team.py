@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Optional
 from sqlmodel import Field, Relationship, SQLModel
 
 from app.core import config
+from app.core.helpers import validated
 
 if TYPE_CHECKING:
     from app.models.user import User
@@ -27,7 +28,7 @@ class Team(TeamBase, table=True):
     leader: Optional["User"] = Relationship(back_populates="led_team")
 
     def get_public(self) -> "TeamPublic":
-        return TeamPublic.model_validate(self)
+        return validated(TeamPublic, self)
 
 
 class TeamCreate(SQLModel):

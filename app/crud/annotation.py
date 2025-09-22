@@ -4,7 +4,7 @@ from app.models.annotation import Annotation, AnnotationCreate, AnnotationUpdate
 
 
 def create(session: Session, annotation_create: AnnotationCreate) -> Annotation:
-    annotation = Annotation.model_validate(annotation_create)
+    annotation: Annotation = Annotation.model_validate(annotation_create)
     session.add(annotation)
     session.commit()
     session.refresh(annotation)
@@ -13,13 +13,14 @@ def create(session: Session, annotation_create: AnnotationCreate) -> Annotation:
 
 def get(session: Session, id: int) -> Annotation | None:
     annotation = session.get(Annotation, id)
+    assert isinstance(annotation, Annotation) or annotation is None
     return annotation
 
 
 def update(
     session: Session, id: int, annotation_update: AnnotationUpdate | dict
 ) -> Annotation | None:
-    annotation = session.get(Annotation, id)
+    annotation: Annotation | None = session.get(Annotation, id)
     if annotation is None:
         return None
 

@@ -1,15 +1,16 @@
 import re
+from typing import Any
 
 from markdown_it import MarkdownIt
 from markdown_it.rules_block import StateBlock
 
 
-def code_switch_plugin(md: MarkdownIt):
+def code_switch_plugin(md: MarkdownIt) -> None:
     """Plugin to handle code switches in markdown"""
 
     def code_switch_block(
         state: StateBlock, start_line: int, end_line: int, silent: bool
-    ):
+    ) -> bool:
         # Check if we're at the start of a code switch block
         pos = state.bMarks[start_line] + state.tShift[start_line]
         maximum = state.eMarks[start_line]
@@ -70,7 +71,7 @@ def code_switch_plugin(md: MarkdownIt):
         state.line = next_line + 1
         return True
 
-    def parse_code_blocks(content: str):
+    def parse_code_blocks(content: str) -> list:
         """Parse code blocks from the content"""
         tabs = []
 
@@ -95,7 +96,7 @@ def code_switch_plugin(md: MarkdownIt):
 
         return tabs
 
-    def render_code_switch_open(tokens, idx, options, env):
+    def render_code_switch_open(tokens: list, idx: int, options: Any, env: Any) -> str:
         """Render the opening code switch HTML"""
         token = tokens[idx]
         switch_name = token.info
@@ -164,7 +165,7 @@ def code_switch_plugin(md: MarkdownIt):
 
         return "".join(html_parts)
 
-    def render_code_switch_close(tokens, idx, options, env):
+    def render_code_switch_close(tokens: list, idx: int, options: Any, env: Any) -> str:
         """Render the closing code switch HTML"""
         return "</div>"  # Close code-switch
 

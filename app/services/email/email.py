@@ -1,8 +1,10 @@
 import smtplib
 import ssl
+from collections.abc import Callable
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from pathlib import Path
+from typing import Any
 
 from jinja2 import Environment, FileSystemLoader
 
@@ -15,18 +17,18 @@ templates_dir = Path(__file__).parent / "templates"
 templates_env = Environment(loader=FileSystemLoader(str(templates_dir)))
 
 
-def render_jinja_template(name: str, context: dict) -> str:
+def render_jinja_template(name: str, context: dict) -> Any:
     template = templates_env.get_template(name)
     return template.render(**context)
 
 
-def with_smtp_server(func):
+def with_smtp_server(func: Callable) -> Callable:
     """
     Lets a function use the SMTP server to send an email.
     # Injects a variable called `server` which holds the `SMTP_SSL` object
     """
 
-    def inner(*args, **kwargs):
+    def inner(*args: Any, **kwargs: Any) -> None:
         with smtplib.SMTP(config.SMTP_URL, config.SMTP_PORT) as server:
             # server.ehlo()
             # server.starttls(context=context)
@@ -39,7 +41,7 @@ def with_smtp_server(func):
 
 
 @with_smtp_server
-def send_verification_email(user: User, server: smtplib.SMTP | None = None):
+def send_verification_email(user: User, server: smtplib.SMTP | None = None) -> None:
     assert server is not None
 
     message = MIMEMultipart("alternative")

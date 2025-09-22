@@ -1,3 +1,5 @@
+from collections.abc import Generator
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import Session, SQLModel, create_engine
@@ -11,7 +13,7 @@ engine = create_engine(DATABASE_URL, echo=True)
 
 
 @pytest.fixture(scope="session", autouse=True)
-def prepare_database():
+def prepare_database() -> Generator[None, None, None]:
     """Create all tables at the start of the test session, drop them at the end."""
     SQLModel.metadata.create_all(engine)
     yield
@@ -19,7 +21,7 @@ def prepare_database():
 
 
 @pytest.fixture(scope="function")
-def test_db():
+def test_db() -> Generator[Session, None, None]:
     """Provide a fresh DB session for each test."""
     with Session(engine) as session:
         yield session
@@ -27,12 +29,12 @@ def test_db():
 
 
 @pytest.fixture(scope="function")
-def client(test_db):
+def client(test_db: Session) -> Generator[TestClient, None, None]:
     """
     Override FastAPI's get_session dependency to use the test session.
     """
 
-    def override_get_db():
+    def override_get_db() -> Generator[Session, None, None]:
         yield test_db
 
     app.dependency_overrides[get_session] = override_get_db

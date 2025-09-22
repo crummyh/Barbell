@@ -1,10 +1,10 @@
 from fastapi.testclient import TestClient
 from sqlmodel import Session, select
 
-from app.models.models import User
+from app.models.user import User
 
 
-def test_register(client: TestClient, test_db: Session):
+def test_register(client: TestClient, test_db: Session) -> None:
     data = {
         "username": "testUser",
         "email": "test@example.com",
@@ -22,7 +22,7 @@ def test_register(client: TestClient, test_db: Session):
     assert db_user.code
 
 
-def test_verify(client: TestClient, test_db: Session):
+def test_verify(client: TestClient, test_db: Session) -> None:
     code = test_db.exec(select(User).where(User.username == "testUser")).one().code
 
     data = {"code": code}
@@ -36,7 +36,7 @@ def test_verify(client: TestClient, test_db: Session):
     assert user.disabled is False
 
 
-def test_token(client: TestClient, test_db: Session):
+def test_token(client: TestClient, test_db: Session) -> None:
     resp = client.post(
         "/auth/v1/token",
         headers={"Content-Type": "application/x-www-form-urlencoded"},

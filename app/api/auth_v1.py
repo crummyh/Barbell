@@ -1,3 +1,4 @@
+# mypy: disable-error-code="truthy-bool, ignore-without-code"
 from datetime import timedelta
 from typing import Annotated
 
@@ -21,7 +22,7 @@ from app.core.dependencies import (
 from app.crud import team, user
 from app.database import get_session
 from app.models.team import Team, TeamCreate
-from app.models.user import User, UserCreate
+from app.models.user import User, UserCreate, UserPublic
 from app.services.email.email import send_verification_email
 
 router = APIRouter()
@@ -36,7 +37,7 @@ def login(
     response: Response,
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     session: Annotated[Session, Depends(get_session)],
-):
+) -> JSONResponse:
     user = authenticate_user(
         session=session, username=form_data.username, password=form_data.password
     )
@@ -46,6 +47,7 @@ def login(
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    assert user.role
     access_token_expires = timedelta(minutes=config.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={"sub": user.username, "role": user.role.name},
@@ -72,7 +74,7 @@ def login(
 )
 async def read_users_me(
     current_user: Annotated[User, Depends(get_current_active_user)],
-):
+) -> UserPublic:
     return current_user.get_public()
 
 
@@ -85,7 +87,7 @@ def register_user(
     new_user: UserCreate,
     background_tasks: BackgroundTasks,
     session: Annotated[Session, Depends(get_session)],
-):
+) -> dict[str, str]:
     try:
         session.exec(select(User).where(User.email == new_user.email)).one()
     except Exception:
@@ -121,7 +123,9 @@ def register_user(
     tags=["Auth"],
     dependencies=[Depends(RateLimiter(requests_limit=2, time_window=10))],
 )
-def verify_email_code(code: str, session: Annotated[Session, Depends(get_session)]):
+def verify_email_code(
+    code: str, session: Annotated[Session, Depends(get_session)]
+) -> dict[str, str]:
     try:
         db_user = session.exec(select(User).where(User.code == code)).one()
 
@@ -147,7 +151,7 @@ def verify_email_code(code: str, session: Annotated[Session, Depends(get_session
 )
 def register_team(
     team_create: TeamCreate, session: Annotated[Session, Depends(get_session)]
-):
+) -> dict[str, str]:
     try:
         session.exec(
             select(Team).where(Team.team_number == team_create.team_number)
@@ -158,6 +162,10 @@ def register_team(
         raise HTTPException(status_code=HTTP_409_CONFLICT, detail="Team already exists")
 
     new_team_leader = team.get_user_from_username(session, team_create.leader_username)
+
+    if new_team_leader is None:
+        raise HTTPException(status_code=404, detail="User does not exist")
+
     try:
         session.exec(select(Team).where(Team.leader_user == new_team_leader.id)).one()
     except Exception:
@@ -180,7 +188,7 @@ def register_team(
 
 
 @router.get("/logout", tags=["Auth"])
-def logout():
+def logout() -> RedirectResponse:
     response = RedirectResponse(url="/login")
     response.delete_cookie("access_token")
     return response
