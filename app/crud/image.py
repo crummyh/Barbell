@@ -7,7 +7,7 @@ from app.models.user import User
 
 
 def create(session: Session, image_create: ImageCreate, user: User) -> Image:
-    image = Image.model_validate(image_create)
+    image: Image = Image.model_validate(image_create)
     assert user.id
     image.created_by = user.id
     session.add(image)
@@ -17,14 +17,14 @@ def create(session: Session, image_create: ImageCreate, user: User) -> Image:
 
 
 def get(session: Session, id: UUID) -> Image | None:
-    image = session.get(Image, id)
+    image: Image | None = session.get(Image, id)
     return image
 
 
 def update(
     session: Session, id: UUID, image_update: ImageUpdate | dict
 ) -> Image | None:
-    image = session.get(Image, id)
+    image: Image | None = session.get(Image, id)
     if image is None:
         return None
 

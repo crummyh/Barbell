@@ -1,17 +1,40 @@
-$primary: #157a83;
-$teal: #157a83;
+$blue: #0d6efd;
+$indigo: #6610f2;
+$purple: #6f42c1;
+$pink: #d63384;
+$red: #ef4444;
+$orange: #f59e0b;
+$yellow: #ffc107;
+$green: #059669;
+$teal: #0d9488;
+$cyan: #0dcaf0;
+
+$primary: $green;
+$secondary: #374151;
+$success: $green;
+$info: $teal;
+$warning: $orange;
+$danger: $red;
+
+$body-bg: #ffffff;
+$body-secondary-bg: #f9fafb;
+$surface-tertiary-bg: #f3f4f6;
+
+$body-bg-dark: #1f2937;
+$body-secondary-bg-dark: #374151;
+$body-tertiary-bg-dark: #4b5563;
+
 $font-family-sans-serif:
-    Armata,
-    system-ui,
+    "Inter",
     -apple-system,
-    "Segoe UI",
-    Roboto,
-    "Helvetica Neue",
-    "Noto Sans",
-    "Liberation Sans",
-    Arial,
-    sans-serif,
-    "Apple Color Emoji",
-    "Segoe UI Emoji",
-    "Segoe UI Symbol",
-    "Noto Color Emoji";
+    BlinkMacSystemFont,
+    sans-serif;
+$font-family-monospace: "JetBrains Mono", "SF Mono", Monaco, monospace;
+
+$headings-font-family: "IBM Plex Sans", sans-serif;
+$headings-font-weight: 600;
+$body-font-weight: 400;
+
+$display-font-family: "IBM Plex Sans", sans-serif;
+$display-font-weight: 600;
+$display-line-height: 1.1;

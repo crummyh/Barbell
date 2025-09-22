@@ -6,6 +6,7 @@ from uuid import UUID, uuid4
 from sqlmodel import Field, Relationship, SQLModel
 
 from app.core import config
+from app.core.helpers import validated
 
 if TYPE_CHECKING:
     from app.models.user import User
@@ -38,7 +39,7 @@ class UploadBatch(BaseUploadBatch, table=True):
     user: "User" = Relationship(back_populates="upload_batches")
 
     def get_public(self) -> "UploadBatchPublic":
-        public = UploadBatchPublic.model_validate(self)
+        public = validated(UploadBatchPublic, self)
         public.username = self.user.username
         return public
 

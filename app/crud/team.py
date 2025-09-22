@@ -15,7 +15,7 @@ def create(session: Session, team_create: TeamCreate) -> Team:
 
 
 def get(session: Session, id: int) -> Team | None:
-    team = session.get(Team, id)
+    team: Team | None = session.get(Team, id)
     return team
 
 

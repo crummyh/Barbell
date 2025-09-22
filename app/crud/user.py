@@ -15,7 +15,7 @@ def create(session: Session, user_create: UserCreate) -> User:
 
 
 def get(session: Session, id: int) -> User | None:
-    user = session.get(User, id)
+    user: User | None = session.get(User, id)
     return user
 
 

@@ -11,6 +11,7 @@ import random
 import tarfile
 from datetime import datetime, timezone
 from io import BytesIO, TextIOWrapper
+from typing import Any, TypedDict
 from uuid import UUID
 
 from sqlmodel import Session, func, select
@@ -27,8 +28,46 @@ from app.services.buckets import (
     update_download_batch,
 )
 
+
+class COCOLicense(TypedDict):
+    url: str
+    id: int
+    name: str
+
+
+class COCOCategory(TypedDict):
+    supercategory: str | None
+    id: int
+    name: str
+
+
+class COCOImage(TypedDict):
+    id: int
+    license: int
+    width: int
+    hight: int
+    file_name: str
+    date_captured: str
+
+
+class COCOAnnotations(TypedDict):
+    id: int
+    category_id: int
+    iscrowd: bool
+    area: float
+    bbox: list[int]
+
+
+class COCOManifest(TypedDict):
+    info: dict[str, Any]
+    licenses: list[COCOLicense]
+    images: list[COCOImage]
+    annotations: list[COCOAnnotations]
+    categories: list[COCOCategory]
+
+
 # Define a base template for manifests
-BASE_COCO_MANIFEST = {
+BASE_COCO_MANIFEST: COCOManifest = {
     "info": {
         "description": "Barbell Open Dataset",
         "url": config.PROJECT_URL,
@@ -177,7 +216,7 @@ def create_download_batch(batch_id: UUID):
                 tar_info.size = manifest_obj.tell()
                 manifest_obj.seek(0)  # Rewind for reading
 
-                tar_info.mtime = datetime.now(timezone.utc).timestamp()
+                tar_info.mtime = datetime.now(timezone.utc).timestamp()  # type: ignore[assignment]
                 tar_info.mode = 0o644
 
                 archive.addfile(tarinfo=tar_info, fileobj=manifest_obj)

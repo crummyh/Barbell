@@ -26,7 +26,6 @@ from app.core.dependencies import (
 from app.crud import image, label_category, user
 from app.database import get_session
 from app.models.download_batch import (
-    DownloadBatch,
     DownloadBatchCreate,
     DownloadBatchPublic,
 )
@@ -44,7 +43,7 @@ from app.models.models import (
     RateLimitUpdate,
     image_response,
 )
-from app.models.upload_batch import UploadBatch, UploadBatchPublic
+from app.models.upload_batch import UploadBatchPublic
 from app.models.user import User, UserPublic, UserRole, UserUpdate
 from app.services import buckets
 
@@ -93,7 +92,7 @@ def update_image(
 ) -> ImagePublic | None:
     if remove_image:
         image.delete(session, id)
-        return
+        return None
 
     db_image = image.get(session, id)
     if not db_image:
@@ -121,7 +120,7 @@ def get_image_by_id(
 @subapp.post(
     "/token", dependencies=[Depends(RateLimiter(requests_limit=10, time_window=5))]
 )
-def redirect_token():
+def redirect_token() -> RedirectResponse:
     """
     Redirects requests from here to the main auth router
     """
@@ -142,6 +141,7 @@ def update_user(
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="User not found")
 
     try:
+        assert db_user.id
         user.update(session, db_user.id, user_update)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from None
@@ -191,7 +191,7 @@ def remove_label_super_category(
     id: int,
     session: Annotated[Session, Depends(get_session)],
     current_user: Annotated[User, Security(minimum_role(UserRole.MODERATOR))],
-):
+) -> dict[str, str]:
     try:
         if label_category.delete_super(session, id) is True:
             return {"detail": "Successfully deleted"}
@@ -211,7 +211,9 @@ def create_label_category(
     current_user: Annotated[User, Security(minimum_role(UserRole.MODERATOR))],
 ) -> LabelCategoryPublic:
     try:
-        return label_category.create(session, category).get_public()
+        new_cat = label_category.create(session, category).get_public()
+        assert isinstance(new_cat, LabelCategoryPublic)
+        return new_cat
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from None
 
@@ -221,7 +223,7 @@ def remove_label_category(
     id: int,
     session: Annotated[Session, Depends(get_session)],
     current_user: Annotated[User, Security(minimum_role(UserRole.MODERATOR))],
-):
+) -> dict[str, str]:
     try:
         if label_category.delete(session, id) is True:
             return {"detail": "Successfully deleted"}
@@ -256,9 +258,7 @@ def get_download_batch_history(
     session: Annotated[Session, Depends(get_session)],
     current_user: Annotated[User, Security(require_login)],
 ) -> list[DownloadBatchPublic] | None:
-    batches = session.exec(
-        select(DownloadBatch).where(DownloadBatch.user == current_user.id)
-    ).all()
+    batches = current_user.download_batches
     if len(batches) == 0:
         return None
 
@@ -270,9 +270,7 @@ def get_upload_batch_history(
     session: Annotated[Session, Depends(get_session)],
     current_user: Annotated[User, Security(require_login)],
 ) -> list[UploadBatchPublic] | None:
-    batches = session.exec(
-        select(UploadBatch).where(UploadBatch.user == current_user.id)
-    ).all()
+    batches = current_user.upload_batches
     if len(batches) == 0:
         return None
 
@@ -308,8 +306,11 @@ def download_redirect(
     background_tasks: BackgroundTasks,
     user: Annotated[User, Depends(require_login)],
     session: Annotated[Session, Depends(get_session)],
-):
-    request_download_batch(request, background_tasks, user, session)
+) -> DownloadBatchPublic:
+    result: DownloadBatchPublic = request_download_batch(
+        request, background_tasks, user, session
+    )
+    return result
 
 
 @subapp.post("/admin/rate-limit/update")
@@ -322,7 +323,9 @@ def update_rate_limit(
 
 
 @subapp.get("/admin/rate-limit")
-def get_rate_limit(user: Annotated[User, Depends(minimum_role(UserRole.ADMIN))]):
+def get_rate_limit(
+    user: Annotated[User, Depends(minimum_role(UserRole.ADMIN))],
+) -> dict:
     return rate_limit_config
 
 
@@ -331,5 +334,6 @@ async def test_upload(
     archive: UploadFile,
     hash: str,
     user: Annotated[User, Depends(require_login)],
-):
-    await test_upload_archive(archive, hash, user)
+) -> dict[str, str]:
+    result: dict[str, str] = await test_upload_archive(archive, hash, user)
+    return result

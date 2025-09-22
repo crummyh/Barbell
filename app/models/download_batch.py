@@ -3,12 +3,13 @@ from enum import Enum
 from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
+from pydantic import BaseModel
 from sqlmodel import JSON, Column, Field, Relationship, SQLModel
 
 from app.core import config
+from app.core.helpers import validated
 
 if TYPE_CHECKING:
-    from app.models.annotation import AnnotationSelection
     from app.models.user import User
 
 
@@ -19,6 +20,11 @@ class DownloadStatus(str, Enum):
     ADDING_MANIFEST = "adding_manifest"
     READY = "ready"
     FAILED = "failed"
+
+
+class AnnotationSelection(BaseModel):
+    id: int
+    super: bool
 
 
 class BaseDownloadBatch(SQLModel):
@@ -35,12 +41,12 @@ class DownloadBatch(BaseDownloadBatch, table=True):
     __tablename__ = "download_batches"  # type: ignore
 
     id: UUID | None = Field(default_factory=uuid4, primary_key=True)
-    user_id: int = Field(foreign_key="users.id")
+    user_id: int = Field(foreign_key="users.id", index=True)
 
     user: "User" = Relationship(back_populates="download_batches")
 
     def get_public(self) -> "DownloadBatchPublic":
-        public = DownloadBatchPublic.model_validate(self)
+        public = validated(DownloadBatchPublic, self)
         public.username = self.user.username
         return public
 

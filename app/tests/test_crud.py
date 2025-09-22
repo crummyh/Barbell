@@ -16,7 +16,7 @@ from app.crud.base import (
 from app.models.user import UserCreate, UserUpdate
 
 
-def test_crud_layers_protocol():
+def test_crud_layers_protocol() -> None:
     protocols = [
         annotation_crud,
         download_batch_crud,
@@ -112,7 +112,7 @@ def generic_test_crud(
 #         (Image, ImageCreate, image_crud, True, {}),
 #     ],
 # )
-def test_crud_cycle(session: Session):
+def test_crud_cycle(session: Session) -> None:
     generic_test_crud(
         user_crud,
         session,

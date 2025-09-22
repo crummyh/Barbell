@@ -2,6 +2,7 @@ import time
 from collections.abc import AsyncGenerator
 from datetime import datetime, timedelta, timezone
 from secrets import token_hex, token_urlsafe
+from types import FunctionType
 from typing import Annotated
 
 import jwt
@@ -99,7 +100,9 @@ def authenticate_user(
     return user
 
 
-def create_access_token(data: dict, expires_delta: timedelta = timedelta(minutes=15)):
+def create_access_token(
+    data: dict, expires_delta: timedelta = timedelta(minutes=15)
+) -> str:
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + expires_delta
     to_encode.update({"exp": expire})
@@ -140,7 +143,7 @@ def get_current_user(
 
 def get_current_active_user(
     current_user: Annotated[User, Depends(get_current_user)],
-):
+) -> User:
     if current_user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -154,7 +157,7 @@ def get_current_active_user(
 
 def require_login(
     current_user: Annotated[User, Depends(get_current_user)],
-):
+) -> User:
     if current_user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -164,14 +167,17 @@ def require_login(
     return current_user
 
 
-def require_role(*roles: UserRole):
-    def role_checker(user: User = Depends(get_current_active_user)):
+def require_role(*roles: UserRole) -> FunctionType:
+    def role_checker(user: User = Depends(get_current_active_user)) -> User:
         if user is None:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Could not validate credentials",
                 headers={"WWW-Authenticate": "Bearer"},
             )
+
+        assert user.role
+
         if user.role not in roles:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -182,14 +188,17 @@ def require_role(*roles: UserRole):
     return role_checker
 
 
-def minimum_role(role: UserRole):
-    def role_checker(user: User = Depends(get_current_active_user)):
+def minimum_role(role: UserRole) -> FunctionType:
+    def role_checker(user: User = Depends(get_current_active_user)) -> User:
         if user is None:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Could not validate credentials",
                 headers={"WWW-Authenticate": "Bearer"},
             )
+
+        assert user.role
+
         if user.role.value <= role.value:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -215,7 +224,7 @@ def generate_verification_code(
 
 request_counters = {}
 
-rate_limit_config = {}
+rate_limit_config: dict[str, int] = {}
 
 
 class RateLimiter:

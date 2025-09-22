@@ -210,4 +210,5 @@ app/web/static/js/
 app/web/static/css/
 app/web/static/assets/
 app/web/templates/docs/*.html
+!app/web/templates/docs/base.html
 app/web/templates/docs/*.yaml

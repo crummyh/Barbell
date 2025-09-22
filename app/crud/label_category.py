@@ -1,5 +1,6 @@
 from sqlmodel import Session
 
+from app.core.helpers import validated
 from app.models.label_category import (
     LabelCategory,
     LabelCategoryCreate,
@@ -16,9 +17,9 @@ def create(
     super: bool = False,
 ) -> LabelCategory | LabelSuperCategory:
     if super or isinstance(label_category_create, LabelSuperCategoryCreate):
-        label_category = LabelSuperCategory.model_validate(label_category_create)
+        label_category = validated(LabelSuperCategory, label_category_create)
     else:
-        label_category = LabelCategory.model_validate(label_category_create)
+        label_category = validated(LabelCategory, label_category_create)
     session.add(label_category)
     session.commit()
     session.refresh(label_category)
@@ -29,7 +30,9 @@ def create_super(
     session: Session,
     label_category_create: LabelSuperCategoryCreate | dict,
 ) -> LabelSuperCategory:
-    label_category = LabelSuperCategory.model_validate(label_category_create)
+    label_category: LabelSuperCategory = validated(
+        LabelSuperCategory, label_category_create
+    )
     session.add(label_category)
     session.commit()
     session.refresh(label_category)
@@ -39,15 +42,25 @@ def create_super(
 def get(
     session: Session, id: int, super: bool = False
 ) -> LabelCategory | LabelSuperCategory | None:
+    label_category = None
     if super:
-        label_category = session.get(LabelCategory, id)
+        label_category: LabelCategory | LabelSuperCategory | None = session.get(
+            LabelCategory, id
+        )
     else:
-        label_category = session.get(LabelSuperCategory, id)
+        label_category: LabelCategory | LabelSuperCategory | None = session.get(
+            LabelSuperCategory, id
+        )
+
     return label_category
 
 
 def get_super(session: Session, id: int) -> LabelSuperCategory | None:
     label_super_category = session.get(LabelSuperCategory, id)
+    assert (
+        isinstance(label_super_category, LabelSuperCategory)
+        or label_super_category is None
+    )
     return label_super_category
 
 

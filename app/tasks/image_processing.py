@@ -2,7 +2,7 @@ import tarfile
 from datetime import datetime, timezone
 from io import BytesIO
 from pathlib import Path
-from typing import BinaryIO
+from typing import IO, BinaryIO
 from uuid import UUID
 
 from PIL import Image as PIL_Image
@@ -17,7 +17,7 @@ from app.models.upload_batch import UploadBatch, UploadStatus
 from app.services.buckets import create_image, get_upload_batch
 
 
-async def process_batch_async(batch_id: UUID):
+async def process_batch_async(batch_id: UUID) -> None:
     with Session(engine) as session:
         batch = upload_batch.get(session, batch_id)  # Get the batch
         if not batch:
@@ -61,7 +61,7 @@ async def process_batch_async(batch_id: UUID):
                         # Validate the image and add it to the database
                         if validate_image(image):
                             image_entry = image_crud.create(
-                                session, ImageCreate(batch=batch_id), batch.user_id
+                                session, ImageCreate(batch=batch_id), batch.user
                             )
 
                             image = _force_image_format(image)
@@ -118,7 +118,7 @@ async def process_batch_async(batch_id: UUID):
             session.commit()
 
 
-def _force_image_format(image: BinaryIO) -> BytesIO:
+def _force_image_format(image: BinaryIO | IO[bytes]) -> BytesIO:
     with PIL_Image.open(image) as img:
         output = BytesIO()
         img.save(output, format=config.IMAGE_STORAGE_FORMAT)
@@ -126,11 +126,11 @@ def _force_image_format(image: BinaryIO) -> BytesIO:
         return output
 
 
-def validate_image(image_path: BinaryIO) -> bool:
+def validate_image(image_path: BinaryIO | IO[bytes]) -> bool:
     """Validate image meets requirements (640x640, etc.)"""
     try:
         with PIL_Image.open(image_path) as img:
-            return img.size == (640, 640)
+            return bool(img.size == (640, 640))
     except Exception:
         return False
 
@@ -157,4 +157,4 @@ def estimate_upload_processing_time(session: Session, batch_id: UUID) -> float:
     assert batch.start_time
     delta_time = (batch.start_time - datetime.now(timezone.utc)).total_seconds()
 
-    return delta_time / progress
+    return float(delta_time / progress)

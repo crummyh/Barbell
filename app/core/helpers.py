@@ -1,6 +1,6 @@
 import hashlib
 import json
-from typing import BinaryIO, TypeVar
+from typing import Any, BinaryIO, TypeVar
 from uuid import UUID
 
 from sqlmodel import SQLModel
@@ -21,7 +21,7 @@ def get_hash_with_streaming(file: BinaryIO, algorithm: str) -> str:
 
 
 class UUIDEncoder(json.JSONEncoder):
-    def default(self, o):
+    def default(self, o: Any) -> Any:
         if isinstance(o, UUID):
             # if the o is uuid, we return the value of uuid
             return o.hex
@@ -32,4 +32,4 @@ T = TypeVar("T", bound=SQLModel)
 
 
 def validated(model: type[T], obj: object) -> T:
-    return model.model_validate(obj)
+    return model.model_validate(obj)  # type: ignore[no-any-return]

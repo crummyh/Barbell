@@ -1,26 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="200"
-    height="80"
-    viewBox="0 0 52.917 21.167"
->
-    <path
-        d="M6.879 9.79h39.158v1.587H6.879z"
-        style="fill: #6c757d; stroke: none; stroke-width: 0.566"
-    />
-    <path
-        d="M3.175 3.175h3.704V1.588H1.587v17.991H6.88v-1.51H3.175ZM49.742 17.992h-3.704v1.587h5.291V1.587h-5.291v1.51h3.704z"
-        style="fill: #157a83; stroke: none; stroke-width: 0.287"
-    />
-    <text
-        x="15"
-        y="18"
-        style="
-            font-family: Armata, sans-serif;
-            font-size: 6px;
-            fill: currentColor;
-        "
-    >
-        Barbell
-    </text>
+   width="200"
+   height="80"
+   viewBox="0 0 52.917 21.167"
+   version="1.1"
+   id="svg8"
+   sodipodi:docname="logo_name.svg"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs12" />
+  <sodipodi:namedview
+     id="namedview10"
+     pagecolor="#ffffff"
+     bordercolor="#999999"
+     borderopacity="1"
+     inkscape:pageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     showgrid="false"
+     inkscape:zoom="6.63"
+     inkscape:cx="100"
+     inkscape:cy="39.969834"
+     inkscape:window-width="2202"
+     inkscape:window-height="1003"
+     inkscape:window-x="4"
+     inkscape:window-y="36"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg8" />
+  <path
+     d="M6.879 9.79h39.158v1.587H6.879z"
+     style="fill: #6c757d; stroke: none; stroke-width: 0.566"
+     id="path2" />
+  <path
+     d="M3.175 3.175h3.704V1.588H1.587v17.991H6.88v-1.51H3.175ZM49.742 17.992h-3.704v1.587h5.291V1.587h-5.291v1.51h3.704z"
+     style="fill: #059669; stroke: none; stroke-width: 0.287"
+     id="path4" />
+  <text
+     x="16.321827"
+     y="18"
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:6px;font-family:'IBM Plex Sans';-inkscape-font-specification:'IBM Plex Sans, @wght=600';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;font-variation-settings:'wght' 600;fill:currentColor"
+     id="text6">Barbell</text>
 </svg>
