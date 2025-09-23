@@ -129,7 +129,7 @@ def get_upload_batch_status(
 
 
 @router.post("/upload/test", tags=["Upload"])
-async def test_upload_archive(
+async def check_upload_archive(
     archive: UploadFile, hash: str, user: Annotated[User, Depends(handle_api_key)]
 ) -> dict[str, str]:
     if not tarfile.is_tarfile(archive.file):
@@ -188,7 +188,7 @@ async def upload(
     `capture_time`: The rough time that the data was gathered
     """
 
-    await test_upload_archive(archive, hash, user)
+    await check_upload_archive(archive, hash, user)
 
     try:
         assert user.id
@@ -296,17 +296,12 @@ def download_download_batch(
     dependencies=[Depends(RateLimiter(requests_limit=1, time_window=60))],
 )
 def rotate_api_key(
-    batch_id: UUID,
     user: Annotated[User, Depends(handle_api_key)],
     session: Annotated[Session, Depends(get_session)],
-) -> str | None:
-    try:
-        user.api_key = get_password_hash(generate_api_key())
-        session.add(user)
-    except Exception:
-        session.rollback()
-    else:
-        session.commit()
+) -> str:
+    key = generate_api_key()
+    user.api_key = get_password_hash(key)
+    session.add(user)
+    session.commit()
 
-    session.refresh(user)
-    return user.api_key
+    return key

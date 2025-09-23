@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 from sqlmodel import Session, select
 
-from app.models.user import User
+from app.models.user import User, UserPublic
 
 
 def test_register(client: TestClient, test_db: Session) -> None:
@@ -47,3 +47,17 @@ def test_token(client: TestClient, test_db: Session) -> None:
     access_cookie = resp.cookies.get("access_token")
 
     assert access_cookie
+    assert client.cookies.get("access_token")
+
+    user_resp = client.get("/auth/v1/users/me")
+    assert resp.status_code == 200
+
+    user_pub = UserPublic.model_validate(user_resp.json())
+    assert user_pub.username == "testUser"
+
+    logout_resp = client.get("/auth/v1/logout")
+    assert logout_resp.status_code == 200
+    assert logout_resp.cookies.get("access_token") is None
+
+    failing_resp = client.get("/auth/v1/users/me")
+    assert failing_resp.status_code != 200

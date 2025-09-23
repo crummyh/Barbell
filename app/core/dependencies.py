@@ -42,7 +42,7 @@ async def handle_api_key(
         )  # noqa: E712
         user = res.one()
 
-        if not pwd_context.verify(key, user.api_key):
+        if not pwd_context.verify(secret=key, hash=user.api_key):
             raise Exception("Invalid API key")
 
         yield user
