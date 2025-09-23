@@ -16,7 +16,6 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "black>=25.1.0",
     "mypy>=1.18.1",
     "pre-commit>=4.3.0",
     "pytest>=8.4.2",
@@ -29,16 +28,6 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["app"]
-
-[tool.black]
-line-length = 88
-target-version = ['py310']
-include = '\.pyi?$'
-extend-exclude = '''
-/(
-  migrations/
-)/
-'''
 
 [tool.ruff]
 target-version = "py310"

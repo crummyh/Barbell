@@ -42,15 +42,11 @@ def create_super(
 def get(
     session: Session, id: int, super: bool = False
 ) -> LabelCategory | LabelSuperCategory | None:
-    label_category = None
+    label_category: LabelCategory | LabelSuperCategory | None = None
     if super:
-        label_category: LabelCategory | LabelSuperCategory | None = session.get(
-            LabelCategory, id
-        )
+        label_category = session.get(LabelCategory, id)
     else:
-        label_category: LabelCategory | LabelSuperCategory | None = session.get(
-            LabelSuperCategory, id
-        )
+        label_category = session.get(LabelSuperCategory, id)
 
     return label_category
 

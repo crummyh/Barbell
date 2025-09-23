@@ -163,8 +163,10 @@ async def dashboard(
     if page_title is None:
         return not_found_page(request)
 
+    assert user.role
     template_name = f"dashboard/{user.role.name.lower()}/{page}.html"
     try:
+        assert user.role
         return templates.TemplateResponse(
             request=request,
             name=template_name,

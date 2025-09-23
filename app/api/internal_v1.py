@@ -76,7 +76,8 @@ def get_image_for_review(
     if not db_image:
         raise HTTPException(status_code=500, detail="No images found")
 
-    return db_image.get_public()
+    public_image: ImagePublic = db_image.get_public()
+    return public_image
 
 
 @subapp.put(
@@ -281,7 +282,7 @@ def get_upload_batch_history(
 def create_or_rotate_api_key(
     session: Annotated[Session, Depends(get_session)],
     current_user: Annotated[User, Security(require_login)],
-):
+) -> str:
     try:
         current_user.api_key = generate_api_key()
         return current_user.api_key

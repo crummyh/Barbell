@@ -7,7 +7,7 @@ from app.models.user import User, UserCreate, UserUpdate
 def create(session: Session, user_create: UserCreate) -> User:
     user_create.password = get_password_hash(user_create.password)
 
-    user = User.model_validate(user_create)
+    user: User = User.model_validate(user_create)
     session.add(user)
     session.commit()
     session.refresh(user)
@@ -20,12 +20,12 @@ def get(session: Session, id: int) -> User | None:
 
 
 def get_user_from_username(session: Session, username: str) -> User | None:
-    user = session.exec(select(User).where(User.username == username)).one()
+    user: User = session.exec(select(User).where(User.username == username)).one()
     return user
 
 
 def update(session: Session, id: int, user_update: UserUpdate | dict) -> User | None:
-    user = session.get(User, id)
+    user: User | None = session.get(User, id)
     if user is None:
         return None
 

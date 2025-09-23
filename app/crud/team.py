@@ -5,8 +5,10 @@ from app.models.team import Team, TeamCreate, TeamUpdate
 
 
 def create(session: Session, team_create: TeamCreate) -> Team:
-    team = Team.model_validate(team_create)
-    team.leader_user = get_user_from_username(session, team_create.leader_username).id
+    team: Team = Team.model_validate(team_create)
+    leader = get_user_from_username(session, team_create.leader_username)
+    assert leader
+    team.leader_user = leader.id
 
     session.add(team)
     session.commit()
@@ -20,12 +22,14 @@ def get(session: Session, id: int) -> Team | None:
 
 
 def get_from_number(session: Session, number: int) -> Team | None:
-    team = session.exec(select(Team).where(Team.team_number == number)).one()
+    team = session.exec(select(Team).where(Team.team_number == number)).one_or_none()
+
+    assert isinstance(team, Team) or team is None
     return team
 
 
 def update(session: Session, id: int, team_update: TeamUpdate | dict) -> Team | None:
-    team = session.get(Team, id)
+    team: Team | None = session.get(Team, id)
     if team is None:
         return None
 
@@ -37,6 +41,8 @@ def update(session: Session, id: int, team_update: TeamUpdate | dict) -> Team | 
     session.add(team)
     session.commit()
     session.refresh(team)
+
+    assert isinstance(team, Team) or team is None
     return team
 
 
