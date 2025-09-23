@@ -147,6 +147,7 @@ async def check_upload_archive(
             detail="Uploaded file is corrupted (hash mismatch) (Are you using sha256?)",
         )
 
+    archive.file.seek(0)
     with tarfile.open(fileobj=archive.file, mode="r:gz") as tar:
         image_files = [m for m in tar.getmembers() if m.isfile()]
 
@@ -209,12 +210,10 @@ async def upload(
             detail="There was an error adding the batch to the database. Sorry!",
         ) from None
 
-    async def upload_archive() -> None:
-        assert batch.id
-        create_upload_batch(archive.file, batch.id)
-        background_tasks.add_task(process_batch_async, batch_id=batch.id)
+    assert batch.id
+    create_upload_batch(archive.file, batch.id)
 
-    background_tasks.add_task(upload_archive)
+    background_tasks.add_task(process_batch_async, batch_id=batch.id)
 
     out = batch.get_public()
     out.estimated_time_left = config.DEFAULT_PROCESSING_TIME

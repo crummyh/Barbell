@@ -7,9 +7,9 @@ from app.models.user import User
 
 
 def create(session: Session, image_create: ImageCreate, user: User) -> Image:
-    image: Image = Image.model_validate(image_create)
-    assert user.id
-    image.created_by = user.id
+    data = image_create.model_dump()
+    data["created_by"] = user.id
+    image: Image = Image.model_validate(data)
     session.add(image)
     session.commit()
     session.refresh(image)

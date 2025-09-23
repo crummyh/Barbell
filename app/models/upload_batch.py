@@ -6,7 +6,6 @@ from uuid import UUID, uuid4
 from sqlmodel import Field, Relationship, SQLModel
 
 from app.core import config
-from app.core.helpers import validated
 
 if TYPE_CHECKING:
     from app.models.user import User
@@ -39,8 +38,10 @@ class UploadBatch(BaseUploadBatch, table=True):
     user: "User" = Relationship(back_populates="upload_batches")
 
     def get_public(self) -> "UploadBatchPublic":
-        public = validated(UploadBatchPublic, self)
-        public.username = self.user.username
+        data = self.model_dump()
+        data["username"] = self.user.username
+        data["estimated_time_left"] = None
+        public: UploadBatchPublic = UploadBatchPublic.model_validate(data)
         return public
 
 
@@ -65,4 +66,4 @@ class UploadBatchUpdate(SQLModel):
 class UploadBatchPublic(BaseUploadBatch):
     id: UUID
     username: str
-    estimated_time_left: float
+    estimated_time_left: float | None
