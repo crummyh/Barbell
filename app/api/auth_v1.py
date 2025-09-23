@@ -17,6 +17,7 @@ from app.core.dependencies import (
     RateLimiter,
     authenticate_user,
     create_access_token,
+    generate_verification_code,
     get_current_active_user,
 )
 from app.crud import team, user
@@ -47,7 +48,7 @@ def login(
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    assert user.role
+    assert user.role is not None
     access_token_expires = timedelta(minutes=config.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={"sub": user.username, "role": user.role.name},
@@ -113,9 +114,12 @@ def register_user(
         raise HTTPException(
             status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
         ) from None
-    else:
-        background_tasks.add_task(send_verification_email, db_user)
-        return {"detail": "Successfully registered"}
+
+    assert db_user.id
+    user.update(session, db_user.id, {"code": generate_verification_code(session)})
+
+    background_tasks.add_task(send_verification_email, db_user)
+    return {"detail": "Successfully registered"}
 
 
 @router.get(
