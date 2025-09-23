@@ -1,6 +1,5 @@
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
-from typing import Any
 
 import uvicorn
 from fastapi import FastAPI, HTTPException, Request
@@ -16,7 +15,7 @@ from app.services.monitoring import start_monitor
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncGenerator[Any, Any]:
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     init_db()
     buckets.init()
     start_monitor()

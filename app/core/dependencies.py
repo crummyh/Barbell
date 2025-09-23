@@ -1,8 +1,7 @@
 import time
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Callable
 from datetime import datetime, timedelta, timezone
 from secrets import token_hex, token_urlsafe
-from types import FunctionType
 from typing import Annotated
 
 import jwt
@@ -65,7 +64,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
 
 
 async def get_token_from_cookie(request: Request) -> str:
-    token = request.cookies.get("access_token")
+    token: str | None = request.cookies.get("access_token")
     if not token:
         raise HTTPException(status_code=401, detail="Not authenticated")
     return token
@@ -79,17 +78,21 @@ async def optional_auth(request: Request) -> str | None:
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+    value: bool = pwd_context.verify(plain_password, hashed_password)
+    return value
 
 
 def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password)
+    hash: str = pwd_context.hash(password)
+    return hash
 
 
 def authenticate_user(
     session: Annotated[Session, Depends(get_session)], username: str, password: str
 ) -> User | None:
-    user = session.exec(select(User).where(User.username == username)).one_or_none()
+    user: User | None = session.exec(
+        select(User).where(User.username == username)
+    ).one_or_none()
     if not user:
         user = session.exec(select(User).where(User.email == username)).one_or_none()
         if not user:
@@ -106,7 +109,7 @@ def create_access_token(
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + expires_delta
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(
+    encoded_jwt: str = jwt.encode(
         to_encode, config.JWT_SECRET_TOKEN, algorithm=config.SECURE_ALGORITHM
     )
     return encoded_jwt
@@ -132,7 +135,7 @@ def get_current_user(
     except InvalidTokenError:
         return None
 
-    user = session.exec(
+    user: User | None = session.exec(
         select(User).where(User.username == token_data.username)
     ).one_or_none()
     if user is None:
@@ -167,7 +170,7 @@ def require_login(
     return current_user
 
 
-def require_role(*roles: UserRole) -> FunctionType:
+def require_role(*roles: UserRole) -> Callable[[User], User]:
     def role_checker(user: User = Depends(get_current_active_user)) -> User:
         if user is None:
             raise HTTPException(
@@ -188,7 +191,7 @@ def require_role(*roles: UserRole) -> FunctionType:
     return role_checker
 
 
-def minimum_role(role: UserRole) -> FunctionType:
+def minimum_role(role: UserRole) -> Callable[[User], User]:
     def role_checker(user: User = Depends(get_current_active_user)) -> User:
         if user is None:
             raise HTTPException(
@@ -224,7 +227,7 @@ def generate_verification_code(
 
 request_counters = {}
 
-rate_limit_config: dict[str, int] = {}
+rate_limit_config: dict[str, dict[str, int]] = {}
 
 
 class RateLimiter:
@@ -232,7 +235,7 @@ class RateLimiter:
         self.default_requests = requests_limit
         self.default_window = time_window
 
-    async def __call__(self, request: Request):
+    async def __call__(self, request: Request) -> bool:
         assert request.client
         client_ip = request.client.host
         route_path = request.url.path  # full request path

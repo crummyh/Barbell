@@ -56,7 +56,7 @@ router = APIRouter()
 
 
 @router.get("/ping", tags=["Stats"])
-async def ping():
+async def ping() -> dict[str, str]:
     return {"ping": "pong!"}
 
 
@@ -131,7 +131,7 @@ def get_upload_batch_status(
 @router.post("/upload/test", tags=["Upload"])
 async def test_upload_archive(
     archive: UploadFile, hash: str, user: Annotated[User, Depends(handle_api_key)]
-):
+) -> dict[str, str]:
     if not tarfile.is_tarfile(archive.file):
         raise HTTPException(status_code=415, detail="File must be of type .tar.gz")
 
@@ -209,7 +209,7 @@ async def upload(
             detail="There was an error adding the batch to the database. Sorry!",
         ) from None
 
-    async def upload_archive():
+    async def upload_archive() -> None:
         assert batch.id
         create_upload_batch(archive.file, batch.id)
         background_tasks.add_task(process_batch_async, batch_id=batch.id)
@@ -249,7 +249,7 @@ def request_download_batch(
     background_tasks: BackgroundTasks,
     user: Annotated[User, Depends(handle_api_key)],
     session: Annotated[Session, Depends(get_session)],
-):
+) -> DownloadBatchPublic:
     try:
         batch = download_batch.create(session, request, user)
 
@@ -272,7 +272,7 @@ def download_download_batch(
     batch_id: UUID,
     user: Annotated[User, Depends(handle_api_key)],
     session: Annotated[Session, Depends(get_session)],
-):
+) -> StreamingResponse:
     batch = download_batch.get(session, batch_id)
     if batch is None:
         raise HTTPException(status_code=404, detail="Batch not found")
@@ -299,7 +299,7 @@ def rotate_api_key(
     batch_id: UUID,
     user: Annotated[User, Depends(handle_api_key)],
     session: Annotated[Session, Depends(get_session)],
-):
+) -> str | None:
     try:
         user.api_key = get_password_hash(generate_api_key())
         session.add(user)

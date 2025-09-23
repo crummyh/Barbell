@@ -14,6 +14,7 @@ from io import BytesIO, TextIOWrapper
 from typing import Any, TypedDict
 from uuid import UUID
 
+from sqlalchemy import ScalarResult
 from sqlmodel import Session, func, select
 
 from app.core import config
@@ -89,7 +90,7 @@ BASE_COCO_MANIFEST: COCOManifest = {
 }
 
 
-def create_download_batch(batch_id: UUID):
+def create_download_batch(batch_id: UUID) -> None:
     with Session(engine) as session:
         batch = download_batch.get(session, batch_id)
 
@@ -113,6 +114,7 @@ def create_download_batch(batch_id: UUID):
                             raise
 
                         for category in super_cat.sub_categories:
+                            assert category.id
                             manifest["categories"].append(
                                 {
                                     "supercategory": super_cat.name,
@@ -123,11 +125,12 @@ def create_download_batch(batch_id: UUID):
                             annotation_category_id_list.append(category.id)
                     else:
                         # The selection is not super, add it alone
-                        category = label_category.get(session, selection.id)
+                        category = label_category.get(session, selection.id)  # type: ignore[assignment]
                         if category is None or isinstance(category, LabelSuperCategory):
                             raise
 
                         if category.super_category:
+                            assert category.id
                             manifest["categories"].append(
                                 {
                                     "supercategory": category.super_category.name,
@@ -136,8 +139,13 @@ def create_download_batch(batch_id: UUID):
                                 }
                             )
                         else:
+                            assert category.id, category.name
                             manifest["categories"].append(
-                                {"id": category.id, "name": category.name}
+                                {
+                                    "supercategory": None,
+                                    "id": category.id,
+                                    "name": category.name,
+                                }
                             )
                         annotation_category_id_list.append(category.id)
 
@@ -152,6 +160,7 @@ def create_download_batch(batch_id: UUID):
             with tarfile.open(fileobj=archive_obj, mode="w:gz") as archive:
                 images = _get_random_images(session, batch.image_count)
                 for image in images:
+                    assert image.id
                     manifest["images"].append(
                         {
                             "id": image.id,
@@ -240,7 +249,7 @@ def create_download_batch(batch_id: UUID):
             raise
 
 
-def _get_random_images(session: Session, count: int):
+def _get_random_images(session: Session, count: int) -> ScalarResult[Image] | list:
     # First, get the total count
     total_images = session.exec(select(func.count()).select_from(Image)).one()
 
