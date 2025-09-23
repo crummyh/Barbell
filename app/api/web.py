@@ -1,3 +1,4 @@
+# mypy: disable-error-code="no-untyped-def"
 from functools import lru_cache
 from pathlib import Path
 from typing import Annotated, Any
@@ -10,7 +11,6 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from jinja2 import TemplateNotFound
 from sqlmodel import Session
-from starlette.templating import _TemplateResponse
 
 from app.core import config
 from app.core.dependencies import get_current_user
@@ -30,7 +30,7 @@ async def home(
     request: Request,
     session: Annotated[Session, Depends(get_session)],
     user: User | None = Depends(get_current_user),
-) -> _TemplateResponse:
+):
     if user is None:
         return templates.TemplateResponse(
             request=request,
@@ -52,7 +52,7 @@ async def login(
     request: Request,
     session: Annotated[Session, Depends(get_session)],
     user: User | None = Depends(get_current_user),
-) -> _TemplateResponse | RedirectResponse:
+):
     if user is None:
         return templates.TemplateResponse(
             request=request,
@@ -68,7 +68,7 @@ async def register(
     request: Request,
     session: Annotated[Session, Depends(get_session)],
     user: User | None = Depends(get_current_user),
-) -> _TemplateResponse | RedirectResponse:
+):
     if user is None:
         return templates.TemplateResponse(
             request=request,
@@ -85,7 +85,7 @@ async def verify(
     request: Request,
     session: Annotated[Session, Depends(get_session)],
     user: User | None = Depends(get_current_user),
-) -> _TemplateResponse | RedirectResponse:
+):
     if user is None:
         return templates.TemplateResponse(
             request=request,
@@ -101,7 +101,7 @@ async def about(
     request: Request,
     session: Annotated[Session, Depends(get_session)],
     user: User | None = Depends(get_current_user),
-) -> _TemplateResponse:
+):
     if user is None:
         return templates.TemplateResponse(
             request=request,
@@ -147,7 +147,7 @@ async def dashboard(
     session: Annotated[Session, Depends(get_session)],
     page: str = "home",
     user: User | None = Depends(get_current_user),
-) -> _TemplateResponse | RedirectResponse:
+):
     if user is None:
         return RedirectResponse("/login")
 
@@ -189,7 +189,7 @@ async def account(
     request: Request,
     session: Annotated[Session, Depends(get_session)],
     user: User | None = Depends(get_current_user),
-) -> _TemplateResponse | RedirectResponse:
+):
     if user is None:
         return RedirectResponse("/login")
 
@@ -224,7 +224,7 @@ async def docs(
     session: Annotated[Session, Depends(get_session)],
     page: str = "introduction",
     user: User | None = Depends(get_current_user),
-) -> _TemplateResponse | HTMLResponse:
+) -> HTMLResponse:
     user_out = None
     if user is not None:
         user_out = user.get_public()
@@ -275,7 +275,7 @@ async def docs(
 # ========== { Other } ========== #
 
 
-def not_found_page(request: Request) -> _TemplateResponse:
+def not_found_page(request: Request):
     return templates.TemplateResponse(
         request=request,
         name="404.html",

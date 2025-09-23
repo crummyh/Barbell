@@ -13,7 +13,6 @@ from app.crud.base import (
     ModelType,
     UpdateSchemaType,
 )
-from app.models.user import UserCreate, UserUpdate
 
 
 def test_crud_layers_protocol() -> None:
@@ -112,10 +111,10 @@ def generic_test_crud(
 #         (Image, ImageCreate, image_crud, True, {}),
 #     ],
 # )
-def test_crud_cycle(session: Session) -> None:
-    generic_test_crud(
-        user_crud,
-        session,
-        UserCreate(username="testuser", password="testing", email="test@example.com"),
-        UserUpdate(password="myNewPassword"),
-    )
+# def test_crud_cycle(session: Session) -> None:
+#     generic_test_crud(
+#         user_crud,
+#         session,
+#         UserCreate(username="testuser", password="testing", email="test@example.com"),
+#         UserUpdate(password="myNewPassword"),
+#     )

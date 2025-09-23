@@ -2,11 +2,13 @@ from collections.abc import Generator
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlmodel import Session, SQLModel, create_engine
+from sqlmodel import Session, SQLModel, create_engine, select
 
 from app.core.config import DATABASE_URL
+from app.core.dependencies import get_password_hash
 from app.database import get_session
 from app.main import app
+from app.models.user import User, UserCreate
 
 # Engine just for tests
 engine = create_engine(DATABASE_URL, echo=True)
@@ -41,3 +43,36 @@ def client(test_db: Session) -> Generator[TestClient, None, None]:
     with TestClient(app) as c:
         yield c
     app.dependency_overrides.clear()
+
+
+TEST_USER_API_KEY = "c8d5dbce53db68f911fdb00272de9067"
+
+
+@pytest.fixture(scope="function")
+def user(test_db: Session) -> Generator[User, None, None]:
+    user = test_db.exec(
+        select(User).where(User.username == "master_tester")
+    ).one_or_none()
+    if user is None:
+        user_create = UserCreate(
+            username="master_tester",
+            email="master@test.com",
+            password=get_password_hash("testing"),
+        )
+        user = User.model_validate(user_create)
+        user.disabled = False
+        test_db.add(user)
+        test_db.commit()
+        test_db.refresh(user)
+
+        user.api_key = get_password_hash(TEST_USER_API_KEY)
+        test_db.add(user)
+        test_db.commit()
+        test_db.refresh(user)
+
+    yield user
+
+
+@pytest.fixture(scope="function")
+def api_key() -> Generator[str, None, None]:
+    yield TEST_USER_API_KEY

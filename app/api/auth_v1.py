@@ -1,4 +1,3 @@
-# mypy: disable-error-code="truthy-bool, ignore-without-code"
 from datetime import timedelta
 from typing import Annotated
 
@@ -17,7 +16,10 @@ from app.core.dependencies import (
     RateLimiter,
     authenticate_user,
     create_access_token,
+    generate_api_key,
+    generate_verification_code,
     get_current_active_user,
+    get_password_hash,
 )
 from app.crud import team, user
 from app.database import get_session
@@ -47,7 +49,7 @@ def login(
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    assert user.role
+    assert user.role is not None
     access_token_expires = timedelta(minutes=config.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={"sub": user.username, "role": user.role.name},
@@ -113,9 +115,12 @@ def register_user(
         raise HTTPException(
             status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
         ) from None
-    else:
-        background_tasks.add_task(send_verification_email, db_user)
-        return {"detail": "Successfully registered"}
+
+    assert db_user.id
+    user.update(session, db_user.id, {"code": generate_verification_code(session)})
+
+    background_tasks.add_task(send_verification_email, db_user)
+    return {"detail": "Successfully registered"}
 
 
 @router.get(
@@ -192,3 +197,16 @@ def logout() -> RedirectResponse:
     response = RedirectResponse(url="/login")
     response.delete_cookie("access_token")
     return response
+
+
+@router.put("/rotate-key")
+def rotate_api_key(
+    current_user: Annotated[User, Depends(get_current_active_user)],
+    session: Annotated[Session, Depends(get_session)],
+) -> str:
+    key = generate_api_key()
+    current_user.api_key = get_password_hash(key)
+    session.add(user)
+    session.commit()
+
+    return key

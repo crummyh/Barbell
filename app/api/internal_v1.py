@@ -14,7 +14,7 @@ from fastapi.responses import RedirectResponse, StreamingResponse
 from sqlmodel import Session, asc, select
 from starlette.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
-from app.api.public_v1 import request_download_batch, test_upload_archive
+from app.api.public_v1 import check_upload_archive, request_download_batch
 from app.core.dependencies import (
     RateLimiter,
     generate_api_key,
@@ -336,5 +336,5 @@ async def test_upload(
     hash: str,
     user: Annotated[User, Depends(require_login)],
 ) -> dict[str, str]:
-    result: dict[str, str] = await test_upload_archive(archive, hash, user)
+    result: dict[str, str] = await check_upload_archive(archive, hash, user)
     return result

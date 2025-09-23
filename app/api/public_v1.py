@@ -129,7 +129,7 @@ def get_upload_batch_status(
 
 
 @router.post("/upload/test", tags=["Upload"])
-async def test_upload_archive(
+async def check_upload_archive(
     archive: UploadFile, hash: str, user: Annotated[User, Depends(handle_api_key)]
 ) -> dict[str, str]:
     if not tarfile.is_tarfile(archive.file):
@@ -147,6 +147,7 @@ async def test_upload_archive(
             detail="Uploaded file is corrupted (hash mismatch) (Are you using sha256?)",
         )
 
+    archive.file.seek(0)
     with tarfile.open(fileobj=archive.file, mode="r:gz") as tar:
         image_files = [m for m in tar.getmembers() if m.isfile()]
 
@@ -188,7 +189,7 @@ async def upload(
     `capture_time`: The rough time that the data was gathered
     """
 
-    await test_upload_archive(archive, hash, user)
+    await check_upload_archive(archive, hash, user)
 
     try:
         assert user.id
@@ -209,12 +210,10 @@ async def upload(
             detail="There was an error adding the batch to the database. Sorry!",
         ) from None
 
-    async def upload_archive() -> None:
-        assert batch.id
-        create_upload_batch(archive.file, batch.id)
-        background_tasks.add_task(process_batch_async, batch_id=batch.id)
+    assert batch.id
+    create_upload_batch(archive.file, batch.id)
 
-    background_tasks.add_task(upload_archive)
+    background_tasks.add_task(process_batch_async, batch_id=batch.id)
 
     out = batch.get_public()
     out.estimated_time_left = config.DEFAULT_PROCESSING_TIME
@@ -296,17 +295,12 @@ def download_download_batch(
     dependencies=[Depends(RateLimiter(requests_limit=1, time_window=60))],
 )
 def rotate_api_key(
-    batch_id: UUID,
     user: Annotated[User, Depends(handle_api_key)],
     session: Annotated[Session, Depends(get_session)],
-) -> str | None:
-    try:
-        user.api_key = get_password_hash(generate_api_key())
-        session.add(user)
-    except Exception:
-        session.rollback()
-    else:
-        session.commit()
+) -> str:
+    key = generate_api_key()
+    user.api_key = get_password_hash(key)
+    session.add(user)
+    session.commit()
 
-    session.refresh(user)
-    return user.api_key
+    return key

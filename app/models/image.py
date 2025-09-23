@@ -18,9 +18,6 @@ class ImageReviewStatus(str, Enum):
 
 
 class ImageBase(SQLModel):
-    created_at: datetime = Field(
-        index=True, default_factory=lambda: datetime.now(timezone.utc)
-    )
     created_by: int = Field(foreign_key="users.id", index=True)
     batch: UUID = Field(foreign_key="upload_batches.id")
     review_status: ImageReviewStatus = Field(
@@ -32,6 +29,9 @@ class Image(ImageBase, table=True):
     __tablename__ = "images"  # type: ignore
 
     id: UUID | None = Field(default_factory=uuid4, primary_key=True)
+    created_at: datetime | None = Field(
+        index=True, default_factory=lambda: datetime.now(timezone.utc)
+    )
 
     annotations: list["Annotation"] = Relationship(
         back_populates="image", sa_relationship_kwargs={"cascade": "all, delete-orphan"}
@@ -58,4 +58,5 @@ class ImageUpdate(SQLModel):
 
 class ImagePublic(ImageBase):
     id: UUID
+    created_at: datetime
     annotations: list["AnnotationPublic"]

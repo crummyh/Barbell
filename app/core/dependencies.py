@@ -1,5 +1,5 @@
 import time
-from collections.abc import AsyncGenerator, Callable
+from collections.abc import Callable
 from datetime import datetime, timedelta, timezone
 from secrets import token_hex, token_urlsafe
 from typing import Annotated
@@ -33,19 +33,19 @@ api_auth_scheme = APIKeyHeader(name="x-api-auth", auto_error=False)
 
 async def handle_api_key(
     db: SessionDep, token: str = Security(api_auth_scheme)
-) -> AsyncGenerator[User, None]:
+) -> User:
     try:
         username, key = token.split(":", 1)
 
         res = db.exec(
             select(User).where(User.username == username).where(User.disabled == False)  # noqa: E712
-        )  # noqa: E712
-        user = res.one()
+        )
+        user: User = res.one()
 
         if not pwd_context.verify(key, user.api_key):
             raise Exception("Invalid API key")
 
-        yield user
+        return user
 
     except Exception:
         raise HTTPException(
