@@ -14,12 +14,12 @@ from starlette.status import (
 from app.core import config
 from app.core.dependencies import (
     RateLimiter,
-    authenticate_user,
     create_access_token,
     generate_api_key,
     generate_verification_code,
-    get_current_active_user,
+    get_current_user,
     get_password_hash,
+    handle_raw_auth,
 )
 from app.crud import team, user
 from app.database import get_session
@@ -40,7 +40,7 @@ def login(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     session: Annotated[Session, Depends(get_session)],
 ) -> JSONResponse:
-    user = authenticate_user(
+    user = handle_raw_auth(
         session=session, username=form_data.username, password=form_data.password
     )
     if not user:
@@ -75,7 +75,7 @@ def login(
     dependencies=[Depends(RateLimiter(requests_limit=10, time_window=5))],
 )
 async def read_users_me(
-    current_user: Annotated[User, Depends(get_current_active_user)],
+    current_user: Annotated[User, Depends(get_current_user)],
 ) -> UserPublic:
     return current_user.get_public()
 
@@ -201,7 +201,7 @@ def logout() -> RedirectResponse:
 
 @router.put("/rotate-key")
 def rotate_api_key(
-    current_user: Annotated[User, Depends(get_current_active_user)],
+    current_user: Annotated[User, Depends(get_current_user)],
     session: Annotated[Session, Depends(get_session)],
 ) -> str:
     key = generate_api_key()

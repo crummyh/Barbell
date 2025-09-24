@@ -77,7 +77,7 @@ function copyID(numb, event) {
 window.copyID = copyID;
 
 async function getBatches() {
-  const response = await callBackend("/internal/download-batches/history/", {
+  const response = await callBackend("/api/v1/download-batches/history/", {
     method: "GET",
     credentials: "include",
   });
@@ -194,7 +194,7 @@ document.getElementById("confirmDownloadBtn").onclick = async function () {
     non_match_images: nonMatchImg,
   };
 
-  const response = await callBackend("/internal/download", {
+  const response = await callBackend("/api/v1/download", {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),

@@ -6,14 +6,13 @@ from typing import Annotated
 
 import jwt
 from fastapi import Depends, HTTPException, Request, Security, status
-from fastapi.security import APIKeyHeader, OAuth2PasswordBearer
+from fastapi.security import APIKeyHeader
 from jwt.exceptions import InvalidTokenError
 from passlib.context import CryptContext
-from sqlmodel import Session, select
+from sqlmodel import Session, or_, select
 
 from app.core import config
 from app.database import get_session
-from app.models.models import TokenData
 from app.models.user import User, UserRole
 
 # ==========={ Database }=========== #
@@ -24,82 +23,109 @@ SessionDep = Annotated[Session, Depends(get_session)]
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# ==========={ API Keys }=========== #
-
-# Combines a key and username:
-# {USERNAME}:{KEY}
-api_auth_scheme = APIKeyHeader(name="x-api-auth", auto_error=False)
-
-
-async def handle_api_key(
-    db: SessionDep, token: str = Security(api_auth_scheme)
-) -> User:
-    try:
-        username, key = token.split(":", 1)
-
-        res = db.exec(
-            select(User).where(User.username == username).where(User.disabled == False)  # noqa: E712
-        )
-        user: User = res.one()
-
-        if not pwd_context.verify(key, user.api_key):
-            raise Exception("Invalid API key")
-
-        return user
-
-    except Exception:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or missing API key",
-        ) from None
-
-
-def generate_api_key() -> str:
-    return token_hex(config.API_KEY_LEN)
-
-
-# ==========={ Passwords }=========== #
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
-
-
-async def get_token_from_cookie(request: Request) -> str:
-    token: str | None = request.cookies.get("access_token")
-    if not token:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    return token
-
-
-async def optional_auth(request: Request) -> str | None:
-    try:
-        return await get_token_from_cookie(request)
-    except HTTPException:
-        return None
-
-
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    value: bool = pwd_context.verify(plain_password, hashed_password)
-    return value
-
 
 def get_password_hash(password: str) -> str:
     hash: str = pwd_context.hash(password)
     return hash
 
 
-def authenticate_user(
-    session: Annotated[Session, Depends(get_session)], username: str, password: str
+# ==========={ API Keys }=========== #
+
+api_auth_scheme = APIKeyHeader(name="x-api-auth", auto_error=False)
+
+
+async def handle_api_key(
+    db: SessionDep, token: str | None = Security(api_auth_scheme)
 ) -> User | None:
-    user: User | None = session.exec(
-        select(User).where(User.username == username)
-    ).one_or_none()
-    if not user:
-        user = session.exec(select(User).where(User.email == username)).one_or_none()
-        if not user:
-            return None
-    assert user.password
-    if not verify_password(password, user.password):
+    if not token:
         return None
+
+    try:
+        parts = token.split(":", 1)
+        if len(parts) != 2:
+            return None
+
+        username, key = parts
+        if not username or not key:
+            return None
+
+        user: User | None = db.exec(
+            select(User).where(
+                User.username == username,
+                User.disabled == False,  # noqa: E712
+                User.api_key != None,  # noqa: E711
+            )
+        ).one_or_none()
+
+        if not user or not user.api_key:
+            return None
+
+        if not pwd_context.verify(key, user.api_key):
+            return None
+
+        return user
+
+    except Exception:
+        return None
+
+
+def generate_api_key() -> str:
+    return token_hex(config.API_KEY_LEN)
+
+
+# ==========={ JWT }=========== #
+
+
+async def handle_jwt(
+    request: Request,
+    session: SessionDep,
+) -> User | None:
+    token = request.cookies.get("access_token")
+    if not token:
+        return None
+
+    try:
+        payload = jwt.decode(
+            token, config.JWT_SECRET_TOKEN, algorithms=[config.SECURE_ALGORITHM]
+        )
+        username = payload.get("sub")
+        if not username:
+            return None
+
+        user: User | None = session.exec(
+            select(User).where(
+                User.username == username,
+                User.disabled == False,  # noqa: E712
+            )
+        ).one_or_none()
+
+        return user
+
+    except InvalidTokenError:
+        return None
+    except Exception:
+        return None
+
+
+def handle_raw_auth(session: SessionDep, username: str, password: str) -> User | None:
+    """Handle username/password authentication"""
+    if not username or not password:
+        return None
+
+    user: User | None = session.exec(
+        select(User).where(
+            or_(User.username == username, User.email == username),
+            User.disabled == False,  # noqa: E712
+            User.password != None,  # noqa: E711
+        )
+    ).one_or_none()
+
+    if not user or not user.password:
+        return None
+
+    if not pwd_context.verify(password, user.password):
+        return None
+
     return user
 
 
@@ -115,98 +141,108 @@ def create_access_token(
     return encoded_jwt
 
 
-def get_current_user(
-    token: Annotated[str | None, Depends(optional_auth)],
-    session: Annotated[Session, Depends(get_session)],
+# ==========={ Common }=========== #
+
+
+# Consider adding type hints for the Security dependencies
+async def get_current_user_optional(
+    db: SessionDep,
+    request: Request,
 ) -> User | None:
-    try:
-        if token is None:
-            raise InvalidTokenError()
+    """Try multiple authentication methods in order of preference"""
 
-        payload = jwt.decode(
-            token, config.JWT_SECRET_TOKEN, algorithms=[config.SECURE_ALGORITHM]
-        )
-        username = payload.get("sub")
-        if username is None:
-            return None
+    if api_user := await handle_api_key(db, request.headers.get("x-api-auth")):
+        return api_user
 
-        token_data = TokenData(username=username)
+    if jwt_user := await handle_jwt(request, db):
+        return jwt_user
 
-    except InvalidTokenError:
-        return None
+    return None
 
-    user: User | None = session.exec(
-        select(User).where(User.username == token_data.username)
-    ).one_or_none()
+
+async def get_current_user(
+    user: Annotated[User | None, Depends(get_current_user_optional)],
+) -> User:
     if user is None:
-        return None
-
+        raise HTTPException(
+            status_code=401,
+            detail="Authentication required. Use API key or login session.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     return user
 
 
-def get_current_active_user(
-    current_user: Annotated[User, Depends(get_current_user)],
-) -> User:
-    if current_user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    if current_user.disabled:
-        raise HTTPException(status_code=400, detail="Inactive user")
-    return current_user
+# ==========={ Additional Utilities }=========== #
 
 
-def require_login(
-    current_user: Annotated[User, Depends(get_current_user)],
+async def get_api_user_only(
+    db: SessionDep, token: str = Security(api_auth_scheme)
 ) -> User:
-    if current_user is None:
+    user = await handle_api_key(db, token)
+    if not user:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-            headers={"WWW-Authenticate": "Bearer"},
+            status_code=401,
+            detail="Valid API key required",
+            headers={"WWW-Authenticate": "ApiKey"},
         )
-    return current_user
+    return user
+
+
+async def get_web_user_only_optional(
+    request: Request,
+    session: SessionDep,
+) -> User | None:
+    user = await handle_jwt(request, session)
+    return user
+
+
+async def get_web_user_only(
+    request: Request,
+    session: SessionDep,
+) -> User:
+    user = await handle_jwt(request, session)
+    if not user:
+        raise HTTPException(
+            status_code=401,
+            detail="Please log in to continue",
+        )
+    return user
 
 
 def require_role(*roles: UserRole) -> Callable[[User], User]:
-    def role_checker(user: User = Depends(get_current_active_user)) -> User:
-        if user is None:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Could not validate credentials",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-
-        assert user.role
-
-        if user.role not in roles:
+    def role_checker(user: User = Depends(get_current_user)) -> User:
+        if not user.role:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Requires role: {[i.name for i in roles]}, but you have: {user.role.name}",
+                detail="User role not assigned",
             )
+
+        if user.role not in roles:
+            role_names = [role.name for role in roles]
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Access denied. Required role(s): {', '.join(role_names)}. Your role: {user.role.name}",
+            )
+
         return user
 
     return role_checker
 
 
-def minimum_role(role: UserRole) -> Callable[[User], User]:
-    def role_checker(user: User = Depends(get_current_active_user)) -> User:
-        if user is None:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Could not validate credentials",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-
-        assert user.role
-
-        if user.role.value <= role.value:
+def minimum_role(min_role: UserRole) -> Callable[[User], User]:
+    def role_checker(user: User = Depends(get_current_user)) -> User:
+        if not user.role:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Requires role: {role.name} or greater, but you have: {user.role.name}",
+                detail="User role not assigned",
             )
+
+        if user.role.value < min_role.value:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Access denied. Required role: {min_role.name} or higher. Your role: {user.role.name}",
+            )
+
         return user
 
     return role_checker

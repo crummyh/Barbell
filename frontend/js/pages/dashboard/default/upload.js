@@ -5,7 +5,7 @@ import * as bootstrap from "bootstrap";
 import { callBackend } from "../base";
 
 async function getBatches() {
-  const response = await callBackend("/internal/upload-batches/history/", {
+  const response = await callBackend("/api/v1/upload-batches/history/", {
     method: "GET",
   });
 

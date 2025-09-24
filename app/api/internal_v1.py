@@ -18,9 +18,9 @@ from app.api.public_v1 import check_upload_archive, request_download_batch
 from app.core.dependencies import (
     RateLimiter,
     generate_api_key,
+    get_current_user,
     minimum_role,
     rate_limit_config,
-    require_login,
     require_role,
 )
 from app.crud import image, label_category, user
@@ -165,7 +165,7 @@ def create_label_super_category(
 @subapp.get("/categories/super")
 def get_label_super_categories(
     session: Annotated[Session, Depends(get_session)],
-    current_user: Annotated[User, Security(require_login)],
+    current_user: Annotated[User, Security(get_current_user)],
 ) -> list[LabelSuperCategoryPublic]:
     return [i.get_public() for i in session.exec(select(LabelSuperCategory)).all()]
 
@@ -257,7 +257,7 @@ def modify_label_category(
 @subapp.get("/download-batches/history")
 def get_download_batch_history(
     session: Annotated[Session, Depends(get_session)],
-    current_user: Annotated[User, Security(require_login)],
+    current_user: Annotated[User, Security(get_current_user)],
 ) -> list[DownloadBatchPublic] | None:
     batches = current_user.download_batches
     if len(batches) == 0:
@@ -269,7 +269,7 @@ def get_download_batch_history(
 @subapp.get("/upload-batches/history")
 def get_upload_batch_history(
     session: Annotated[Session, Depends(get_session)],
-    current_user: Annotated[User, Security(require_login)],
+    current_user: Annotated[User, Security(get_current_user)],
 ) -> list[UploadBatchPublic] | None:
     batches = current_user.upload_batches
     if len(batches) == 0:
@@ -281,7 +281,7 @@ def get_upload_batch_history(
 @subapp.put("/api-key")
 def create_or_rotate_api_key(
     session: Annotated[Session, Depends(get_session)],
-    current_user: Annotated[User, Security(require_login)],
+    current_user: Annotated[User, Security(get_current_user)],
 ) -> str:
     try:
         current_user.api_key = generate_api_key()
@@ -296,7 +296,7 @@ def create_or_rotate_api_key(
 @subapp.get("/api-key")
 def get_api_key(
     session: Annotated[Session, Depends(get_session)],
-    current_user: Annotated[User, Security(require_login)],
+    current_user: Annotated[User, Security(get_current_user)],
 ) -> str | None:
     return current_user.api_key
 
@@ -305,7 +305,7 @@ def get_api_key(
 def download_redirect(
     request: DownloadBatchCreate,
     background_tasks: BackgroundTasks,
-    user: Annotated[User, Depends(require_login)],
+    user: Annotated[User, Depends(get_current_user)],
     session: Annotated[Session, Depends(get_session)],
 ) -> DownloadBatchPublic:
     result: DownloadBatchPublic = request_download_batch(
@@ -334,7 +334,7 @@ def get_rate_limit(
 async def test_upload(
     archive: UploadFile,
     hash: str,
-    user: Annotated[User, Depends(require_login)],
+    user: Annotated[User, Depends(get_current_user)],
 ) -> dict[str, str]:
     result: dict[str, str] = await check_upload_archive(archive, hash, user)
     return result

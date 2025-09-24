@@ -13,7 +13,7 @@ from jinja2 import TemplateNotFound
 from sqlmodel import Session
 
 from app.core import config
-from app.core.dependencies import get_current_user
+from app.core.dependencies import get_web_user_only_optional
 from app.database import get_session
 from app.models.user import User, UserRole
 
@@ -29,7 +29,7 @@ templates = Jinja2Templates(str(Path(BASE_DIR, config.TEMPLATES_PATH)))
 async def home(
     request: Request,
     session: Annotated[Session, Depends(get_session)],
-    user: User | None = Depends(get_current_user),
+    user: User | None = Depends(get_web_user_only_optional),
 ):
     if user is None:
         return templates.TemplateResponse(
@@ -51,7 +51,7 @@ async def home(
 async def login(
     request: Request,
     session: Annotated[Session, Depends(get_session)],
-    user: User | None = Depends(get_current_user),
+    user: User | None = Depends(get_web_user_only_optional),
 ):
     if user is None:
         return templates.TemplateResponse(
@@ -67,7 +67,7 @@ async def login(
 async def register(
     request: Request,
     session: Annotated[Session, Depends(get_session)],
-    user: User | None = Depends(get_current_user),
+    user: User | None = Depends(get_web_user_only_optional),
 ):
     if user is None:
         return templates.TemplateResponse(
@@ -84,7 +84,7 @@ async def verify(
     code: str,
     request: Request,
     session: Annotated[Session, Depends(get_session)],
-    user: User | None = Depends(get_current_user),
+    user: User | None = Depends(get_web_user_only_optional),
 ):
     if user is None:
         return templates.TemplateResponse(
@@ -100,7 +100,7 @@ async def verify(
 async def about(
     request: Request,
     session: Annotated[Session, Depends(get_session)],
-    user: User | None = Depends(get_current_user),
+    user: User | None = Depends(get_web_user_only_optional),
 ):
     if user is None:
         return templates.TemplateResponse(
@@ -146,7 +146,7 @@ async def dashboard(
     request: Request,
     session: Annotated[Session, Depends(get_session)],
     page: str = "home",
-    user: User | None = Depends(get_current_user),
+    user: User | None = Depends(get_web_user_only_optional),
 ):
     if user is None:
         return RedirectResponse("/login")
@@ -163,10 +163,10 @@ async def dashboard(
     if page_title is None:
         return not_found_page(request)
 
-    assert user.role
+    assert user.role is not None
     template_name = f"dashboard/{user.role.name.lower()}/{page}.html"
     try:
-        assert user.role
+        assert user.role is not None
         return templates.TemplateResponse(
             request=request,
             name=template_name,
@@ -188,7 +188,7 @@ async def dashboard(
 async def account(
     request: Request,
     session: Annotated[Session, Depends(get_session)],
-    user: User | None = Depends(get_current_user),
+    user: User | None = Depends(get_web_user_only_optional),
 ):
     if user is None:
         return RedirectResponse("/login")
@@ -223,7 +223,7 @@ async def docs(
     request: Request,
     session: Annotated[Session, Depends(get_session)],
     page: str = "introduction",
-    user: User | None = Depends(get_current_user),
+    user: User | None = Depends(get_web_user_only_optional),
 ) -> HTMLResponse:
     user_out = None
     if user is not None:
@@ -275,10 +275,17 @@ async def docs(
 # ========== { Other } ========== #
 
 
-def not_found_page(request: Request):
+def not_found_page(
+    request: Request, user: User | None = Depends(get_web_user_only_optional)
+):
+    if user is not None:
+        user_pub = user.get_public()
+    else:
+        user_pub = None
+
     return templates.TemplateResponse(
         request=request,
         name="404.html",
-        context={"user": None, "debug": config.DEBUG, "page": "404"},
+        context={"user": user_pub, "debug": config.DEBUG, "page": "404"},
         status_code=404,
     )
