@@ -5,6 +5,9 @@ An *open* dataset allowing <abbr title="FIRST Robotics Competition">FRC</abbr> t
 > [!WARNING]
 > This project is in ***pre-alpha*** as of June 24, 2025. Everything is still at the "it works on my machine" point, except it doesn't even work for me! :sweat_smile:
 
+> [!NOTE]
+> I don't quite have time in my schedule to work on this right now. The project is ***not*** abandoned, and I will come back to it in 2026
+
 ![Static Badge](https://img.shields.io/badge/Licence-MIT-blue?style=for-the-badge)
 ![Static Badge](https://img.shields.io/badge/FastAPI-%23009485?style=for-the-badge&logo=fastapi&logoColor=%23ffffff)
 
@@ -14,7 +17,7 @@ See [issues](https://github.com/crummyh/Barbell/issues)
 
 ## Developing
 
-If you are interested in helping, read this then take a look at [issues](https://github.com/crummyh/Barbell/issues) to see what I am working on.
+If you are interested in helping, read this, then take a look at [issues](https://github.com/crummyh/Barbell/issues) to see what I am working on.
 
 ### Libraries Used
 
