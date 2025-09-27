@@ -7,7 +7,8 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.templating import _TemplateResponse
 
-from app.api import api_v1, auth_v1, web
+from app.api import auth_v1, web
+from app.api.v1 import router
 from app.core import config
 from app.database import init_db
 from app.services import buckets
@@ -79,7 +80,7 @@ app.debug = config.DEBUG
 
 app.mount("/static", StaticFiles(directory="app/web/static"), name="static")
 app.include_router(web.router, include_in_schema=False)
-app.include_router(api_v1.router, prefix="/api/v1")
+app.include_router(router.router, prefix="/api/v1")
 app.include_router(auth_v1.router, prefix="/auth/v1")
 
 
