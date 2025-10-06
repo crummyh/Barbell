@@ -38,7 +38,7 @@ router = APIRouter()
 
 
 @router.get(
-    "/upload/status/{batch_id}",
+    "/status/{batch_id}",
     tags=["Upload"],
     dependencies=[Depends(RateLimiter(requests_limit=30, time_window=10))],
 )
@@ -57,7 +57,7 @@ def get_upload_batch_status(
     return out
 
 
-@router.post("/upload/test", tags=["Upload"])
+@router.post("/test", tags=["Upload"])
 async def check_upload_archive(
     archive: UploadFile, hash: str, user: Annotated[User, Depends(get_current_user)]
 ) -> dict[str, str]:
@@ -96,7 +96,7 @@ async def check_upload_archive(
 
 
 @router.post(
-    "/upload",
+    "",
     tags=["Upload"],
     dependencies=[Depends(RateLimiter(requests_limit=2, time_window=60))],
 )
@@ -149,7 +149,7 @@ async def upload(
     return out
 
 
-@router.get("/upload-batches/history")
+@router.get("/history")
 def get_upload_batch_history(
     session: SessionDep,
     current_user: Annotated[User, Security(get_current_user)],

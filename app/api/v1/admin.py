@@ -17,8 +17,8 @@ from app.models.user import User, UserRole
 router = APIRouter()
 
 
-@router.post("/admin/rate-limit/update")
-def update_rate_limit(
+@router.post("/rate-limiting")
+def update_rate_limiting_config(
     cfg: RateLimitUpdate, user: Annotated[User, Depends(minimum_role(UserRole.ADMIN))]
 ) -> dict:
     rate_limit_config[cfg.route]["requests_limit"] = cfg.requests_limit
@@ -26,8 +26,8 @@ def update_rate_limit(
     return {"message": "Rate limit updated", "config": rate_limit_config}
 
 
-@router.get("/admin/rate-limit")
-def get_rate_limit(
+@router.get("/rate-limiting")
+def get_rate_limiting_config(
     user: Annotated[User, Depends(minimum_role(UserRole.ADMIN))],
 ) -> dict:
     return rate_limit_config

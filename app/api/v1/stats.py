@@ -33,7 +33,7 @@ async def ping() -> dict[str, str]:
 
 
 @router.get(
-    "/stats",
+    "",
     tags=["Stats"],
     dependencies=[Depends(RateLimiter(requests_limit=20, time_window=10))],
 )
@@ -58,7 +58,7 @@ def get_stats(session: SessionDep) -> StatsOut:
     return out
 
 
-@router.get("/stats/labels", tags=["Stats"])
+@router.get("/labels", tags=["Stats"])
 def get_label_info(
     session: SessionDep,
 ) -> list[LabelSuperCategoryPublic]:

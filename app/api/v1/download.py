@@ -32,7 +32,7 @@ router = APIRouter()
 
 
 @router.get(
-    "/download/status/{batch_id}",
+    "/status/{batch_id}",
     tags=["Download"],
     dependencies=[Depends(RateLimiter(requests_limit=30, time_window=10))],
 )
@@ -50,7 +50,7 @@ def get_download_batch_status(
 
 
 @router.put(
-    "/download/request",
+    "/request",
     tags=["Download"],
     dependencies=[Depends(RateLimiter(requests_limit=2, time_window=60))],
 )
@@ -74,7 +74,7 @@ def request_download_batch(
 
 
 @router.put(
-    "/download/get/{batch_id}",
+    "/get/{batch_id}",
     tags=["Download"],
     dependencies=[Depends(RateLimiter(requests_limit=2, time_window=60))],
 )
@@ -97,7 +97,7 @@ def download_download_batch(
     )
 
 
-@router.get("/download-batches/history")
+@router.get("/history")
 def get_download_batch_history(
     session: SessionDep,
     current_user: Annotated[User, Security(get_current_user)],

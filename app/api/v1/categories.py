@@ -30,7 +30,7 @@ from app.models.user import User, UserRole
 router = APIRouter()
 
 
-@router.post("/categories/super/create")
+@router.post("/super")
 def create_label_super_category(
     category: LabelSuperCategoryCreate,
     session: SessionDep,
@@ -42,7 +42,7 @@ def create_label_super_category(
         raise HTTPException(status_code=500, detail=str(e)) from None
 
 
-@router.get("/categories/super")
+@router.get("/super")
 def get_label_super_categories(
     session: SessionDep,
     current_user: Annotated[User, Security(get_current_user)],
@@ -50,7 +50,7 @@ def get_label_super_categories(
     return [i.get_public() for i in session.exec(select(LabelSuperCategory)).all()]
 
 
-@router.put("/categories/super/update")
+@router.put("/super")
 def modify_label_super_category(
     id: int,
     update: LabelSuperCategoryUpdate,
@@ -67,7 +67,7 @@ def modify_label_super_category(
     return public_label.get_public()
 
 
-@router.delete("/categories/super/remove")
+@router.delete("/super")
 def remove_label_super_category(
     id: int,
     session: SessionDep,
@@ -85,7 +85,7 @@ def remove_label_super_category(
         raise HTTPException(status_code=500, detail=str(e)) from None
 
 
-@router.post("/categories/create")
+@router.post()
 def create_label_category(
     category: LabelCategoryCreate,
     session: SessionDep,
@@ -99,7 +99,7 @@ def create_label_category(
         raise HTTPException(status_code=500, detail=str(e)) from None
 
 
-@router.delete("/categories/remove")
+@router.delete()
 def remove_label_category(
     id: int,
     session: SessionDep,
@@ -117,7 +117,7 @@ def remove_label_category(
         raise HTTPException(status_code=500, detail=str(e)) from None
 
 
-@router.put("/categories/update")
+@router.put()
 def modify_label_category(
     id: int,
     update: LabelCategoryUpdate,
