@@ -15,7 +15,8 @@
     "iscrowd",
     "iconify",
     "Treeview",
-    "uvicorn"
+    "uvicorn",
+    "mdsvex"
   ],
   "flagWords": []
 }

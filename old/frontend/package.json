@@ -1,0 +1,29 @@
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build",
+    "build-email": "npx mjml email_templates/*.mjml -o ../app/services/email/templates",
+    "build-all": "npm run build && npm run build-email",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "bootstrap": "^5.3.7",
+    "highlight.js": "^11.11.1",
+    "iconify-icon": "^3.0.0",
+    "mjml": "^4.7.1",
+    "quercus.js": "^0.4.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "sass": "^1.91.0",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.3"
+  }
+}
