@@ -1,0 +1,3 @@
+const docsLayout = () => {
+	return;
+};

@@ -17,22 +17,19 @@ from app.core.dependencies import (
     RateLimiter,
     SessionDep,
     minimum_role,
-    require_role,
 )
-from app.crud import image, user
+from app.crud import image
 from app.models.image import Image, ImagePublic, ImageReviewStatus, ImageUpdate
 from app.models.models import (
     image_response,
 )
-from app.models.user import User, UserPublic, UserRole, UserUpdate
+from app.models.user import User, UserRole
 from app.services import buckets
 
 router = APIRouter()
 
 
-@router.get(
-    "", dependencies=[Depends(RateLimiter(requests_limit=5, time_window=5))]
-)
+@router.get("", dependencies=[Depends(RateLimiter(requests_limit=5, time_window=5))])
 def get_image_for_review(
     current_user: Annotated[User, Security(minimum_role(UserRole.MODERATOR))],
     session: SessionDep,

@@ -30,6 +30,7 @@ def create_or_rotate_api_key(
             status_code=500, detail="Failed to change API key"
         ) from None
 
+
 @router.put(
     "/user/update", dependencies=[Depends(RateLimiter(requests_limit=5, time_window=5))]
 )

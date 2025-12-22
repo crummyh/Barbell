@@ -1,4 +1,37 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap');
+
 @import 'tailwindcss';
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
 @plugin '@iconify/tailwind4';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+	--font-sans: 'Inter', sans-serif;
+	--font-mono: 'JetBrains Mono', monospace;
+
+	--color-primary-50: #e6f7f8;
+	--color-primary-100: #cceff1;
+	--color-primary-200: #99dfe3;
+	--color-primary-300: #66cfd5;
+	--color-primary-400: #33bfc7;
+	--color-primary-500: #007a85;
+	--color-primary-600: #00626a;
+	--color-primary-700: #004950;
+	--color-primary-800: #003135;
+	--color-primary-900: #00181b;
+	--color-primary-950: #000c0d;
+
+	--color-accent-50: #fef3f2;
+	--color-accent-100: #fee5e2;
+	--color-accent-200: #fecfc9;
+	--color-accent-300: #fcaea4;
+	--color-accent-400: #f87f6f;
+	--color-accent-500: #f05943;
+	--color-accent-600: #dd3b23;
+	--color-accent-700: #ba2f19;
+	--color-accent-800: #9a2b19;
+	--color-accent-900: #80291c;
+	--color-accent-950: #461209;
+}

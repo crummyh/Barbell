@@ -17,6 +17,7 @@
 		"@eslint/compat": "^1.4.0",
 		"@eslint/js": "^9.39.1",
 		"@iconify-json/material-symbols": "^1.2.50",
+		"@iconify-json/simple-icons": "^1.2.63",
 		"@iconify/tailwind4": "^1.2.0",
 		"@sveltejs/adapter-auto": "^7.0.0",
 		"@sveltejs/kit": "^2.49.1",
