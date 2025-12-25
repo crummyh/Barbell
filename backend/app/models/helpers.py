@@ -4,4 +4,4 @@ T = TypeVar("T")
 
 
 def validated(model: type[T], obj: object) -> T:
-    return model.model_validate(obj)  # type: ignore
+    return model.model_validate(obj)  # type: ignore  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType, reportAttributeAccessIssue]

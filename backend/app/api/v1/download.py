@@ -73,7 +73,7 @@ def request_download_batch(
     return batch.get_public()
 
 
-@router.put(
+@router.get(
     "/get/{batch_id}",
     tags=["Download"],
     dependencies=[Depends(RateLimiter(requests_limit=2, time_window=60))],

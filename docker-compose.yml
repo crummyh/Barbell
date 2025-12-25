@@ -1,16 +1,16 @@
 services:
   web:
     build:
-      context: .
-      dockerfile: backend.Dockerfile
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: barbell-backend
     ports:
       - "8000:8000"
     depends_on:
       - db
     env_file:
-      - .env
-      - .env.db
+      - ./backend/.env
+      - ./backend/.env.db
     environment:
       - DATABASE_URL=postgresql+psycopg2://myuser:mypassword@db:5432/myappdb
       - DEBUG=true
@@ -20,13 +20,13 @@ services:
 
   test:
     build:
-      context: .
-      dockerfile: backend.Dockerfile
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: barbell-tests
     depends_on:
       - test-db
     env_file:
-      - .env.db
+      - ./backend/.env.db
     environment:
       - DATABASE_URL=postgresql+psycopg2://test_user:test_password@test-db:5432/test_db
       - DEBUG=true
@@ -42,7 +42,7 @@ services:
   frontend:
     build:
       context: ./frontend
-      dockerfile: frontend.Dockerfile
+      dockerfile: Dockerfile
     container_name: barbell-frontend
     working_dir: /frontend
     volumes:
@@ -58,7 +58,7 @@ services:
     container_name: postgres-db
     restart: always
     env_file:
-      - .env.db
+      - ./backend/.env.db
     ports:
       - "5432:5432"
     volumes:

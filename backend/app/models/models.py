@@ -24,7 +24,6 @@ class StatsOut(BaseModel):
     image_count: int
     un_reviewed_image_count: int
     team_count: int
-    uptime: timedelta
 
 
 class TeamStatsOut(BaseModel):

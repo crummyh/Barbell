@@ -78,7 +78,7 @@ def remove_label_super_category(
             return {"detail": "Successfully deleted"}
         else:
             raise HTTPException(
-                status_code=HTTP_400_BAD_REQUEST, detail="Catagory does not exist"
+                status_code=HTTP_400_BAD_REQUEST, detail="Category does not exist"
             )
     except Exception as e:
         session.rollback()
@@ -110,7 +110,7 @@ def remove_label_category(
             return {"detail": "Successfully deleted"}
         else:
             raise HTTPException(
-                status_code=HTTP_400_BAD_REQUEST, detail="Catagory does not exist"
+                status_code=HTTP_400_BAD_REQUEST, detail="Category does not exist"
             )
     except Exception as e:
         session.rollback()

@@ -52,6 +52,6 @@ class AnnotationUpdate(SQLModel):
     image_id: UUID | None = None
 
 
-class AnnotationPublic(SQLModel):
+class AnnotationPublic(AnnotationBase):
     id: int
     image_id: UUID

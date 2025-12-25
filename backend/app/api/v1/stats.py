@@ -53,7 +53,6 @@ def get_stats(session: SessionDep) -> StatsOut:
             .where(Image.review_status != ImageReviewStatus.APPROVED)
         ).one(),
         team_count=session.exec(select(func.count()).select_from(Team)).one(),
-        uptime=get_uptime(),
     )
     return out
 

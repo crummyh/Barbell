@@ -63,6 +63,7 @@ logs/
 # Testing
 coverage/
 .nyc_output/
+tests/
 
 # OS
 Thumbs.db
