@@ -34,4 +34,16 @@
 	--color-accent-800: #9a2b19;
 	--color-accent-900: #80291c;
 	--color-accent-950: #461209;
+
+	--color-gray-50: #f5f6f7;
+	--color-gray-100: #e8eaec;
+	--color-gray-200: #d1d5d9;
+	--color-gray-300: #a9b1b8;
+	--color-gray-400: #7d8891;
+	--color-gray-500: #5f6b76;
+	--color-gray-600: #4a545e;
+	--color-gray-700: #3d454d;
+	--color-gray-800: #2d3339;
+	--color-gray-900: #1a1e22;
+	--color-gray-950: #0f1113;
 }

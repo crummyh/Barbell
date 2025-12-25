@@ -22,7 +22,6 @@ from app.models.models import (
     StatsOut,
 )
 from app.models.team import Team
-from app.services.monitoring import get_uptime
 
 router = APIRouter()
 

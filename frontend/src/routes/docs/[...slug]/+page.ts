@@ -2,22 +2,24 @@ import { error } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
 
 export const load: PageLoad = async ({ params }) => {
-	const { slug } = params;
+	let { slug } = params;
 
-	const sections: string[] = slug ? slug.split('/') : [];
+	let sections: string[] = slug ? slug.split('/') : [];
 
 	if (sections.length === 0) {
-		// Go to index page
+		slug = 'index';
+		sections = ['index'];
 	}
 
 	const allDocs = import.meta.glob('$content/docs/**/*.md');
 
 	let matchedPath: string | null = null;
+	let contents = {};
 
 	for (const path in allDocs) {
 		// Extract the parts after /content/docs/
 		// Example: "/content/docs/01-intro/02-quickstart.md" -> ["01-intro", "02-quickstart.md"]
-		const pathParts = path.replace('/content/docs/', '').split('/');
+		const pathParts = path.replace('/src/content/docs/', '').split('/');
 
 		// Remove numeric prefixes and .md extension for comparison
 		const cleanPathParts = pathParts.map((part) => part.replace(/^\d+-/, '').replace(/\.md$/, ''));
