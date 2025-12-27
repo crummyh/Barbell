@@ -1,7 +1,10 @@
 import { error } from '@sveltejs/kit';
-import type { PageLoad } from './$types';
 
-export const load: PageLoad = async ({ params }) => {
+export const prerender = true;
+
+const allDocs = import.meta.glob('$content/docs/**/*.md', { eager: true, import: 'metadata' });
+
+export async function load({ params }) {
 	let { slug } = params;
 
 	let sections: string[] = slug ? slug.split('/') : [];
@@ -11,14 +14,10 @@ export const load: PageLoad = async ({ params }) => {
 		sections = ['index'];
 	}
 
-	const allDocs = import.meta.glob('$content/docs/**/*.md');
-
 	let matchedPath: string | null = null;
-	let contents = {};
 
 	for (const path in allDocs) {
 		// Extract the parts after /content/docs/
-		// Example: "/content/docs/01-intro/02-quickstart.md" -> ["01-intro", "02-quickstart.md"]
 		const pathParts = path.replace('/src/content/docs/', '').split('/');
 
 		// Remove numeric prefixes and .md extension for comparison
@@ -38,14 +37,8 @@ export const load: PageLoad = async ({ params }) => {
 		throw error(404, `Documentation page not found: ${slug}`);
 	}
 
-	try {
-		const doc = await allDocs[matchedPath]();
-
-		return {
-			component: doc.default,
-			metadata: doc.metadata || {}
-		};
-	} catch (e) {
-		throw error(500, `Failed to load documentation: ${e.message}`);
-	}
-};
+	return {
+		path: matchedPath,
+		metadata: allDocs[matchedPath]
+	};
+}

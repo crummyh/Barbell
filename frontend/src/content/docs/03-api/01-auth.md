@@ -4,7 +4,7 @@ description: "Letting the backend know who you are"
 ---
 
 <script lang="ts">
-  import { CodeSwitch } from '$lib/components/docs/CodeSwitch.svelte'
+  import CodeSwitch from '$lib/components/docs/CodeSwitch.svelte'
 </script>
 
 # API Keys

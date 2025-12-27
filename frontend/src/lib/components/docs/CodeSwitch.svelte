@@ -1,9 +1,7 @@
 <script lang="ts">
-	let { children } = $props();
+	let { tabs } = $props();
 
 	let activeTab = $state(0);
-
-	let tabs = $derived(children?.() || []);
 
 	function selectTab(index: number) {
 		activeTab = index;

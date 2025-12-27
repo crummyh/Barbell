@@ -1,4 +1,4 @@
-interface DocMetadata {
+export interface DocMetadata {
 	title?: string;
 	description?: string;
 	icon?: string;
