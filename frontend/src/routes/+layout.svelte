@@ -2,8 +2,17 @@
 	import './layout.css';
 	import favicon from '$lib/assets/favicon.svg';
 	import TopNav from '$lib/components/TopNav.svelte';
+	import type { Snippet } from 'svelte';
 
-	let { children } = $props();
+	interface Props {
+		children: Snippet<[]>;
+		data: {
+			authed: boolean;
+		};
+	}
+
+	let { children, data }: Props = $props();
+	let authed = $derived(data.authed);
 </script>
 
 <svelte:head>
@@ -14,6 +23,6 @@
 </svelte:head>
 
 <div class="bg-white dark:bg-gray-800">
-	<TopNav></TopNav>
+	<TopNav {authed}></TopNav>
 	{@render children()}
 </div>

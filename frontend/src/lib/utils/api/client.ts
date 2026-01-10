@@ -22,7 +22,7 @@ class APIClient {
 		this.baseURL = baseURL;
 	}
 
-	private async request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
+	async request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
 		const { params, ...fetchOptions } = options;
 
 		// Build URL with query parameters
@@ -57,8 +57,7 @@ class APIClient {
 		if (contentType?.includes('application/json')) {
 			return response.json();
 		}
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		return response.text() as any;
+		return response.text() as T;
 	}
 
 	async get<T>(endpoint: string, options?: RequestOptions): Promise<T> {

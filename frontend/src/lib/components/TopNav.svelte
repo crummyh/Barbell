@@ -4,6 +4,13 @@
 
 	let toggled = $state(false);
 
+	interface Props {
+		authed: boolean;
+	}
+
+	let { authed }: Props = $props();
+	$inspect(authed);
+
 	function toggleMobileNav() {
 		toggled = !toggled;
 	}
@@ -29,7 +36,26 @@
 				<li><a href={resolve('/docs')} class="text-heading px-2">Docs</a></li>
 				<li><a href={resolve('/about')} class="text-heading px-2">About</a></li>
 				<li><ColorModeSwitch /></li>
-				<li><a href={resolve('/docs')} class="text-heading">Account</a></li>
+				{#if authed}
+					<li>
+						<button class="text-heading" aria-label="account"
+							><span class="icon-[material-symbols--account-circle]"></span></button
+						>
+					</li>
+				{:else}
+					<li>
+						<a
+							href={resolve('/login')}
+							class="text-heading mx-2 rounded-md bg-white p-2 text-gray-950">Log in</a
+						>
+					</li>
+					<li>
+						<a
+							href={resolve('/register')}
+							class="text-heading mx-2 rounded-md bg-white p-2 text-gray-950">Sign Up</a
+						>
+					</li>
+				{/if}
 			</ul>
 		</div>
 	</div>

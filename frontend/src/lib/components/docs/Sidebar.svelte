@@ -7,15 +7,19 @@
 	const currentPath = $state(page.url.pathname);
 </script>
 
-<nav class="sidebar">
+<nav class="sticky top-20 me-4">
 	<!-- eslint-disable-next-line svelte/require-each-key -->
 	{#each [...docsBySection] as [sectionName, docs]}
-		<div class="section">
-			<h3>{sectionName}</h3>
+		<div class="mb-3">
+			<h3 class="text-lg">{sectionName}</h3>
 			<ul>
 				{#each docs as doc (doc)}
-					<li>
-						<a href={resolve(doc.path)} class:active={currentPath === doc.path}>
+					<li class="mb-1">
+						<a
+							href={resolve(doc.path)}
+							class:active={currentPath === doc.path}
+							class="text-gray-700"
+						>
 							{doc.metadata.title || doc.slug}
 						</a>
 					</li>

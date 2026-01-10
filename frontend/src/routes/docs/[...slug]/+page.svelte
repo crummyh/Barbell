@@ -3,6 +3,7 @@
 	import { type Component } from 'svelte';
 	import type { PageData } from './$types';
 	import type { DocMetadata } from '$lib/utils/docs';
+	import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -25,14 +26,21 @@
 </script>
 
 <svelte:head>
-	<title>{metadata?.title || 'Barbell Documentation'}</title>
+	<title>{metadata?.title + ' - Barbell Documentation'}</title>
 </svelte:head>
 
-<div class="flex min-h-full w-full">
-	<Sidebar />
-	<div class="prose dark:prose-invert">
-		{#if DocsComponent}
-			<DocsComponent></DocsComponent>
-		{/if}
+<div class="min-h-full w-full justify-center">
+	<div class="mx-auto flex w-full lg:w-5xl">
+		<Sidebar />
+		<div>
+			<Breadcrumbs sections={[data.section, metadata.title]}></Breadcrumbs>
+			<h1 class="text-5xl font-semibold">{metadata.title}</h1>
+			<h3>{metadata.description}</h3>
+			<div class="prose dark:prose-invert prose-code:before:hidden prose-code:after:hidden">
+				{#if DocsComponent}
+					<DocsComponent></DocsComponent>
+				{/if}
+			</div>
+		</div>
 	</div>
 </div>

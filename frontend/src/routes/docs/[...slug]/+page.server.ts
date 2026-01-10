@@ -37,8 +37,11 @@ export async function load({ params }) {
 		throw error(404, `Documentation page not found: ${slug}`);
 	}
 
+	const splitPath = matchedPath.split('/');
+
 	return {
 		path: matchedPath,
-		metadata: allDocs[matchedPath]
+		metadata: allDocs[matchedPath],
+		section: splitPath[splitPath.length - 2].replace(/^\d+-/, '')
 	};
 }

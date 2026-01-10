@@ -1,21 +1,21 @@
 export interface DocMetadata {
-	title?: string;
+	title: string;
 	description?: string;
 	icon?: string;
 }
 
 interface DocInfo {
-	path: string; // URL path like "/docs/intro/quickstart"
-	filePath: string; // File path like "/content/docs/01-intro/02-quickstart.md"
-	section: string; // Like "intro"
-	slug: string; // Like "quickstart"
-	order: number; // The numeric prefix (01, 02, etc.)
+	path: string;
+	filePath: string;
+	section: string;
+	slug: string;
+	order: number;
 	metadata: DocMetadata;
 }
 
 export function getAllDocs(): DocInfo[] {
 	// Eager import gets the actual modules immediately
-	const allDocs = import.meta.glob<{ metadata?: DocMetadata }>('$content/docs/**/*.md', {
+	const allDocs = import.meta.glob<{ metadata: DocMetadata }>('$content/docs/**/*.md', {
 		eager: true
 	});
 
@@ -24,14 +24,9 @@ export function getAllDocs(): DocInfo[] {
 	for (const filePath in allDocs) {
 		const doc = allDocs[filePath];
 
-		// Parse the file path
-		// "/content/docs/01-intro/02-quickstart.md"
 		const pathParts = filePath.replace('/src/content/docs/', '').replace('.md', '').split('/');
-
-		// Skip if it's not a valid doc file
 		if (pathParts.length < 2) continue;
 
-		// Extract section (e.g., "01-intro")
 		const sectionWithPrefix = pathParts[0];
 		const fileWithPrefix = pathParts[pathParts.length - 1];
 
@@ -82,4 +77,17 @@ export function getDocsBySection() {
 	}
 
 	return sections;
+}
+
+const langIconTable = {
+	py: 'icon-[simple-icons--python]',
+	js: 'icon-[simple-icons--javascript]'
+};
+
+export function getLangIcon(lang: string): string {
+	try {
+		return langIconTable[lang];
+	} catch {
+		throw new Error('Failed to find matching icon');
+	}
 }

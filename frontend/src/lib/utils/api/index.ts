@@ -1,4 +1,5 @@
 import { adminService } from './services/admin';
+import { authService } from './services/auth';
 import { categoriesService } from './services/categories';
 import { imagesService } from './services/images';
 
@@ -14,6 +15,7 @@ export * from './types/user';
 
 export const api = {
 	admin: adminService,
+	auth: authService,
 	categories: categoriesService,
 	images: imagesService
 };

@@ -59,6 +59,7 @@
 					<div
 						class="mb-2 min-w-36 text-5xl font-bold text-gray-900 tabular-nums dark:text-gray-100"
 						in:countUp={{ duration: 5000, delay: 1000, goal: 99999 }}
+						aria-label="99,999"
 					>
 						99,999
 					</div>
@@ -76,6 +77,7 @@
 					<div
 						class="mb-2 min-w-36 text-5xl font-bold text-gray-900 tabular-nums dark:text-gray-100"
 						in:countUp={{ duration: 5000, delay: 1000, goal: 999 }}
+						aria-label="999"
 					>
 						999
 					</div>
@@ -93,6 +95,7 @@
 					<div
 						class="mb-2 min-w-36 text-5xl font-bold text-gray-900 tabular-nums dark:text-gray-100"
 						in:countUp={{ duration: 5000, delay: 1000, goal: 100, suffix: '%' }}
+						aria-label="100%"
 					>
 						100%
 					</div>

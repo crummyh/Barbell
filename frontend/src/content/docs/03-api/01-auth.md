@@ -48,8 +48,8 @@ response = requests.get('my_endpoint', headers={"x-api-auth": api_key})
 {/snippet}
 
 <CodeSwitch tabs={[
-  { label: 'JavaScript', content: apiJsCode },
-  { label: 'Python', content: apiPyCode }
+  { label: 'JavaScript', content: apiJsCode, lang: 'js' },
+  { label: 'Python', content: apiPyCode, lang: 'py' }
 ]} />  
 
 # Best Practices
